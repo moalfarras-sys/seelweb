@@ -1,0 +1,55 @@
+# Dependencies
+node_modules
+.npm
+
+# Build output
+.next
+dist
+build
+out
+
+# Environment & secrets
+.env.local
+.env.*.local
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+.cursor
+*.swp
+*.swo
+.DS_Store
+
+# Testing
+coverage
+.nyc_output
+__tests__
+
+# Logs
+*.log
+npm-debug.log*
+
+# Docker (don't nest)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# Prisma dev databases
+prisma/*.db
+prisma/migrations/dev.db
+
+# Nginx config (separate volume)
+nginx/

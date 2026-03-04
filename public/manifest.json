@@ -1,0 +1,32 @@
+{
+    "name": "SEEL Transport & Reinigung",
+    "short_name": "SEEL",
+    "description": "Professionelle Umzüge, Reinigung und Entrümpelung deutschlandweit",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#060e1f",
+    "theme_color": "#0d9ea0",
+    "orientation": "portrait-primary",
+    "scope": "/",
+    "categories": [
+        "business",
+        "logistics"
+    ],
+    "lang": "de",
+    "icons": [
+        {
+            "src": "/images/logo.jpeg",
+            "sizes": "192x192",
+            "type": "image/jpeg",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/images/logo.jpeg",
+            "sizes": "512x512",
+            "type": "image/jpeg",
+            "purpose": "any"
+        }
+    ],
+    "screenshots": [],
+    "prefer_related_applications": false
+}

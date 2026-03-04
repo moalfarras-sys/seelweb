@@ -1,0 +1,639 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ServiceCategory {
+  HOME_CLEANING
+  MOVE_OUT_CLEANING
+  OFFICE_CLEANING
+  MOVING
+  DISPOSAL
+}
+
+enum OrderStatus {
+  ANFRAGE
+  ANGEBOT
+  BESTAETIGT
+  IN_BEARBEITUNG
+  ABGESCHLOSSEN
+  STORNIERT
+}
+
+enum PaymentMethod {
+  STRIPE
+  RECHNUNG
+  UEBERWEISUNG
+  BAR
+  PAYPAL
+}
+
+enum PaymentStatus {
+  AUSSTEHEND
+  BEZAHLT
+  UEBERFAELLIG
+  ERSTATTET
+}
+
+enum OfferStatus {
+  PENDING
+  MODIFIED
+  APPROVED
+  REJECTED
+  EXPIRED
+  ACCEPTED
+}
+
+enum ContractStatus {
+  DRAFT
+  PENDING_SIGNATURE
+  SIGNED
+  LOCKED
+  CANCELLED
+}
+
+enum SignatureMethod {
+  DRAWN
+  TYPED
+}
+
+enum CommunicationChannel {
+  EMAIL
+  INTERNAL_NOTE
+  PHONE
+}
+
+enum CommunicationDirection {
+  OUTBOUND
+  INBOUND
+  INTERNAL
+}
+
+enum PaymentState {
+  OPEN
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  REFUNDED
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String
+  company   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  orders    Order[]
+  tenders   Tender[]
+  contracts B2BContract[]
+  offers    Offer[]
+  offerContracts Contract[]
+  communications Communication[]
+  discountAssignments DiscountAssignment[]
+
+  @@map("customers")
+}
+
+model Address {
+  id            String  @id @default(cuid())
+  street        String
+  houseNumber   String  @map("house_number")
+  zip           String
+  city          String
+  floor         Int     @default(0)
+  hasElevator   Boolean @default(false) @map("has_elevator")
+  hasParkingZone Boolean @default(true) @map("has_parking_zone")
+  notes         String?
+  latitude      Float?
+  longitude     Float?
+  ordersFrom    Order[] @relation("FromAddress")
+  ordersTo      Order[] @relation("ToAddress")
+
+  @@map("addresses")
+}
+
+model ServiceCatalog {
+  id          String          @id @default(cuid())
+  category    ServiceCategory
+  nameDe      String          @map("name_de")
+  descDe      String?         @map("desc_de")
+  icon        String?
+  sortOrder   Int             @default(0) @map("sort_order")
+  isActive    Boolean         @default(true) @map("is_active")
+  orders      Order[]
+  pricing     ServicePricing[]
+  definitions ServiceDefinition[]
+  priceRules  PriceRule[]
+  surcharges  Surcharge[]
+  extras      Extra[]
+
+  @@map("service_catalog")
+}
+
+enum UnitType {
+  hourly
+  km
+  m2
+  m3
+  flat
+}
+
+enum ServiceDefinitionType {
+  MOVING
+  CLEANING
+  DISPOSAL
+  EXPRESS_MOVING
+}
+
+// Configurable hourly-rate pricing per service per zone
+model ServicePricing {
+  id                String          @id @default(cuid())
+  serviceId         String          @map("service_id")
+  zone              String          @default("DE_DEFAULT")
+  hourlyRate        Float           @map("hourly_rate")
+  minimumHours      Float           @default(2) @map("minimum_hours")
+  weekendMultiplier Float           @default(1.25) @map("weekend_multiplier")
+  holidayMultiplier Float           @default(1.5) @map("holiday_multiplier")
+  isActive          Boolean         @default(true) @map("is_active")
+  validFrom         DateTime        @default(now()) @map("valid_from")
+  validTo           DateTime?       @map("valid_to")
+  service           ServiceCatalog  @relation(fields: [serviceId], references: [id])
+
+  @@unique([serviceId, zone])
+  @@map("service_pricing")
+}
+
+// ZIP codes mapped to pricing zones
+model PricingZone {
+  id       String @id @default(cuid())
+  zip      String @unique
+  zone     String @default("DE_DEFAULT")
+  city     String @default("Unbekannt")
+  isActive Boolean @default(true) @map("is_active")
+
+  @@map("pricing_zones")
+}
+
+// Extras that add time (and optionally a flat fee)
+model Extra {
+  id          String  @id @default(cuid())
+  code        String  @unique
+  nameDe      String  @map("name_de")
+  descDe      String? @map("desc_de")
+  timeAddMin  Int     @map("time_add_min")
+  extraFee    Float   @default(0) @map("extra_fee")
+  allowCustom Boolean @default(false) @map("allow_custom")
+  icon        String?
+  sortOrder   Int     @default(0) @map("sort_order")
+  isActive    Boolean @default(true) @map("is_active")
+  appliesToCategories String[] @map("applies_to")
+  serviceId   String? @map("service_id")
+  pricingType UnitType @default(flat) @map("pricing_type")
+  value       Float    @default(0)
+  unit        String?  @map("unit")
+  service     ServiceCatalog? @relation(fields: [serviceId], references: [id])
+
+  @@map("extras")
+}
+
+model Discount {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  description String?
+  amount      Float
+  isPercent   Boolean  @default(true) @map("is_percent")
+  validFrom   DateTime @map("valid_from")
+  validTo     DateTime @map("valid_to")
+  maxUses     Int?     @map("max_uses")
+  usedCount   Int      @default(0) @map("used_count")
+  isActive    Boolean  @default(true) @map("is_active")
+  codeType    String   @default("PROMO") @map("code_type")
+  stackable   Boolean  @default(false)
+  usageScope  String   @default("GLOBAL") @map("usage_scope")
+  assignments DiscountAssignment[]
+
+  @@map("discounts")
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique @map("order_number")
+  trackingNumber  String?       @unique @map("tracking_number")
+  customerId      String        @map("customer_id")
+  serviceId       String        @map("service_id")
+  status          OrderStatus   @default(ANFRAGE)
+  fromAddressId   String?       @map("from_address_id")
+  toAddressId     String?       @map("to_address_id")
+  scheduledAt     DateTime?     @map("scheduled_at")
+  timeSlot        String?       @map("time_slot")
+  bookedHours     Float         @default(2) @map("booked_hours")
+  extrasTimeMin   Int           @default(0) @map("extras_time_min")
+  totalHours      Float         @default(2) @map("total_hours")
+  hourlyRate      Float         @default(0) @map("hourly_rate")
+  workers         Int           @default(1)
+  volumeM3        Float?        @map("volume_m3")
+  distanceKm      Float?        @map("distance_km")
+  areaM2          Float?        @map("area_m2")
+  subtotal        Float         @default(0)
+  quoteFingerprint String?      @map("quote_fingerprint")
+  quoteSnapshotJson Json?       @map("quote_snapshot_json")
+  discountCode    String?       @map("discount_code")
+  discountAmount  Float         @default(0) @map("discount_amount")
+  netto           Float         @default(0)
+  mwst            Float         @default(0)
+  totalPrice      Float         @default(0) @map("total_price")
+  paymentMethod   PaymentMethod @default(UEBERWEISUNG) @map("payment_method")
+  paymentStatus   PaymentStatus @default(AUSSTEHEND) @map("payment_status")
+  stripeSessionId String?       @map("stripe_session_id")
+  extrasJson      Json?         @map("extras_json")
+  breakdownJson   Json?         @map("breakdown_json")
+  addressSnapshotJson Json?     @map("address_snapshot_json")
+  notes           String?
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  customer    Customer       @relation(fields: [customerId], references: [id])
+  service     ServiceCatalog @relation(fields: [serviceId], references: [id])
+  fromAddress Address?       @relation("FromAddress", fields: [fromAddressId], references: [id])
+  toAddress   Address?       @relation("ToAddress", fields: [toAddressId], references: [id])
+  invoices    Invoice[]
+  offer       Offer?
+
+  @@map("orders")
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  orderId       String        @map("order_id")
+  contractId    String?       @map("contract_id")
+  invoiceNumber String        @unique @map("invoice_number")
+  amount        Float
+  tax           Float         @default(0)
+  totalAmount   Float         @map("total_amount")
+  pdfUrl        String?       @map("pdf_url")
+  paidAt        DateTime?     @map("paid_at")
+  dueDate       DateTime      @map("due_date")
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id])
+  contract Contract? @relation(fields: [contractId], references: [id])
+  payments Payment[]
+
+  @@map("invoices")
+}
+
+model Offer {
+  id             String      @id @default(cuid())
+  offerNumber    String      @unique @map("offer_number")
+  customerId     String      @map("customer_id")
+  orderId        String      @unique @map("order_id")
+  status         OfferStatus @default(PENDING)
+  title          String?
+  introText      String?     @map("intro_text")
+  validUntil     DateTime    @map("valid_until")
+  subtotal       Float       @default(0)
+  discountAmount Float       @default(0) @map("discount_amount")
+  extraFees      Float       @default(0) @map("extra_fees")
+  netto          Float       @default(0)
+  mwst           Float       @default(0)
+  totalPrice     Float       @default(0) @map("total_price")
+  currency       String      @default("EUR")
+  token          String      @unique
+  latestVersion  Int         @default(1) @map("latest_version")
+  approvedAt     DateTime?   @map("approved_at")
+  rejectedAt     DateTime?   @map("rejected_at")
+  acceptedAt     DateTime?   @map("accepted_at")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  customer       Customer        @relation(fields: [customerId], references: [id])
+  order          Order           @relation(fields: [orderId], references: [id])
+  items          OfferItem[]
+  versions       OfferVersion[]
+  contracts      Contract[]
+  communications Communication[]
+
+  @@map("offers")
+}
+
+model OfferItem {
+  id          String   @id @default(cuid())
+  offerId     String   @map("offer_id")
+  position    Int
+  type        String   @default("SERVICE")
+  title       String
+  description String?
+  quantity    Float    @default(1)
+  unitPrice   Float    @default(0) @map("unit_price")
+  totalPrice  Float    @default(0) @map("total_price")
+  metaJson    Json?    @map("meta_json")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  offer Offer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@index([offerId])
+  @@map("offer_items")
+}
+
+model OfferVersion {
+  id           String   @id @default(cuid())
+  offerId      String   @map("offer_id")
+  versionNo    Int      @map("version_no")
+  snapshotJson Json     @map("snapshot_json")
+  addressSnapshotJson Json? @map("address_snapshot_json")
+  createdBy    String?  @map("created_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  offer Offer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@unique([offerId, versionNo])
+  @@map("offer_versions")
+}
+
+model Contract {
+  id               String         @id @default(cuid())
+  contractNumber   String         @unique @map("contract_number")
+  offerId          String         @unique @map("offer_id")
+  customerId       String         @map("customer_id")
+  status           ContractStatus @default(DRAFT)
+  token            String         @unique
+  termsVersion     String         @default("2026-01") @map("terms_version")
+  agreedToTermsAt  DateTime?      @map("agreed_to_terms_at")
+  signedAt         DateTime?      @map("signed_at")
+  signedByName     String?        @map("signed_by_name")
+  signedByIp       String?        @map("signed_by_ip")
+  signedByUserAgent String?       @map("signed_by_user_agent")
+  signedPdfBase64  String?        @map("signed_pdf_base64")
+  finalNetto       Float          @default(0) @map("final_netto")
+  finalMwst        Float          @default(0) @map("final_mwst")
+  finalTotalPrice  Float          @default(0) @map("final_total_price")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  offer           Offer           @relation(fields: [offerId], references: [id])
+  customer        Customer        @relation(fields: [customerId], references: [id])
+  signatures      Signature[]
+  invoices        Invoice[]
+  communications  Communication[]
+
+  @@map("contracts")
+}
+
+model Signature {
+  id            String          @id @default(cuid())
+  contractId    String          @map("contract_id")
+  method        SignatureMethod
+  typedName     String?         @map("typed_name")
+  imageDataUrl  String?         @map("image_data_url")
+  ipAddress     String?         @map("ip_address")
+  userAgent     String?         @map("user_agent")
+  signatureHash String?         @map("signature_hash")
+  signedAt      DateTime        @default(now()) @map("signed_at")
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+  @@map("signatures")
+}
+
+model Communication {
+  id         String                 @id @default(cuid())
+  customerId String?                @map("customer_id")
+  offerId    String?                @map("offer_id")
+  contractId String?                @map("contract_id")
+  channel    CommunicationChannel
+  direction  CommunicationDirection
+  subject    String?
+  message    String
+  metaJson   Json?                  @map("meta_json")
+  sentBy     String?                @map("sent_by")
+  createdAt  DateTime               @default(now()) @map("created_at")
+
+  customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  offer    Offer?    @relation(fields: [offerId], references: [id], onDelete: SetNull)
+  contract Contract? @relation(fields: [contractId], references: [id], onDelete: SetNull)
+
+  @@index([customerId])
+  @@index([offerId])
+  @@index([contractId])
+  @@map("communications")
+}
+
+model Payment {
+  id         String       @id @default(cuid())
+  invoiceId  String       @map("invoice_id")
+  amount     Float
+  method     String?
+  status     PaymentState @default(OPEN)
+  paidAt     DateTime?    @map("paid_at")
+  reference  String?
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@map("payments")
+}
+
+// B2B contracts (monthly/annual cleaning, etc.)
+model B2BContract {
+  id            String          @id @default(cuid())
+  customerId    String          @map("customer_id")
+  category      ServiceCategory
+  title         String
+  description   String?
+  pricePerMonth Float?          @map("price_per_month")
+  pricePerM2    Float?          @map("price_per_m2")
+  areaM2        Float?          @map("area_m2")
+  startDate     DateTime        @map("start_date")
+  endDate       DateTime?       @map("end_date")
+  invoiceSchedule String        @default("MONTHLY") @map("invoice_schedule")
+  status        String          @default("AKTIV")
+  signToken     String?         @unique @map("sign_token")
+  signedAt      DateTime?       @map("signed_at")
+  signedByName  String?         @map("signed_by_name")
+  contractPdfUrl String?        @map("contract_pdf_url")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@map("b2b_contracts")
+}
+
+model Tender {
+  id            String   @id @default(cuid())
+  customerId    String   @map("customer_id")
+  title         String
+  description   String
+  category      ServiceCategory
+  startDate     DateTime @map("start_date")
+  endDate       DateTime? @map("end_date")
+  budget        Float?
+  status        String   @default("OFFEN")
+  attachmentUrl String?  @map("attachment_url")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@map("tenders")
+}
+
+model RouteCache {
+  id          String   @id @default(cuid())
+  cacheKey    String   @unique @map("cache_key")
+  fromLat     Float    @map("from_lat")
+  fromLon     Float    @map("from_lon")
+  toLat       Float    @map("to_lat")
+  toLon       Float    @map("to_lon")
+  distanceKm  Float    @map("distance_km")
+  durationMin Int      @map("duration_min")
+  geometryJson Json?   @map("geometry_json")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("route_cache")
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  role         String   @default("admin")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("admin_users")
+}
+
+model ManualExpense {
+  id          String   @id @default(cuid())
+  category    String
+  description String
+  amount      Float
+  date        DateTime
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("manual_expenses")
+}
+
+model ServiceArea {
+  id             String   @id @default(cuid())
+  regionName     String   @map("region_name")
+  postalConfigJson Json   @map("postal_config_json")
+  enabled        Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  priceRules     PriceRule[]
+
+  @@map("service_areas")
+}
+
+model ServiceDefinition {
+  id             String                @id @default(cuid())
+  serviceId      String                @map("service_id")
+  slug           String                @unique
+  nameDe         String                @map("name_de")
+  type           ServiceDefinitionType
+  enabled        Boolean               @default(true)
+  bookingFlowJson Json                 @map("booking_flow_json")
+  createdAt      DateTime              @default(now()) @map("created_at")
+  updatedAt      DateTime              @updatedAt @map("updated_at")
+  service        ServiceCatalog        @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@map("service_definitions")
+}
+
+model PriceRule {
+  id          String        @id @default(cuid())
+  serviceId   String        @map("service_id")
+  regionId    String        @map("region_id")
+  baseFee     Float         @default(0) @map("base_fee")
+  unitType    UnitType      @map("unit_type")
+  unitPrice   Float         @default(0) @map("unit_price")
+  minUnits    Float         @default(0) @map("min_units")
+  enabled     Boolean       @default(true)
+  priority    Int           @default(100)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  service     ServiceCatalog @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  region      ServiceArea   @relation(fields: [regionId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId, regionId, enabled, priority])
+  @@map("price_rules")
+}
+
+model Surcharge {
+  id          String        @id @default(cuid())
+  serviceId   String        @map("service_id")
+  nameDe      String        @map("name_de")
+  triggerJson Json          @map("trigger_json")
+  formulaJson Json          @map("formula_json")
+  enabled     Boolean       @default(true)
+  priority    Int           @default(100)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  service     ServiceCatalog @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId, enabled, priority])
+  @@map("surcharges")
+}
+
+model OfferSequence {
+  year        Int    @id
+  currentValue Int   @default(0) @map("current_value")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("offer_sequences")
+}
+
+model ContractSequence {
+  year        Int    @id
+  currentValue Int   @default(0) @map("current_value")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("contract_sequences")
+}
+
+model InvoiceSequence {
+  year        Int    @id
+  currentValue Int   @default(0) @map("current_value")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("invoice_sequences")
+}
+
+model TrackingSequence {
+  period      String   @id
+  currentValue Int     @default(0) @map("current_value")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("tracking_sequences")
+}
+
+model DiscountAssignment {
+  id         String   @id @default(cuid())
+  discountId String   @map("discount_id")
+  customerId String?  @map("customer_id")
+  email      String?
+  phone      String?
+  note       String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  discount Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@index([discountId])
+  @@index([customerId])
+  @@index([email])
+  @@index([phone])
+  @@map("discount_assignments")
+}
