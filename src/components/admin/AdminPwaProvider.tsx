@@ -44,11 +44,10 @@ export default function AdminPwaProvider() {
   if (installed || !deferredPrompt) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 z-[70] rounded-xl border border-teal-300/40 bg-teal-500 px-3 py-2 text-white shadow-lg">
+    <div className="fixed bottom-5 right-5 z-[70] rounded-xl border border-teal-300/40 bg-teal-500 px-3 py-2 text-white shadow-lg">
       <button onClick={triggerInstall} className="text-sm font-semibold">
         Admin App installieren
       </button>
     </div>
   );
 }
-

@@ -31,6 +31,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect("/admin/login");
   }
 
+  if (session.isLoggedIn && pathname === "/admin/login") {
+    redirect("/admin");
+  }
+
   if (!session.isLoggedIn) {
     return <>{children}</>;
   }
