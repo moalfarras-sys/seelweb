@@ -117,7 +117,7 @@ export default function Navbar() {
 
   return (
     <>
-      {/* â•â•â• TOP INFO BAR "” Desktop Only â•â•â• */}
+      {/* Top info bar */}
       <div className="hidden lg:block bg-navy-800 dark:bg-navy-950 text-white/90 py-2">
         <div className="max-w-7xl mx-auto px-8 flex items-center justify-between text-xs">
           <div className="flex items-center gap-6">
@@ -142,7 +142,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* â•â•â• MAIN NAVBAR â•â•â• */}
+      {/* Main navbar */}
       <nav
         className={cn(
           "sticky top-0 z-50 transition-all duration-500",
@@ -154,7 +154,7 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-[72px]">
 
-            {/* â”€â”€ Logo â”€â”€ */}
+            {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group shrink-0">
               <div className="relative">
                 <Image
@@ -175,7 +175,7 @@ export default function Navbar() {
               </div>
             </Link>
 
-            {/* â”€â”€ Desktop Navigation "” Full visible, NO hamburger â”€â”€ */}
+            {/* Desktop navigation */}
             <div className="hidden lg:flex items-center gap-0.5">
               {navLinks.map((link) => {
                 if (link.hasMega) {
@@ -212,7 +212,7 @@ export default function Navbar() {
                         )}
                       </Link>
 
-                      {/* â”€â”€ Mega Dropdown â”€â”€ */}
+                      {/* Mega dropdown */}
                       <AnimatePresence>
                         {megaOpen && (
                           <motion.div initial={{ opacity: 0, y: 8, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.98 }} transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
@@ -302,7 +302,7 @@ export default function Navbar() {
               })}
             </div>
 
-            {/* â”€â”€ Desktop Right Actions â”€â”€ */}
+            {/* Desktop actions */}
             <div className="hidden lg:flex items-center gap-2">
               <a
                 href={`tel:${CONTACT.PRIMARY_PHONE}`}
@@ -325,7 +325,7 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {/* â”€â”€ Mobile Controls "” Hamburger only on mobile â”€â”€ */}
+            {/* Mobile controls */}
             <div className="flex items-center gap-2 lg:hidden">
               <a
                 href={`tel:${CONTACT.PRIMARY_PHONE}`}
@@ -347,7 +347,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* â•â•â• MOBILE DRAWER "” Slide from right â•â•â• */}
+      {/* Mobile drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <>

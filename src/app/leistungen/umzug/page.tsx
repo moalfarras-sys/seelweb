@@ -92,7 +92,7 @@ export default function UmzugPage() {
         <div className="max-w-3xl mx-auto text-center">
           <ScrollReveal>
             <h2 className="text-2xl font-bold text-navy-800 dark:text-white mb-4">Transparente Preisgestaltung</h2>
-            <p className="text-silver-600 dark:text-silver-300 mb-4">Unser Umzugspreis setzt sich transparent zusammen aus Arbeitszeit, Mitarbeiteranzahl, Entfernung (km), Ladevolumen (mÂ³) und ggf. Stockwerkzuschlägen.</p>
+            <p className="text-silver-600 dark:text-silver-300 mb-4">Unser Umzugspreis setzt sich transparent zusammen aus Arbeitszeit, Mitarbeiteranzahl, Entfernung (km), Ladevolumen (m³) und ggf. Stockwerkzuschlägen.</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
               {[
                 { icon: Clock, label: "Stundenbasiert" },

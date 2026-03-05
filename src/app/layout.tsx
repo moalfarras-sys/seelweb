@@ -19,17 +19,15 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://seeltransport.de"),
-  title: "Seel Transport â€“ UmzÃ¼ge, Reinigung & Dienstleistungen in Berlin",
+  title: "SEEL Transport – Umzüge, Reinigung & Entrümpelung in Berlin",
   description:
-    "Professionelle UmzÃ¼ge, MÃ¶beltransporte, Reinigungsdienste und EntrÃ¼mpelung in Berlin. Jetzt online buchen â€“ zuverlÃ¤ssig, schnell und mit hÃ¶chster Sorgfalt.",
+    "Professionelle Umzüge, Transporte, Reinigung und Entrümpelung in Berlin und deutschlandweit. Transparent kalkuliert, zuverlässig umgesetzt.",
   keywords: [
     "Umzug Berlin",
-    "MÃ¶beltransport",
-    "Reinigungsservice Berlin",
-    "EntrÃ¼mpelung",
-    "BÃ¼roumzug",
-    "Schulumzug",
-    "Transport Berlin",
+    "Umzugsfirma Berlin",
+    "Entrümpelung Berlin",
+    "Transport Service Berlin",
+    "Umzug deutschlandweit",
   ],
   manifest: "/manifest.json",
   appleWebApp: {
@@ -38,14 +36,40 @@ export const metadata: Metadata = {
     title: "SEEL Transport",
   },
   openGraph: {
-    title: "Seel Transport â€“ UmzÃ¼ge & Reinigung in Berlin",
-    description: "Professionelle UmzÃ¼ge, Transporte und Reinigungsdienste â€“ alles aus einer Hand.",
+    title: "SEEL Transport – Umzugsfirma Berlin",
+    description: "Umzug, Transport, Reinigung und Entrümpelung aus einer Hand.",
     url: "https://seeltransport.de",
-    siteName: "Seel Transport",
+    siteName: "SEEL Transport",
     locale: "de_DE",
     type: "website",
-    images: [{ url: "/images/logo.jpeg", width: 512, height: 512, alt: "Seel Transport Logo" }],
+    images: [{ url: "/images/logo.jpeg", width: 512, height: 512, alt: "SEEL Transport Logo" }],
   },
+  alternates: {
+    canonical: "https://seeltransport.de",
+  },
+};
+
+const localBusinessSchema = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  name: "SEEL Transport & Reinigung",
+  url: "https://seeltransport.de",
+  logo: "https://seeltransport.de/images/logo.jpeg",
+  telephone: "+49 172 8003410",
+  address: {
+    "@type": "PostalAddress",
+    addressCountry: "DE",
+    addressLocality: "Berlin",
+  },
+  areaServed: "Deutschland",
+  openingHoursSpecification: [
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      opens: "07:00",
+      closes: "20:00",
+    },
+  ],
 };
 
 export default async function RootLayout({
@@ -60,22 +84,22 @@ export default async function RootLayout({
   return (
     <html lang="de" suppressHydrationWarning>
       <head>
+        <meta charSet="utf-8" />
         <link rel="apple-touch-icon" href="/images/logo.jpeg" />
         <meta name="mobile-web-app-capable" content="yes" />
+        <Script id="local-business-schema" type="application/ld+json" strategy="beforeInteractive">
+          {JSON.stringify(localBusinessSchema)}
+        </Script>
       </head>
       <body className="antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {!isAdmin && <Navbar />}
           <main className="min-h-screen">{children}</main>
           {!isAdmin && <Footer />}
           {!isAdmin && <WhatsAppButton />}
           {!isAdmin && <CookieBanner />}
         </ThemeProvider>
+
         {!isAdmin && (
           <>
             <Script id="sw-register" strategy="afterInteractive">{`
@@ -122,4 +146,3 @@ export default async function RootLayout({
     </html>
   );
 }
-

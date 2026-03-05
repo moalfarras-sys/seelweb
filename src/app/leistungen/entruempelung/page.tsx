@@ -24,7 +24,7 @@ const features = [
 ];
 
 const faqs = [
-  { q: "Was kostet eine Entrümpelung", a: "Der Preis richtet sich nach dem Volumen (mÂ³), der Etage und dem Zugang. Sie erhalten ein transparentes Angebot mit allen Positionen vorab." },
+  { q: "Was kostet eine Entrümpelung", a: "Der Preis richtet sich nach dem Volumen (m³), der Etage und dem Zugang. Sie erhalten ein transparentes Angebot mit allen Positionen vorab." },
   { q: "Brauche ich eine zweite Adresse angeben", a: "Nein. Bei Entrümpelung und Entsorgung benötigen wir nur die Objektadresse – es gibt keine Zieladresse." },
   { q: "Entsorgen Sie auch Elektrogeräte", a: "Ja, wir entsorgen Elektrogeräte, Möbel, Bauschutt und Sondermüll fachgerecht gemäß den geltenden Vorschriften." },
   { q: "Wie schnell können Sie kommen", a: "In der Regel innerhalb von 2–5 Werktagen. Expresstermine sind gegen Aufpreis möglich." },
@@ -96,10 +96,10 @@ export default function EntruempelungPage() {
         <div className="max-w-3xl mx-auto text-center">
           <ScrollReveal>
             <h2 className="text-2xl font-bold text-navy-800 dark:text-white mb-4">Transparente Preisgestaltung</h2>
-            <p className="text-silver-600 dark:text-silver-300">Die Kosten richten sich nach dem Entsorgungsvolumen (mÂ³), der Etage und dem Vorhandensein eines Aufzugs. Keine versteckten Kosten – alle Zuschläge werden vorab im Angebot aufgeführt.</p>
+            <p className="text-silver-600 dark:text-silver-300">Die Kosten richten sich nach dem Entsorgungsvolumen (m³), der Etage und dem Vorhandensein eines Aufzugs. Keine versteckten Kosten – alle Zuschläge werden vorab im Angebot aufgeführt.</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
               {[
-                { icon: Home, label: "Nach Volumen (mÂ³)" },
+                { icon: Home, label: "Nach Volumen (m³)" },
                 { icon: Recycle, label: "Recycling inklusive" },
                 { icon: Shield, label: "Entsorgungsnachweis" },
               ].map((item) => {
