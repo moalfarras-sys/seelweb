@@ -172,7 +172,7 @@ function ServiceCard({
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-700"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-navy-800 via-black/5 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-navy-950/35 via-navy-900/10 to-transparent dark:from-navy-800/70 dark:via-navy-900/20" />
         </div>
         <div className="p-6">
           <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${service.gradient} flex items-center justify-center mb-4 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300 shadow-md`}>
