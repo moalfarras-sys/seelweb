@@ -63,6 +63,7 @@ export default function AngebotePage() {
   const [messageSubject, setMessageSubject] = useState("Rückfrage zu Ihrem Angebot");
   const [messageBody, setMessageBody] = useState("");
   const [showContact, setShowContact] = useState(false);
+  const [exportingAll, setExportingAll] = useState(false);
 
   const showToast = (msg: string, type: "ok" | "err" = "ok") => {
     setToast({ msg, type });
@@ -138,6 +139,31 @@ export default function AngebotePage() {
       showToast(err instanceof Error ? err.message : "Speichern fehlgeschlagen", "err");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function downloadFullExport() {
+    setExportingAll(true);
+    try {
+      const res = await fetch("/api/admin/export/all", { method: "GET" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Export fehlgeschlagen");
+      }
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `seel-komplettexport-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      showToast("Komplettexport wurde heruntergeladen.");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Export fehlgeschlagen", "err");
+    } finally {
+      setExportingAll(false);
     }
   }
 
@@ -221,6 +247,14 @@ export default function AngebotePage() {
           </h1>
           <p className="text-sm text-silver-500 mt-1">{offers.length} Angebote insgesamt</p>
         </div>
+        <button
+          onClick={downloadFullExport}
+          disabled={exportingAll}
+          className="px-4 py-2.5 rounded-xl bg-navy-800 dark:bg-navy-700 text-white text-sm font-medium hover:bg-navy-900 dark:hover:bg-navy-600 flex items-center gap-2 disabled:opacity-50"
+        >
+          {exportingAll ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
+          Alles exportieren (ZIP)
+        </button>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -511,6 +545,13 @@ export default function AngebotePage() {
                         <a href={`/vertrag/${c.token}`} target="_blank" rel="noopener noreferrer"
                           className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-navy-700">
                           <ExternalLink size={16} className="text-silver-500" />
+                        </a>
+                        <a
+                          href={`/api/vertrag/${c.token}/pdf?download=1`}
+                          className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-navy-700"
+                          title="Vertrag als PDF herunterladen"
+                        >
+                          <Download size={16} className="text-silver-500" />
                         </a>
                       </div>
                     ))}

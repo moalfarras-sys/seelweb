@@ -63,7 +63,7 @@ export default function AdminShell({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-100/80 via-cyan-50/70 to-blue-100/70 dark:from-[#060f20] dark:via-[#08152b] dark:to-[#050b16] flex">
+    <div className="admin-shell min-h-screen bg-gradient-to-br from-sky-100/90 via-cyan-50/85 to-blue-100/85 dark:from-[#060f20] dark:via-[#08152b] dark:to-[#050b16] flex">
       <AdminPwaProvider />
 
       <aside
