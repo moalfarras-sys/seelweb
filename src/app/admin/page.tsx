@@ -12,6 +12,7 @@ import {
   Truck,
   ArrowUpRight,
   BarChart3,
+  Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -42,6 +43,7 @@ export default function AdminDashboard() {
   const [customerCount, setCustomerCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [exportingAll, setExportingAll] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -109,6 +111,25 @@ export default function AdminDashboard() {
     );
   }
 
+  async function downloadFullExport() {
+    setExportingAll(true);
+    try {
+      const res = await fetch("/api/admin/export/all", { method: "GET" });
+      if (!res.ok) throw new Error("Export fehlgeschlagen");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `seel-komplettexport-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } finally {
+      setExportingAll(false);
+    }
+  }
+
   const today = new Date().toLocaleDateString("de-DE");
   const todayOrders = orders.filter((o) => {
     const d = o.scheduledAt || o.createdAt;
@@ -141,11 +162,20 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-navy-800 dark:text-white">Dashboard</h1>
-        <p className="text-silver-500 dark:text-silver-400 text-sm mt-1">Übersicht über Ihre Geschäftsaktivitäten</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-navy-800 dark:text-white">Dashboard</h1>
+          <p className="text-silver-500 dark:text-silver-400 text-sm mt-1">Übersicht über Ihre Geschäftsaktivitäten</p>
+        </div>
+        <button
+          onClick={downloadFullExport}
+          disabled={exportingAll}
+          className="px-4 py-2 rounded-xl bg-navy-800 dark:bg-navy-700 text-white text-sm font-medium hover:bg-navy-900 dark:hover:bg-navy-600 disabled:opacity-50 flex items-center gap-2"
+        >
+          <Download size={15} />
+          {exportingAll ? "Export..." : "Alle Daten exportieren"}
+        </button>
       </div>
-
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {stats.map((stat) => {
           const Icon = stat.icon;
@@ -259,3 +289,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+

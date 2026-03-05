@@ -27,7 +27,26 @@ interface Order {
   distanceKm: number | null;
   customer: { id: string; name: string; email: string; phone: string; company?: string };
   service: { nameDe: string; category: string };
-  offers?: Array<{ id: string; offerNumber: string; token: string; status: string; totalPrice: number }>;
+  offers?: Array<{
+    id: string;
+    offerNumber: string;
+    token: string;
+    status: string;
+    totalPrice: number;
+    contracts?: Array<{
+      id: string;
+      token: string;
+      status: string;
+      contractNumber: string;
+      signedAt?: string | null;
+    }>;
+    invoices?: Array<{
+      id: string;
+      invoiceNumber: string;
+      contractId?: string | null;
+      totalAmount: number;
+    }>;
+  }>;
 }
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; icon: typeof Clock; next?: string; nextLabel?: string }> = {
@@ -61,6 +80,7 @@ export default function BuchungenPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALLE");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [exportingAll, setExportingAll] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "ok" | "err" } | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -119,6 +139,28 @@ export default function BuchungenPage() {
     finally { setActionLoading(null); }
   }
 
+  async function downloadFullExport() {
+    setExportingAll(true);
+    try {
+      const res = await fetch("/api/admin/export/all", { method: "GET" });
+      if (!res.ok) throw new Error();
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `seel-komplettexport-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      showToast("Komplettexport wurde heruntergeladen.");
+    } catch {
+      showToast("Export fehlgeschlagen.", "err");
+    } finally {
+      setExportingAll(false);
+    }
+  }
+
   const filtered = orders.filter((b) => {
     const q = search.toLowerCase();
     const matchSearch = b.customer.name.toLowerCase().includes(q) || b.orderNumber.toLowerCase().includes(q) || b.customer.email.toLowerCase().includes(q);
@@ -160,9 +202,19 @@ export default function BuchungenPage() {
           </h1>
           <p className="text-silver-500 text-sm mt-0.5">{orders.length} Buchungen</p>
         </div>
-        <button onClick={fetchOrders} className="px-4 py-2 rounded-xl border border-gray-200 dark:border-navy-700 text-sm hover:bg-gray-50 dark:hover:bg-navy-800 flex items-center gap-2">
-          <RefreshCw size={15} /> Aktualisieren
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={fetchOrders} className="px-4 py-2 rounded-xl border border-gray-200 dark:border-navy-700 text-sm hover:bg-gray-50 dark:hover:bg-navy-800 flex items-center gap-2">
+            <RefreshCw size={15} /> Aktualisieren
+          </button>
+          <button
+            onClick={downloadFullExport}
+            disabled={exportingAll}
+            className="px-4 py-2 rounded-xl bg-navy-800 dark:bg-navy-700 text-white text-sm hover:bg-navy-900 dark:hover:bg-navy-600 disabled:opacity-50 flex items-center gap-2"
+          >
+            {exportingAll ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
+            Alles exportieren (ZIP)
+          </button>
+        </div>
       </div>
 
       {/* Stats Row */}
@@ -363,6 +415,30 @@ export default function BuchungenPage() {
                               <a href={`/api/angebot/${o.token}/pdf`} target="_blank" rel="noopener noreferrer" className="p-1 rounded hover:bg-gray-200 dark:hover:bg-navy-700">
                                 <Download size={12} className="text-silver-500" />
                               </a>
+                              {o.contracts?.map((contract) => (
+                                <a
+                                  key={contract.id}
+                                  href={`/api/vertrag/${contract.token}/pdf?download=1`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-2 py-1 rounded border border-emerald-200 dark:border-emerald-500/30 text-[11px] text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
+                                  title={`Vertrag ${contract.contractNumber} herunterladen`}
+                                >
+                                  Vertrag PDF
+                                </a>
+                              ))}
+                              {o.invoices?.map((invoice) => (
+                                <a
+                                  key={invoice.id}
+                                  href={`/api/rechnung/${invoice.id}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-2 py-1 rounded border border-blue-200 dark:border-blue-500/30 text-[11px] text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10"
+                                  title={`Rechnung ${invoice.invoiceNumber} herunterladen`}
+                                >
+                                  Rechnung PDF
+                                </a>
+                              ))}
                             </div>
                           ))}
                         </div>
