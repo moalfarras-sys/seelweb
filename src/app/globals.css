@@ -102,10 +102,10 @@
 
   body {
     background:
-      radial-gradient(1200px 700px at 8% 12%, rgba(125, 211, 252, 0.35) 0%, transparent 60%),
-      radial-gradient(900px 600px at 85% 18%, rgba(56, 189, 248, 0.22) 0%, transparent 58%),
-      radial-gradient(1100px 720px at 50% 92%, rgba(14, 165, 233, 0.18) 0%, transparent 62%),
-      linear-gradient(180deg, #ecf7ff 0%, #dff2ff 48%, #eaf7ff 100%);
+      radial-gradient(1100px 720px at 10% 10%, rgba(56, 189, 248, 0.44) 0%, transparent 60%),
+      radial-gradient(1000px 680px at 88% 14%, rgba(14, 165, 233, 0.30) 0%, transparent 58%),
+      radial-gradient(1300px 800px at 52% 92%, rgba(59, 130, 246, 0.26) 0%, transparent 62%),
+      linear-gradient(180deg, #e9f7ff 0%, #d8f0ff 46%, #e7f6ff 100%);
     color: var(--text-primary);
     transition: background-color 500ms cubic-bezier(0.4, 0, 0.2, 1),
       color 300ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -126,10 +126,10 @@
     pointer-events: none;
     z-index: -1;
     background:
-      radial-gradient(42% 36% at 14% 26%, rgba(59, 130, 246, 0.14) 0%, transparent 72%),
-      radial-gradient(34% 30% at 82% 22%, rgba(14, 165, 233, 0.18) 0%, transparent 70%),
-      radial-gradient(38% 34% at 68% 82%, rgba(56, 189, 248, 0.14) 0%, transparent 75%);
-    animation: skyDrift 18s ease-in-out infinite alternate;
+      radial-gradient(40% 34% at 14% 26%, rgba(56, 189, 248, 0.23) 0%, transparent 72%),
+      radial-gradient(34% 30% at 82% 22%, rgba(14, 165, 233, 0.26) 0%, transparent 70%),
+      radial-gradient(36% 30% at 68% 82%, rgba(59, 130, 246, 0.22) 0%, transparent 75%);
+    animation: skyDrift 14s ease-in-out infinite alternate;
   }
 
   .dark body::before {
@@ -142,16 +142,23 @@
     inset: 0;
     pointer-events: none;
     z-index: -1;
-    opacity: 0.42;
+    opacity: 0.48;
     background-image:
-      linear-gradient(rgba(14, 165, 233, 0.055) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(14, 165, 233, 0.05) 1px, transparent 1px);
-    background-size: 44px 44px;
-    mask-image: radial-gradient(ellipse at 50% 30%, black 32%, transparent 82%);
+      linear-gradient(rgba(14, 165, 233, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(14, 165, 233, 0.07) 1px, transparent 1px);
+    background-size: 52px 52px;
+    mask-image: radial-gradient(ellipse at 50% 34%, black 36%, transparent 84%);
   }
 
   .dark body::after {
     content: none;
+  }
+
+  html:not(.dark) main > section:not([class*="bg-navy"]):not(.gradient-navy) {
+    background-color: rgba(239, 249, 255, 0.66) !important;
+    border-top: 1px solid rgba(125, 211, 252, 0.32);
+    border-bottom: 1px solid rgba(125, 211, 252, 0.24);
+    backdrop-filter: blur(2px);
   }
 
   ::selection {
