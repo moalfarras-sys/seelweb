@@ -587,6 +587,23 @@ model Surcharge {
   @@map("surcharges")
 }
 
+model PricingSettings {
+  id                    String   @id @default("default")
+  kmPriceEur            Float    @default(0.75) @map("km_price_eur")
+  roundTripMultiplier   Float    @default(1) @map("round_trip_multiplier")
+  minimumFeeEur         Float    @default(0) @map("minimum_fee_eur")
+  vatEnabled            Boolean  @default(true) @map("vat_enabled")
+  estimateLabelEnabled  Boolean  @default(true) @map("estimate_label_enabled")
+  baseMovingEur         Float    @default(0) @map("base_moving_eur")
+  baseDisposalEur       Float    @default(0) @map("base_disposal_eur")
+  baseHomeCleaningEur   Float    @default(0) @map("base_home_cleaning_eur")
+  baseMoveOutCleaningEur Float   @default(0) @map("base_move_out_cleaning_eur")
+  baseOfficeCleaningEur Float    @default(0) @map("base_office_cleaning_eur")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("pricing_settings")
+}
+
 model OfferSequence {
   year        Int    @id
   currentValue Int   @default(0) @map("current_value")

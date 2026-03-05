@@ -1052,6 +1052,11 @@ export default function BuchenPage() {
                           {formatCurrency(quote.total)}
                         </div>
                       </div>
+                      {services.includes("MOVING") && (
+                        <p className="text-[11px] text-amber-600 mt-2">
+                          Distanzkosten sind als Richtwert/Schätzung ausgewiesen bis zur finalen Einsatzplanung.
+                        </p>
+                      )}
 
                       {/* Discount Input inside widget */}
                       <div className="mt-4 pt-4 border-t border-slate-200 dark:border-navy-700">

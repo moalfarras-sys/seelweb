@@ -31,8 +31,16 @@ export async function GET(req: NextRequest, { params }: Params) {
       routeDistanceKm: offer.order.distanceKm,
       serviceDate: offer.order.scheduledAt?.toLocaleDateString("de-DE") || null,
       timeSlot: offer.order.timeSlot,
-      fromAddress: offer.order.fromAddress?.street || null,
-      toAddress: offer.order.toAddress?.street || null,
+      fromAddress: offer.order.fromAddress
+        ? [offer.order.fromAddress.street, offer.order.fromAddress.houseNumber, offer.order.fromAddress.zip, offer.order.fromAddress.city]
+            .filter(Boolean)
+            .join(", ")
+        : null,
+      toAddress: offer.order.toAddress
+        ? [offer.order.toAddress.street, offer.order.toAddress.houseNumber, offer.order.toAddress.zip, offer.order.toAddress.city]
+            .filter(Boolean)
+            .join(", ")
+        : null,
       items: offer.items.map((item) => ({
         title: item.title,
         description: item.description,
@@ -50,6 +58,17 @@ export async function GET(req: NextRequest, { params }: Params) {
       trackingNumber: offer.order.trackingNumber || undefined,
       statusNote: offer.status === "PENDING" ? "Anfrage eingegangen - wartet auf Bestätigung" : undefined,
       agbText: "Es gelten unsere AGB.",
+      jobDetails: {
+        computedDurationHours: offer.order.totalHours || null,
+        routeDurationMin: null,
+        floorFrom: offer.order.fromAddress?.floor ?? null,
+        floorTo: offer.order.toAddress?.floor ?? null,
+        hasElevatorFrom: offer.order.fromAddress?.hasElevator ?? null,
+        hasElevatorTo: offer.order.toAddress?.hasElevator ?? null,
+        parkingFrom: offer.order.fromAddress ? (offer.order.fromAddress.hasParkingZone ? "Parkzone" : "Keine Parkzone") : null,
+        parkingTo: offer.order.toAddress ? (offer.order.toAddress.hasParkingZone ? "Parkzone" : "Keine Parkzone") : null,
+        estimateNote: "Hinweis: Distanzkosten werden als Richtwert/Schätzung berechnet, bis die finale Einsatzplanung bestätigt ist.",
+      },
     });
 
     return new NextResponse(new Uint8Array(pdf), {

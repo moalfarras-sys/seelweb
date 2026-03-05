@@ -7,12 +7,8 @@ type JsonObject = Record<string, unknown>;
 type BreakdownService = {
   serviceType: string;
   hours: number;
-  breakdown?: {
-    totalHours?: number;
-    hourlyRate?: number;
-    netto?: number;
-    mwst?: number;
-    total?: number;
+  pricing?: {
+    lines?: Array<{ label: string; amount: number; detail?: string }>;
   };
 };
 
@@ -179,6 +175,78 @@ const SERVICE_LABELS: Record<string, string> = {
   DISPOSAL: "Entrümpelung",
 };
 
+function buildOfferItemsFromBreakdown(
+  services: BreakdownService[],
+  extrasByService: Map<string, string[]>
+) {
+  let position = 1;
+  const items: Array<{
+    position: number;
+    type: "SERVICE" | "EXTRA";
+    title: string;
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+    metaJson: { serviceType: string };
+  }> = [];
+
+  for (const svc of services) {
+    const serviceLabel = SERVICE_LABELS[svc.serviceType] || svc.serviceType;
+    const pricingLines = (svc.pricing?.lines || []).filter(
+      (line) => line && Number.isFinite(line.amount) && line.amount !== 0
+    );
+
+    for (const line of pricingLines) {
+      const label = String(line.label || "").toLowerCase();
+      if (label.includes("netto") || label.includes("mwst") || label.includes("gesamt")) continue;
+      const amount = Number(line.amount);
+      items.push({
+        position: position++,
+        type: "SERVICE",
+        title: `${serviceLabel}: ${line.label}`,
+        description: line.detail || "",
+        quantity: 1,
+        unitPrice: amount,
+        totalPrice: amount,
+        metaJson: { serviceType: svc.serviceType },
+      });
+    }
+
+    const extras = extrasByService.get(svc.serviceType) || [];
+    for (const name of extras) {
+      items.push({
+        position: position++,
+        type: "EXTRA",
+        title: name,
+        description: "Zusatzleistung",
+        quantity: 1,
+        unitPrice: 0,
+        totalPrice: 0,
+        metaJson: { serviceType: svc.serviceType },
+      });
+    }
+  }
+
+  if (items.length === 0) {
+    for (const svc of services) {
+      const serviceLabel = SERVICE_LABELS[svc.serviceType] || svc.serviceType;
+      items.push({
+        position: position++,
+        type: "SERVICE",
+        title: serviceLabel,
+        description: `${Number(svc.hours || 0).toFixed(2)} Std.`,
+        quantity: Number(svc.hours || 0),
+        unitPrice: 0,
+        totalPrice: 0,
+        metaJson: { serviceType: svc.serviceType },
+      });
+    }
+  }
+
+  return items;
+}
+
 export async function createOfferFromOrder(order: OrderWithPayload) {
   const token = createPublicToken();
   const validUntil = new Date();
@@ -209,35 +277,7 @@ export async function createOfferFromOrder(order: OrderWithPayload) {
           token,
           latestVersion: 1,
           items: {
-            create: services.flatMap((svc, idx) => {
-              const serviceLabel = SERVICE_LABELS[svc.serviceType] || svc.serviceType;
-              const totalHours = svc.breakdown?.totalHours ?? svc.hours ?? 0;
-              const hourlyRate = svc.breakdown?.hourlyRate ?? 0;
-              const baseTotal = totalHours * hourlyRate;
-              const extraItems = (extrasByService.get(svc.serviceType) || []).map((name, eIdx) => ({
-                position: idx * 100 + eIdx + 2,
-                type: "EXTRA",
-                title: name,
-                description: "Zusatzleistung",
-                quantity: 1,
-                unitPrice: 0,
-                totalPrice: 0,
-                metaJson: { serviceType: svc.serviceType },
-              }));
-              return [
-                {
-                  position: idx * 100 + 1,
-                  type: "SERVICE",
-                  title: serviceLabel,
-                  description: `${totalHours.toFixed(2)} Std.`,
-                  quantity: totalHours,
-                  unitPrice: hourlyRate,
-                  totalPrice: baseTotal,
-                  metaJson: { serviceType: svc.serviceType },
-                },
-                ...extraItems,
-              ];
-            }),
+            create: buildOfferItemsFromBreakdown(services, extrasByService),
           },
           versions: {
             create: {

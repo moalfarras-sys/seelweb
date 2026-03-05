@@ -1,6 +1,7 @@
-import crypto from "crypto";
+﻿import crypto from "crypto";
 import { prisma } from "@/lib/db";
 import type { Discount, ServiceCategory, UnitType } from "@prisma/client";
+import { getPricingSettingsSnapshot, getServiceBasePrice } from "@/lib/pricing/settings";
 
 export type PricingInputParams = {
   hours?: number;
@@ -43,6 +44,8 @@ export type PricingResult = {
   regionId: string;
   regionName: string;
   effectiveCategory: ServiceCategory;
+  estimateLabelEnabled?: boolean;
+  appliedKmPriceEur?: number | null;
 };
 
 export type DiscountResolution = {
@@ -67,6 +70,7 @@ export type PricingAggregateResult = {
   total: number;
   lines: PricingLine[];
   quoteFingerprint: string;
+  estimateLabelEnabled: boolean;
 };
 
 const MWST = 0.19;
@@ -95,10 +99,7 @@ function getUnitsByType(unitType: UnitType, input: PricingInputParams): number {
 
 function isZipIncluded(zip: string, postalConfig: unknown): boolean {
   if (!postalConfig || typeof postalConfig !== "object") return false;
-  const config = postalConfig as {
-    explicit?: string[];
-    ranges?: Array<{ from: string; to: string }>;
-  };
+  const config = postalConfig as { explicit?: string[]; ranges?: Array<{ from: string; to: string }> };
 
   if (Array.isArray(config.explicit) && config.explicit.includes(zip)) return true;
   if (!Array.isArray(config.ranges)) return false;
@@ -152,12 +153,7 @@ function evalFormula(formula: Record<string, unknown>, input: PricingInputParams
 }
 
 export function buildQuoteFingerprint(input: {
-  services: Array<{
-    serviceType: string;
-    zip: string;
-    subtotal: number;
-    total: number;
-  }>;
+  services: Array<{ serviceType: string; zip: string; subtotal: number; total: number }>;
   total: number;
   discountCode: string | null;
   discountAmount: number;
@@ -185,20 +181,16 @@ export async function calculatePricingFromDbRules(
   input: PricingInputParams
 ): Promise<PricingResult> {
   const effectiveCategory = toServiceCategory(serviceCategory);
+  const pricingSettings = await getPricingSettingsSnapshot();
   const region = await resolveRegionByZip(zip);
 
-  if (!region) {
-    throw new Error("SERVICE_AREA_NOT_SUPPORTED");
-  }
+  if (!region) throw new Error("SERVICE_AREA_NOT_SUPPORTED");
 
   const candidateRules = await prisma.priceRule.findMany({
     where: {
       enabled: true,
       regionId: region.id,
-      service: {
-        category: effectiveCategory,
-        isActive: true,
-      },
+      service: { category: effectiveCategory, isActive: true },
     },
     select: {
       id: true,
@@ -213,9 +205,7 @@ export async function calculatePricingFromDbRules(
     orderBy: [{ priority: "asc" }, { createdAt: "asc" }],
   });
 
-  if (candidateRules.length === 0) {
-    throw new Error("NO_PRICE_RULES");
-  }
+  if (candidateRules.length === 0) throw new Error("NO_PRICE_RULES");
 
   const rulesPerService = new Map<string, number>();
   for (const rule of candidateRules) {
@@ -229,23 +219,36 @@ export async function calculatePricingFromDbRules(
     where: { id: selectedServiceId },
     select: { id: true, nameDe: true },
   });
-
   if (!service) throw new Error("SERVICE_NOT_FOUND");
 
   const rules = candidateRules.filter((rule) => rule.serviceId === service.id);
   const lines: PricingLine[] = [];
   let subtotal = 0;
+  let appliedKmPriceEur: number | null = null;
+
+  const serviceBasePrice = Number(getServiceBasePrice(pricingSettings, effectiveCategory).toFixed(2));
+  if (serviceBasePrice > 0) {
+    subtotal += serviceBasePrice;
+    lines.push({ label: "Basispreis Service", amount: serviceBasePrice, detail: "Admin Preisregel" });
+  }
 
   for (const rule of rules) {
     const rawUnits = getUnitsByType(rule.unitType, input);
     const units = Math.max(rawUnits, rule.minUnits);
-    const variable = Number((units * rule.unitPrice).toFixed(2));
+    let unitPrice = rule.unitPrice;
+
+    if (effectiveCategory === "MOVING" && rule.unitType === "km") {
+      unitPrice = Number((pricingSettings.kmPriceEur * pricingSettings.roundTripMultiplier).toFixed(4));
+      appliedKmPriceEur = unitPrice;
+    }
+
+    const variable = Number((units * unitPrice).toFixed(2));
     const amount = Number((rule.baseFee + variable).toFixed(2));
     subtotal += amount;
     lines.push({
-      label: `Regel ${rule.unitType}`,
+      label: effectiveCategory === "MOVING" && rule.unitType === "km" ? "Distanzkosten (Richtwert)" : `Regel ${rule.unitType}`,
       amount,
-      detail: `Basis ${rule.baseFee.toFixed(2)} EUR + ${units.toFixed(2)} × ${rule.unitPrice.toFixed(2)} EUR`,
+      detail: `Basis ${rule.baseFee.toFixed(2)} EUR + ${units.toFixed(2)} × ${unitPrice.toFixed(2)} EUR`,
     });
   }
 
@@ -294,12 +297,22 @@ export async function calculatePricingFromDbRules(
   }
 
   subtotal = Number((subtotal + extrasTotal + surchargesTotal).toFixed(2));
+  if (pricingSettings.minimumFeeEur > 0 && subtotal < pricingSettings.minimumFeeEur) {
+    const minimumAdjustment = Number((pricingSettings.minimumFeeEur - subtotal).toFixed(2));
+    subtotal = pricingSettings.minimumFeeEur;
+    lines.push({
+      label: "Mindestbetrag Anpassung",
+      amount: minimumAdjustment,
+      detail: `Mindestbetrag ${pricingSettings.minimumFeeEur.toFixed(2)} EUR`,
+    });
+  }
+
   const netto = subtotal;
-  const mwst = Number((netto * MWST).toFixed(2));
+  const mwst = pricingSettings.vatEnabled ? Number((netto * MWST).toFixed(2)) : 0;
   const total = Number((netto + mwst).toFixed(2));
 
   lines.push({ label: "Nettobetrag", amount: netto });
-  lines.push({ label: "MwSt. (19%)", amount: mwst });
+  lines.push({ label: pricingSettings.vatEnabled ? "MwSt. (19%)" : "MwSt. (deaktiviert)", amount: mwst });
   lines.push({ label: "Gesamtbetrag", amount: total });
 
   return {
@@ -313,6 +326,8 @@ export async function calculatePricingFromDbRules(
     regionId: region.id,
     regionName: region.regionName,
     effectiveCategory,
+    estimateLabelEnabled: pricingSettings.estimateLabelEnabled,
+    appliedKmPriceEur,
   };
 }
 
@@ -333,9 +348,7 @@ export async function resolveDiscountForCustomer(params: {
   if (discount.validFrom > now || discount.validTo < now) throw new Error("DISCOUNT_EXPIRED");
   if (discount.maxUses != null && discount.usedCount >= discount.maxUses) throw new Error("DISCOUNT_USAGE_EXCEEDED");
 
-  const assignments = await prisma.discountAssignment.findMany({
-    where: { discountId: discount.id },
-  });
+  const assignments = await prisma.discountAssignment.findMany({ where: { discountId: discount.id } });
 
   if (assignments.length > 0) {
     const email = String(params.customerEmail || "").trim().toLowerCase();
@@ -366,6 +379,7 @@ export async function calculateAggregatePricing(params: {
   customerPhone?: string | null;
   customerId?: string | null;
 }): Promise<PricingAggregateResult> {
+  const pricingSettings = await getPricingSettingsSnapshot();
   const services = await Promise.all(
     params.services.map(async (svc) => {
       const result = await calculatePricingFromDbRules(svc.serviceType, svc.zip, svc.params);
@@ -389,7 +403,7 @@ export async function calculateAggregatePricing(params: {
 
   const discountAmount = discountResolution?.amount ?? 0;
   const netto = Number((subtotal - discountAmount).toFixed(2));
-  const mwst = Number((netto * MWST).toFixed(2));
+  const mwst = pricingSettings.vatEnabled ? Number((netto * MWST).toFixed(2)) : 0;
   const total = Number((netto + mwst).toFixed(2));
 
   const lines: PricingLine[] = [];
@@ -407,7 +421,7 @@ export async function calculateAggregatePricing(params: {
     });
   }
   lines.push({ label: "Netto", amount: netto });
-  lines.push({ label: "MwSt. (19%)", amount: mwst });
+  lines.push({ label: pricingSettings.vatEnabled ? "MwSt. (19%)" : "MwSt. (deaktiviert)", amount: mwst });
   lines.push({ label: "Gesamt", amount: total });
 
   const quoteFingerprint = buildQuoteFingerprint({
@@ -435,5 +449,6 @@ export async function calculateAggregatePricing(params: {
     total,
     lines,
     quoteFingerprint,
+    estimateLabelEnabled: pricingSettings.estimateLabelEnabled,
   };
 }

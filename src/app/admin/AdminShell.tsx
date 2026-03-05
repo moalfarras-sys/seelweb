@@ -20,6 +20,7 @@ const sidebarLinks = [
   { href: "/admin/rechnungen",     icon: FileText,          label: "Rechnungen",   group: "finance" },
   { href: "/admin/buchhaltung",    icon: Calculator,        label: "Buchhaltung",  group: "finance" },
   { href: "/admin/preise",         icon: Euro,              label: "Preise",       group: "finance" },
+  { href: "/admin/preisregeln",    icon: Euro,              label: "Preisregeln",  group: "finance" },
   { href: "/admin/berichte",       icon: BarChart3,         label: "Berichte",     group: "finance" },
   { href: "/admin/einstellungen",  icon: Settings,          label: "Einstellungen",group: "system" },
   { href: "/admin/gesundheit",     icon: HeartPulse,        label: "Systemstatus", group: "system" },

@@ -60,6 +60,18 @@ interface OfferPDFData {
   agbText?: string;
   trackingNumber?: string;
   statusNote?: string;
+  jobDetails?: {
+    computedDurationHours?: number | null;
+    routeDurationMin?: number | null;
+    floorFrom?: number | null;
+    floorTo?: number | null;
+    hasElevatorFrom?: boolean | null;
+    hasElevatorTo?: boolean | null;
+    parkingFrom?: string | null;
+    parkingTo?: string | null;
+    estimateNote?: string | null;
+    addons?: string[];
+  };
 }
 
 interface ContractPDFData {
@@ -484,6 +496,34 @@ export function generateOfferPDF(data: OfferPDFData): Buffer {
     doc.text(`Route: ${data.routeDistanceKm.toFixed(1)} km`, 20, y);
     y += 4.5;
   }
+  if (data.jobDetails?.computedDurationHours) {
+    doc.text(`Geplante Dauer: ${data.jobDetails.computedDurationHours.toFixed(2)} Std.`, 20, y);
+    y += 4.5;
+  }
+  if (data.jobDetails?.routeDurationMin) {
+    doc.text(`Fahrzeit (geschätzt): ${Math.round(data.jobDetails.routeDurationMin)} Min.`, 20, y);
+    y += 4.5;
+  }
+  if (typeof data.jobDetails?.floorFrom === "number" || typeof data.jobDetails?.floorTo === "number") {
+    const floorFrom = data.jobDetails.floorFrom ?? 0;
+    const floorTo = data.jobDetails.floorTo ?? 0;
+    doc.text(`Stockwerke: Start ${floorFrom} / Ziel ${floorTo}`, 20, y);
+    y += 4.5;
+  }
+  if (typeof data.jobDetails?.hasElevatorFrom === "boolean" || typeof data.jobDetails?.hasElevatorTo === "boolean") {
+    const from = data.jobDetails.hasElevatorFrom ? "Ja" : "Nein";
+    const to = data.jobDetails.hasElevatorTo ? "Ja" : "Nein";
+    doc.text(`Aufzug: Start ${from} / Ziel ${to}`, 20, y);
+    y += 4.5;
+  }
+  if (data.jobDetails?.parkingFrom || data.jobDetails?.parkingTo) {
+    doc.text(`Parken: Start ${data.jobDetails.parkingFrom || "-"} / Ziel ${data.jobDetails.parkingTo || "-"}`, 20, y);
+    y += 4.5;
+  }
+  if (data.jobDetails?.addons && data.jobDetails.addons.length > 0) {
+    doc.text(`Add-ons: ${data.jobDetails.addons.join(", ")}`, 20, y);
+    y += 4.5;
+  }
   y += 4;
 
   doc.setFillColor(...NAVY);
@@ -593,6 +633,14 @@ export function generateOfferPDF(data: OfferPDFData): Buffer {
     setBrandFont(doc, "bold");
     doc.text(`Status: ${data.statusNote}`, 20, y);
     y += 5;
+  }
+
+  if (data.jobDetails?.estimateNote) {
+    doc.setTextColor(...GRAY);
+    doc.setFontSize(8);
+    setBrandFont(doc, "normal");
+    doc.text(data.jobDetails.estimateNote, 20, y);
+    y += 4.5;
   }
 
   const fy = ph - 18;

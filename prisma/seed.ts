@@ -246,6 +246,26 @@ async function seedLegacyPricing(serviceIds: Map<ServiceCategory, string>) {
   }
 }
 
+async function seedPricingSettings() {
+  await prisma.pricingSettings.upsert({
+    where: { id: "default" },
+    update: {},
+    create: {
+      id: "default",
+      kmPriceEur: 0.75,
+      roundTripMultiplier: 1,
+      minimumFeeEur: 0,
+      vatEnabled: true,
+      estimateLabelEnabled: true,
+      baseMovingEur: 0,
+      baseDisposalEur: 0,
+      baseHomeCleaningEur: 0,
+      baseMoveOutCleaningEur: 0,
+      baseOfficeCleaningEur: 0,
+    },
+  });
+}
+
 async function main() {
   console.log("Seed starte...");
   const serviceIds = await upsertServiceCatalog();
@@ -256,6 +276,7 @@ async function main() {
   await seedExtras(serviceIds);
   await seedDiscounts();
   await seedLegacyPricing(serviceIds);
+  await seedPricingSettings();
   console.log("Seed abgeschlossen.");
 }
 

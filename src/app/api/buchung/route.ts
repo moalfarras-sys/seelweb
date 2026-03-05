@@ -520,6 +520,23 @@ export async function POST(req: NextRequest) {
         trackingNumber,
         statusNote: "Anfrage eingegangen - wartet auf Bestätigung",
         agbText: "Es gelten unsere AGB. Stornierungsbedingungen gemäß AGB.",
+        jobDetails: {
+          computedDurationHours: combinedHours,
+          routeDurationMin: null,
+          floorFrom: firstService.floorFrom ?? null,
+          floorTo: firstService.floorTo ?? null,
+          hasElevatorFrom: firstService.hasElevatorFrom ?? null,
+          hasElevatorTo: firstService.hasElevatorTo ?? null,
+          parkingFrom: null,
+          parkingTo: null,
+          estimateNote: aggregate.estimateLabelEnabled
+            ? "Hinweis: Distanzkosten werden als Richtwert/Schätzung berechnet, bis die finale Einsatzplanung bestätigt ist."
+            : null,
+          addons: (firstService.extras || [])
+            .filter((e) => e.selected)
+            .map((e) => String(e.name || e.code || "").trim())
+            .filter(Boolean),
+        },
       });
     } catch (pdfError) {
       console.error(`[booking:${requestId}] pdf_generation_failed`, pdfError);
