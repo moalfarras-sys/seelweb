@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface CheckResult {
   name: string;
   ok: boolean;
@@ -127,5 +130,8 @@ export async function GET() {
   ]);
 
   const allOk = checks.every((c) => c.ok);
-  return NextResponse.json({ ok: allOk, checks, timestamp: new Date().toISOString() });
+  return NextResponse.json(
+    { ok: allOk, checks, timestamp: new Date().toISOString() },
+    { headers: { "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0" } }
+  );
 }
