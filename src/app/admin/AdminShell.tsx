@@ -10,6 +10,7 @@ import {
   HeartPulse, ChevronRight, Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import AdminPwaProvider from "@/components/admin/AdminPwaProvider";
 
 const sidebarLinks = [
   { href: "/admin",                icon: LayoutDashboard,   label: "Dashboard",    group: "main" },
@@ -49,6 +50,7 @@ export default function AdminShell({
 
   return (
     <div className="min-h-screen bg-[var(--surface-2)] dark:bg-[var(--surface-1)] flex">
+      <AdminPwaProvider />
       {/* Sidebar */}
       <aside
         className={cn(

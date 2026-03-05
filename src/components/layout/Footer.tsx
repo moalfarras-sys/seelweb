@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Phone, Mail, MapPin, Clock, Truck, SprayCan, Building2, Trash2, GraduationCap } from "lucide-react";
-import { CONTACT, whatsappUrl } from "@/config/contact";
+import { CONTACT, whatsappDefaultUrl } from "@/config/contact";
 import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 import { CookieSettingsButton } from "@/components/layout/CookieBanner";
 
@@ -31,7 +31,7 @@ export default function Footer() {
             </p>
             <div className="flex gap-3">
               <a
-                href={whatsappUrl()}
+                href={whatsappDefaultUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center hover:bg-green-600 hover:scale-110 transition-all duration-300"
@@ -106,16 +106,16 @@ export default function Footer() {
               <li className="flex items-center gap-3">
                 <Phone size={18} className="text-teal-400 shrink-0" />
                 <div className="flex flex-col">
-                  <a href={`tel:${CONTACT.PRIMARY_PHONE}`} className="text-silver-300 hover:text-teal-400 transition-colors text-sm">
-                    {CONTACT.PRIMARY_PHONE_DISPLAY} <span className="text-silver-500 text-xs">(Telefon & WhatsApp)</span>
+                  <a href="tel:+491728003410" className="text-silver-300 hover:text-teal-400 transition-all duration-200 text-sm hover:translate-x-0.5">
+                    +49 172 8003410
                   </a>
                 </div>
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={18} className="text-teal-400 shrink-0" />
                 <div className="flex flex-col">
-                  <a href={`tel:${CONTACT.SECONDARY_PHONE}`} className="text-silver-300 hover:text-teal-400 transition-colors text-sm">
-                    {CONTACT.SECONDARY_PHONE_DISPLAY} <span className="text-silver-500 text-xs">(Zweite Nummer)</span>
+                  <a href="tel:+491607746966" className="text-silver-300 hover:text-teal-400 transition-all duration-200 text-sm hover:translate-x-0.5">
+                    +49 160 7746966
                   </a>
                 </div>
               </li>

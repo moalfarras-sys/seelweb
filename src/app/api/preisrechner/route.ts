@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { calculateAggregatePricing, type PricingInputParams, type PricingServiceInput } from "@/lib/pricing/rules";
+import {
+  calculateAggregatePricing,
+  type PricingInputParams,
+  type PricingServiceInput,
+} from "@/lib/pricing/rules";
 
 export async function POST(req: NextRequest) {
+  const requestId = req.headers.get("x-request-id") || crypto.randomUUID();
   try {
     const body = await req.json();
     const incomingServices = Array.isArray(body.services) ? body.services : [];
 
     if (incomingServices.length === 0) {
-      return NextResponse.json({ error: "Pflichtfeld: services[]" }, { status: 400 });
+      return NextResponse.json({ error: "Pflichtfeld: services[]", requestId }, { status: 400 });
     }
 
     const services: PricingServiceInput[] = incomingServices.map((svc: Record<string, unknown>) => {
@@ -53,7 +58,10 @@ export async function POST(req: NextRequest) {
     });
 
     if (services.some((s) => !s.serviceType || !/^\d{5}$/.test(s.zip))) {
-      return NextResponse.json({ error: "Ungültige services[] Daten (serviceType/zip)." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Ungueltige services[] Daten (serviceType/zip).", requestId },
+        { status: 400 }
+      );
     }
 
     const pricing = await calculateAggregatePricing({
@@ -63,16 +71,24 @@ export async function POST(req: NextRequest) {
       customerPhone: body.customerPhone,
     });
 
-    return NextResponse.json({ success: true, pricing });
+    return NextResponse.json({ success: true, pricing, requestId });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Fehler bei der Preisberechnung";
+    console.error(`[pricing:${requestId}] failed`, error);
     if (message === "SERVICE_AREA_NOT_SUPPORTED") {
-      return NextResponse.json({ code: message, error: "Service in dieser Region derzeit nicht verfügbar." }, { status: 422 });
+      return NextResponse.json(
+        { code: message, error: "Service in dieser Region derzeit nicht verfuegbar.", requestId },
+        { status: 422 }
+      );
     }
     if (message.startsWith("DISCOUNT_")) {
-      return NextResponse.json({ code: message, error: "Rabattcode ist ungültig oder nicht anwendbar." }, { status: 422 });
+      return NextResponse.json(
+        { code: message, error: "Rabattcode ist ungueltig oder nicht anwendbar.", requestId },
+        { status: 422 }
+      );
     }
 
-    return NextResponse.json({ error: "Fehler bei der Preisberechnung" }, { status: 500 });
+    return NextResponse.json({ error: "Fehler bei der Preisberechnung", requestId }, { status: 500 });
   }
 }
+

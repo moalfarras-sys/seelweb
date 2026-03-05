@@ -3,39 +3,37 @@
 import { motion } from "framer-motion";
 import { Phone, Mail, MapPin, Clock, Send, Check, ArrowRight, MessageCircle } from "lucide-react";
 import { useState } from "react";
-import { CONTACT, whatsappUrl } from "@/config/contact";
+import { CONTACT, whatsappDefaultUrl } from "@/config/contact";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import TiltCard from "@/components/ui/TiltCard";
 import Link from "next/link";
 
-const contactItems = [
+type ContactLine = { label: string; href?: string };
+type ContactItem = { icon: typeof Phone; title: string; lines: ContactLine[] };
+
+const contactItems: ContactItem[] = [
   {
     icon: Phone,
     title: "Telefon",
-    lines: [CONTACT.PRIMARY_PHONE_DISPLAY],
-    href: `tel:${CONTACT.PRIMARY_PHONE}`,
-  },
-  {
-    icon: MessageCircle,
-    title: "WhatsApp",
-    lines: [CONTACT.WHATSAPP_PHONE_DISPLAY],
-    href: whatsappUrl("Hallo, ich habe eine Frage."),
+    lines: [
+      { label: "+49 172 8003410", href: "tel:+491728003410" },
+      { label: "+49 160 7746966", href: "tel:+491607746966" },
+    ],
   },
   {
     icon: Mail,
     title: "E-Mail",
-    lines: [CONTACT.EMAIL],
-    href: `mailto:${CONTACT.EMAIL}`,
+    lines: [{ label: CONTACT.EMAIL, href: `mailto:${CONTACT.EMAIL}` }],
   },
   {
     icon: MapPin,
     title: "Standort",
-    lines: [`${CONTACT.CITY}, ${CONTACT.COUNTRY}`],
+    lines: [{ label: `${CONTACT.CITY}, ${CONTACT.COUNTRY}` }],
   },
   {
     icon: Clock,
     title: "Erreichbarkeit",
-    lines: [CONTACT.AVAILABILITY],
+    lines: [{ label: CONTACT.AVAILABILITY }],
   },
 ];
 
@@ -104,17 +102,24 @@ export default function KontaktPage() {
                 return (
                   <ScrollReveal key={item.title} delay={i * 0.08}>
                     <TiltCard intensity={5}>
-                      <div className="flex items-start gap-4 p-6 bg-gray-50 dark:bg-navy-800/60 rounded-xl border border-gray-200 dark:border-navy-700/50 hover:shadow-md transition-all glass-reflect">
-                        <div className="w-12 h-12 bg-teal-50 dark:bg-teal-500/10 rounded-xl flex items-center justify-center shrink-0">
+                      <div className="group flex items-start gap-4 p-6 bg-gradient-to-br from-white to-slate-50 dark:from-navy-900/70 dark:to-navy-800/70 rounded-2xl border border-gray-200 dark:border-navy-700/50 hover:shadow-xl hover:shadow-teal-500/10 transition-all glass-reflect">
+                        <div className="w-12 h-12 bg-teal-50 dark:bg-teal-500/10 rounded-xl flex items-center justify-center shrink-0 ring-1 ring-teal-200/60 dark:ring-teal-500/20">
                           <Icon className="text-teal-600 dark:text-teal-400" size={22} />
                         </div>
                         <div>
                           <h3 className="font-semibold text-navy-800 dark:text-white mb-1">{item.title}</h3>
                           {item.lines.map((line) => (
-                            <p key={line} className="text-silver-600 dark:text-silver-200 text-sm">
-                              {item.href ? (
-                                <a href={item.href} target={item.href.startsWith("http") ? "_blank" : undefined} rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined} className="hover:text-teal-600 dark:hover:text-teal-400 transition-colors">{line}</a>
-                              ) : line}
+                            <p key={line.label} className="text-silver-600 dark:text-silver-200 text-sm leading-6">
+                              {line.href ? (
+                                <a
+                                  href={line.href}
+                                  target={line.href.startsWith("http") ? "_blank" : undefined}
+                                  rel={line.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                                  className="inline-flex items-center gap-1 hover:text-teal-600 dark:hover:text-teal-400 transition-all duration-200 group-hover:translate-x-0.5"
+                                >
+                                  {line.label}
+                                </a>
+                              ) : line.label}
                             </p>
                           ))}
                         </div>
@@ -132,7 +137,7 @@ export default function KontaktPage() {
                   </h3>
                   <p className="text-silver-600 dark:text-silver-200 text-sm mb-3">Schreiben Sie uns direkt auf WhatsApp!</p>
                   <a
-                    href={whatsappUrl("Hallo, ich habe eine Frage zu Ihren Dienstleistungen.")}
+                    href={whatsappDefaultUrl()}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-500 text-white rounded-xl text-sm font-medium hover:bg-green-600 transition-all shadow-md btn-shine"

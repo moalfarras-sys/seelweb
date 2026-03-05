@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { DayPicker } from "react-day-picker";
+import { de } from "date-fns/locale";
 import { formatCurrency } from "@/lib/utils";
 import AddressAutocomplete, { type AddressResult } from "@/components/maps/AddressAutocomplete";
 import RouteMap from "@/components/maps/RouteMap";
@@ -81,6 +83,8 @@ type BookingResult = {
   paypalRedirectUrl?: string | null;
 };
 
+type AvailabilitySlot = { start: string; end: string; label: string };
+
 type PaymentMethod = "UEBERWEISUNG" | "BAR" | "PAYPAL";
 
 const MIN_HOURS: Record<ServiceType, number> = {
@@ -154,8 +158,6 @@ const SMART_PRESETS: Record<
   ],
 };
 
-const SLOT_PRESETS = ["08:00-10:00", "10:00-12:00", "12:00-14:00", "14:00-16:00", "16:00-18:00"];
-
 const steps = [
   { id: 1, title: "Service wählen" },
   { id: 2, title: "Details & Adresse" },
@@ -181,20 +183,13 @@ export default function BuchenPage() {
   const [submitError, setSubmitError] = useState("");
   const [isCalculating, setIsCalculating] = useState(false);
   const [done, setDone] = useState<BookingResult | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [availableSlots, setAvailableSlots] = useState<AvailabilitySlot[]>([]);
+  const [slotLoading, setSlotLoading] = useState(false);
+  const [slotError, setSlotError] = useState("");
+  const [slotNotice, setSlotNotice] = useState("");
 
   const doneTracking = done?.trackingNumber || done?.orderNumber || "";
-  const quickDates = useMemo(() => {
-    const items: string[] = [];
-    const now = new Date();
-    for (let i = 1; i <= 10; i++) {
-      const d = new Date(now);
-      d.setDate(now.getDate() + i);
-      if (d.getDay() === 0) continue;
-      items.push(d.toISOString().slice(0, 10));
-      if (items.length === 5) break;
-    }
-    return items;
-  }, []);
 
   useEffect(() => {
     const raw = search.get("service");
@@ -246,6 +241,28 @@ export default function BuchenPage() {
     });
   }, [services, ensureCfg]);
 
+  const computedDurationMin = useMemo(() => {
+    const total = services.reduce((sum, s) => {
+      const c = ensureCfg(s);
+      if (s === "MOVING") {
+        const routePart = Math.max(0, Math.ceil((c.durationMin || 0) / 30) * 30);
+        const floorPart = Math.max(0, (c.floorFrom + c.floorTo) * 10);
+        const volumePart = Math.max(0, Math.ceil((c.volumeM3 || 0) / 15) * 20);
+        return sum + c.hours * 60 + routePart + floorPart + volumePart;
+      }
+      if (s === "MOVE_OUT_CLEANING") {
+        const areaPart = Math.max(0, Math.ceil((c.areaM2 || 0) / 20) * 15);
+        return sum + c.hours * 60 + areaPart;
+      }
+      if (s === "DISPOSAL") {
+        const volumePart = Math.max(0, Math.ceil((c.volumeM3 || 0) / 5) * 15);
+        return sum + c.hours * 60 + volumePart;
+      }
+      return sum + c.hours * 60;
+    }, 0);
+    return Math.max(60, Math.ceil(total / 30) * 30);
+  }, [services, ensureCfg]);
+
   const isStep2Valid = useMemo(() => {
     if (services.length === 0) return false;
     return quotePayload.every((r) => /^\d{4,5}$/.test(String(r.zip || "")) && Number(r.hours || 0) >= MIN_HOURS[r.serviceType]);
@@ -292,12 +309,94 @@ export default function BuchenPage() {
     return () => clearTimeout(t);
   }, [isStep2Valid, quotePayload, discountCode, customerEmail, customerPhone, selectedDate]);
 
+  useEffect(() => {
+    let cancelled = false;
+    if (!selectedDate || services.length === 0) {
+      setAvailableSlots([]);
+      setSlotError("");
+      return;
+    }
+
+    const fetchAvailability = async () => {
+      setSlotLoading(true);
+      setSlotError("");
+      try {
+        const serviceKey = services.join(",");
+        const res = await fetch(
+          `/api/availability?date=${encodeURIComponent(selectedDate)}&duration=${computedDurationMin}&service=${encodeURIComponent(serviceKey)}`,
+          { cache: "no-store" }
+        );
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          if (!cancelled) {
+            setAvailableSlots([]);
+            setSlotError(data.error || "Zeitfenster konnten nicht geladen werden.");
+          }
+          return;
+        }
+        const slots = Array.isArray(data.slots) ? (data.slots as AvailabilitySlot[]) : [];
+        if (!cancelled) {
+          setAvailableSlots(slots);
+          if (timeSlot && !slots.some((s) => s.label === timeSlot)) {
+            setTimeSlot("");
+            setSlotNotice("Ihr vorheriges Zeitfenster passt nicht mehr zur aktuellen Dauer.");
+          } else {
+            setSlotNotice("");
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setAvailableSlots([]);
+          setSlotError("Zeitfenster konnten nicht geladen werden.");
+        }
+      } finally {
+        if (!cancelled) setSlotLoading(false);
+      }
+    };
+
+    fetchAvailability();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedDate, services, computedDurationMin, timeSlot]);
+
   const bookingReady = Boolean(
-    quote && selectedDate && timeSlot && customerName && customerEmail && customerPhone && services.length > 0
+    quote &&
+      selectedDate &&
+      timeSlot &&
+      customerName &&
+      customerEmail &&
+      customerPhone &&
+      services.length > 0 &&
+      (availableSlots.length === 0 || availableSlots.some((s) => s.label === timeSlot))
   );
 
   async function submit() {
-    if (!quote) return;
+    const currentQuote = quote;
+    const errors: Record<string, string> = {};
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.trim());
+    const phoneOk = /^[+0-9\s\-()]{7,}$/.test(customerPhone.trim());
+    if (!customerName.trim()) errors.customerName = "Bitte Namen eingeben.";
+    if (!emailOk) errors.customerEmail = "Bitte gültige E-Mail eingeben.";
+    if (!phoneOk) errors.customerPhone = "Bitte gültige Telefonnummer eingeben.";
+    if (!selectedDate) errors.selectedDate = "Bitte Datum wählen.";
+    if (!timeSlot) errors.timeSlot = "Bitte Zeitfenster wählen.";
+
+    const invalidZip = services.find((s) => {
+      const c = ensureCfg(s);
+      const z = c.addressFrom?.zip || c.addressTo?.zip || "";
+      return !/^\d{5}$/.test(z);
+    });
+    if (invalidZip) errors.zip = "Bitte gültige PLZ (5-stellig) in der Adresse eintragen.";
+
+    if (!currentQuote) {
+      errors.quote = "Preis konnte nicht berechnet werden.";
+    }
+
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+    const finalQuote = currentQuote as QuoteResult;
+
     setSubmitting(true);
     setSubmitError("");
     try {
@@ -309,8 +408,8 @@ export default function BuchenPage() {
         notes,
         paymentMethod,
         discountCode,
-        quotedTotal: quote.total,
-        quoteFingerprint: quote.quoteFingerprint,
+        quotedTotal: finalQuote.total,
+        quoteFingerprint: finalQuote.quoteFingerprint,
       };
       const res = await fetch("/api/buchung", {
         method: "POST",
@@ -319,7 +418,8 @@ export default function BuchenPage() {
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        setSubmitError(data.error || "Buchung fehlgeschlagen");
+        const errorId = data.requestId ? ` (Fehler-ID: ${data.requestId})` : "";
+        setSubmitError(`${data.error || "Buchung fehlgeschlagen"}${errorId}`);
         return;
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -442,7 +542,7 @@ export default function BuchenPage() {
                   />
                 </div>
 
-                {steps.map((step, idx) => {
+                {steps.map((step) => {
                   const isActive = step.id === currentStep;
                   const isPast = step.id < currentStep;
                   return (
@@ -721,56 +821,76 @@ export default function BuchenPage() {
                     </h3>
 
                     <div className="space-y-3">
-                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Verfügbare Termine</label>
-                      <div className="flex flex-wrap gap-2">
-                        {quickDates.map((d) => (
-                          <button
-                            key={d}
-                            type="button"
-                            onClick={() => setSelectedDate(d)}
-                            className={`rounded-xl px-4 py-2 text-sm font-medium transition-all ${selectedDate === d
-                              ? "bg-teal-500 text-white shadow-md shadow-teal-500/20 scale-105"
-                              : "bg-white/80 dark:bg-navy-900/60 border border-slate-200 dark:border-navy-700 text-slate-700 dark:text-slate-300 hover:border-teal-300"
-                              }`}
-                          >
-                            {new Date(`${d}T00:00:00`).toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit" })}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-slate-400 text-sm">oder</span>
-                        <input
-                          type="date"
-                          value={selectedDate}
-                          onChange={(e) => setSelectedDate(e.target.value)}
-                          className="px-4 py-2 flex-1 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-teal-500 outline-none transition-shadow"
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kalender (DE)</label>
+                      <div className="rounded-2xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 p-3 sm:p-4">
+                        <DayPicker
+                          mode="single"
+                          locale={de}
+                          weekStartsOn={1}
+                          selected={selectedDate ? new Date(`${selectedDate}T00:00:00`) : undefined}
+                          onSelect={(d) => {
+                            if (!d) return;
+                            const asIso = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString().slice(0, 10);
+                            setSelectedDate(asIso);
+                          }}
+                          disabled={[
+                            { before: new Date(new Date().setHours(0, 0, 0, 0)) },
+                            { dayOfWeek: [0] },
+                          ]}
+                          classNames={{
+                            months: "flex justify-center",
+                            month: "space-y-2",
+                            caption: "flex justify-center py-2 text-sm font-semibold",
+                            table: "w-full border-collapse",
+                            head_row: "grid grid-cols-7",
+                            row: "grid grid-cols-7 mt-1",
+                            head_cell: "text-center text-[11px] font-semibold text-slate-500 py-1",
+                            cell: "text-center",
+                            day: "h-10 w-10 rounded-xl text-sm hover:bg-slate-100 dark:hover:bg-navy-800 transition",
+                            day_selected: "bg-teal-500 text-white hover:bg-teal-600",
+                            day_today: "ring-2 ring-blue-400 text-blue-600 dark:text-blue-300",
+                            day_disabled: "opacity-30",
+                          }}
                         />
                       </div>
+                      {fieldErrors.selectedDate && <p className="text-xs text-red-500">{fieldErrors.selectedDate}</p>}
                     </div>
 
                     <div className="space-y-3 pt-2">
-                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Zeitfenster</label>
-                      <div className="flex flex-wrap gap-2">
-                        {SLOT_PRESETS.map((slot) => (
-                          <button
-                            key={slot}
-                            type="button"
-                            onClick={() => setTimeSlot(slot)}
-                            className={`rounded-xl px-4 py-2 text-sm font-medium transition-all ${timeSlot === slot
-                              ? "bg-blue-500 text-white shadow-md shadow-blue-500/20 scale-105"
-                              : "bg-white/80 dark:bg-navy-900/60 border border-slate-200 dark:border-navy-700 text-slate-700 dark:text-slate-300 hover:border-blue-300"
-                              }`}
-                          >
-                            {slot}
-                          </button>
-                        ))}
+                      <div className="flex items-center justify-between gap-2">
+                        <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Verfügbare Zeitfenster</label>
+                        <span className="text-xs text-slate-500">Dauer: {Math.round(computedDurationMin / 60 * 10) / 10} Std. (automatisch)</span>
                       </div>
-                      <input
-                        value={timeSlot}
-                        onChange={(e) => setTimeSlot(e.target.value)}
-                        placeholder="Z.b: 11:30 (Optional)"
-                        className="w-full px-4 py-2.5 mt-2 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-blue-500 outline-none transition-shadow"
-                      />
+                      {slotNotice && <p className="text-xs text-amber-600">{slotNotice}</p>}
+                      {slotError && <p className="text-xs text-red-500">{slotError}</p>}
+                      {slotLoading ? (
+                        <div className="flex items-center gap-2 text-sm text-slate-500">
+                          <div className="w-4 h-4 border-2 border-slate-300 border-t-teal-500 rounded-full animate-spin" />
+                          Zeitfenster werden geladen...
+                        </div>
+                      ) : availableSlots.length === 0 ? (
+                        <div className="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-900/20 p-3 text-sm text-amber-700">
+                          Kein freies Zeitfenster für diesen Tag. Bitte wählen Sie ein anderes Datum.
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {availableSlots.map((slot) => (
+                            <button
+                              key={slot.label}
+                              type="button"
+                              onClick={() => setTimeSlot(slot.label)}
+                              className={`rounded-xl px-3 py-2 text-sm font-medium transition-all ${
+                                timeSlot === slot.label
+                                  ? "bg-blue-500 text-white shadow-md shadow-blue-500/20 scale-[1.02]"
+                                  : "bg-white/80 dark:bg-navy-900/60 border border-slate-200 dark:border-navy-700 text-slate-700 dark:text-slate-300 hover:border-blue-300"
+                              }`}
+                            >
+                              {slot.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {fieldErrors.timeSlot && <p className="text-xs text-red-500">{fieldErrors.timeSlot}</p>}
                     </div>
                   </div>
 
@@ -784,19 +904,19 @@ export default function BuchenPage() {
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                           <User size={16} className="text-slate-400" />
                         </div>
-                        <input value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Vollständiger Name" className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-blue-500 outline-none transition-shadow" />
+                        <input value={customerName} onChange={(e) => { setCustomerName(e.target.value); setFieldErrors((p) => ({ ...p, customerName: "" })); }} placeholder="Vollständiger Name" className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-blue-500 outline-none transition-shadow" />
                       </div>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                           <Mail size={16} className="text-slate-400" />
                         </div>
-                        <input type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} placeholder="E-Mail Adresse" className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-blue-500 outline-none transition-shadow" />
+                        <input type="email" value={customerEmail} onChange={(e) => { setCustomerEmail(e.target.value); setFieldErrors((p) => ({ ...p, customerEmail: "" })); }} placeholder="E-Mail Adresse" className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-blue-500 outline-none transition-shadow" />
                       </div>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                           <Phone size={16} className="text-slate-400" />
                         </div>
-                        <input type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="Telefonnummer" className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-blue-500 outline-none transition-shadow" />
+                        <input type="tel" value={customerPhone} onChange={(e) => { setCustomerPhone(e.target.value); setFieldErrors((p) => ({ ...p, customerPhone: "" })); }} placeholder="Telefonnummer" className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-blue-500 outline-none transition-shadow" />
                       </div>
                       <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-blue-500 outline-none appearance-none">
                         <option value="UEBERWEISUNG">Überweisung (Rechnung)</option>
@@ -804,6 +924,15 @@ export default function BuchenPage() {
                         <option value="PAYPAL">PayPal</option>
                       </select>
                     </div>
+                    {(fieldErrors.customerName || fieldErrors.customerEmail || fieldErrors.customerPhone || fieldErrors.zip || fieldErrors.quote) && (
+                      <div className="space-y-1 text-xs text-red-500">
+                        {fieldErrors.customerName && <p>{fieldErrors.customerName}</p>}
+                        {fieldErrors.customerEmail && <p>{fieldErrors.customerEmail}</p>}
+                        {fieldErrors.customerPhone && <p>{fieldErrors.customerPhone}</p>}
+                        {fieldErrors.zip && <p>{fieldErrors.zip}</p>}
+                        {fieldErrors.quote && <p>{fieldErrors.quote}</p>}
+                      </div>
+                    )}
                     <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Besondere Hinweise oder Notizen für uns..." rows={3} className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-blue-500 outline-none transition-shadow resize-none" />
                   </div>
 
@@ -886,6 +1015,12 @@ export default function BuchenPage() {
                     </li>
                   ))}
                 </ul>
+
+                <div className="rounded-xl border border-slate-200/70 dark:border-navy-700/70 bg-white/50 dark:bg-navy-900/30 p-3 text-xs space-y-1 mb-4">
+                  <p><span className="text-slate-500">Termin:</span> {selectedDate ? new Date(`${selectedDate}T00:00:00`).toLocaleDateString("de-DE") : "Nicht gewählt"}</p>
+                  <p><span className="text-slate-500">Zeitfenster:</span> {timeSlot || "Nicht gewählt"}</p>
+                  <p><span className="text-slate-500">Dauer:</span> {Math.round(computedDurationMin / 60 * 10) / 10} Std.</p>
+                </div>
 
                 <div className="pt-4 border-t border-slate-200 dark:border-navy-700">
                   {quoteError ? (

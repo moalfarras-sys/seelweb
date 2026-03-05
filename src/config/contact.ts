@@ -43,6 +43,18 @@ export const COMPANY_BANK = {
   ACCOUNT_HOLDER: "Lisaveta Al-Shamaileh",
 };
 
+export const WHATSAPP_DEFAULT_MESSAGE = `Hallo 👋
+Ich habe Ihre Website besucht und interessiere mich für einen Umzug.
+
+Bitte senden Sie mir ein Angebot.
+
+Startadresse:
+Zieladresse:
+Wohnungsgröße:
+Gewünschtes Datum:
+
+Vielen Dank.`;
+
 export function whatsappUrl(message?: string): string {
   const base = `https://wa.me/${CONTACT.WHATSAPP_NUMBER}`;
   if (message) {
@@ -50,6 +62,10 @@ export function whatsappUrl(message?: string): string {
   }
   return base;
 };
+
+export function whatsappDefaultUrl(): string {
+  return whatsappUrl(WHATSAPP_DEFAULT_MESSAGE);
+}
 
 export function whatsappBookingUrl(params : {
   service?: string;

@@ -4,6 +4,16 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  if (
+    pathname === "/admin/manifest.webmanifest" ||
+    pathname === "/admin/offline" ||
+    pathname === "/admin-sw.js"
+  ) {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-next-url", pathname);
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
+
   if (pathname === "/admin/login") {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-next-url", pathname);
@@ -23,5 +33,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|images|manifest.json|sw.js).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|images|icons|manifest.json|sw.js|admin-sw.js).*)"],
 };
