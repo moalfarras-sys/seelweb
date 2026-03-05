@@ -92,7 +92,7 @@ export default async function RootLayout({
         </Script>
       </head>
       <body className="antialiased">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
           {!isAdmin && <Navbar />}
           <main className="min-h-screen">{children}</main>
           {!isAdmin && <Footer />}
@@ -116,7 +116,7 @@ export default async function RootLayout({
                     }
                     return;
                   }
-                  await navigator.serviceWorker.register('/sw.js');
+                  await navigator.serviceWorker.register('/sw.js?v=20260305-2');
                 } catch (e) {}
               })();
             `}</Script>
