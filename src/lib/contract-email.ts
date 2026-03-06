@@ -35,7 +35,7 @@ export function buildContractSignatureEmail(data: {
         <p style="margin:0 0 18px;color:#46556b;font-size:15px;line-height:1.8;">
           Sehr geehrte/r <strong style="color:#0f2550;">${data.customerName}</strong>,
           Ihr Auftrag zu Angebot <strong style="color:#0d9ea0;">${data.offerNumber}</strong> wurde intern freigegeben.
-          Bitte prüfen Sie den Vertragsinhalt und leisten Sie Ihre digitale Unterschrift über den folgenden Button.
+          Bitte pruefen Sie den Vertragsinhalt und leisten Sie Ihre digitale Unterschrift ueber den folgenden Button.
         </p>
 
         <div style="background:linear-gradient(180deg,#f8fbfd 0%,#f1f5f9 100%);border:1px solid #d9e3ee;border-radius:22px;padding:22px 24px;margin:0 0 28px;">

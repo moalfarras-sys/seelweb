@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { sendEmail } from "@/lib/email";
+import { getInternalNotificationBcc, sendEmail } from "@/lib/email";
 import { buildContractSignatureEmail, getContractSignatureSubject } from "@/lib/contract-email";
 import { toContractSummary } from "@/lib/contracts";
 import { createContractFromOffer } from "@/lib/workflow";
@@ -44,9 +44,11 @@ export async function POST(_req: NextRequest, { params }: Params) {
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "http://localhost:3000";
     const signUrl = `${baseUrl}/vertrag/${pendingContract.token}`;
+    const internalBcc = getInternalNotificationBcc(offer.customer.email);
 
-    await sendEmail({
+    const emailResult = await sendEmail({
       to: offer.customer.email,
+      bcc: internalBcc,
       subject: getContractSignatureSubject(offer.offerNumber),
       html: buildContractSignatureEmail({
         customerName: offer.customer.name,
@@ -55,6 +57,8 @@ export async function POST(_req: NextRequest, { params }: Params) {
         totalPrice: offer.totalPrice,
         signUrl,
       }),
+      requestId: `contract-resend-${offer.id}`,
+      throwOnFailure: true,
     });
 
     await prisma.communication.create({
@@ -66,7 +70,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
         direction: "OUTBOUND",
         subject: `Vertrag zur Signatur gesendet (${offer.offerNumber})`,
         message: `Signaturlink versendet: ${signUrl}`,
-        metaJson: { signUrl },
+        metaJson: { signUrl, messageId: emailResult.messageId, internalBcc },
         sentBy: session.email || "admin",
       },
     });

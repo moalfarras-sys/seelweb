@@ -59,7 +59,10 @@ interface EmailOptions {
   subject: string;
   html: string;
   attachments?: nodemailer.SendMailOptions["attachments"];
+  cc?: string | string[];
+  bcc?: string | string[];
   requestId?: string;
+  throwOnFailure?: boolean;
 }
 
 const MAX_RETRIES = 2;
@@ -69,9 +72,34 @@ async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-export async function sendEmail({ to, subject, html, attachments, requestId }: EmailOptions) {
+function normalizeRecipients(value?: string | string[]) {
+  if (!value) return undefined;
+  const items = (Array.isArray(value) ? value : [value])
+    .map((entry) => String(entry || "").trim())
+    .filter(Boolean);
+  return items.length > 0 ? Array.from(new Set(items)) : undefined;
+}
+
+export function getInternalNotificationBcc(primaryRecipients: string | string[]) {
+  const fallback = process.env.SMTP_USER || CONTACT.EMAIL;
+  const primary = new Set((normalizeRecipients(primaryRecipients) || []).map((entry) => entry.toLowerCase()));
+  return fallback && !primary.has(fallback.toLowerCase()) ? [fallback] : undefined;
+}
+
+export async function sendEmail({
+  to,
+  subject,
+  html,
+  attachments,
+  cc,
+  bcc,
+  requestId,
+  throwOnFailure = true,
+}: EmailOptions) {
   const rid = requestId || crypto.randomUUID().slice(0, 8);
   const hasAttachments = Array.isArray(attachments) && attachments.length > 0;
+  const ccRecipients = normalizeRecipients(cc);
+  const bccRecipients = normalizeRecipients(bcc);
 
   const safeAttachments = hasAttachments
     ? attachments!.map((att) => {
@@ -90,9 +118,11 @@ export async function sendEmail({ to, subject, html, attachments, requestId }: E
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
       const info = await transporter.sendMail({
-        from: `"Seel Transport & Reinigung" <${process.env.SMTP_USER}>`, // Strictly use SMTP_USER to avoid DMARC/SPF bounces
+        from: `"Seel Transport & Reinigung" <${fromAddress}>`,
         replyTo: CONTACT.EMAIL,
         to,
+        cc: ccRecipients,
+        bcc: bccRecipients,
         subject,
         html,
         text: stripHtmlToPlainText(html),
@@ -104,6 +134,8 @@ export async function sendEmail({ to, subject, html, attachments, requestId }: E
         accepted: info.accepted,
         rejected: info.rejected,
         pdfAttached: hasAttachments,
+        cc: ccRecipients,
+        bcc: bccRecipients,
         attempt,
       });
       return { success: true, messageId: info.messageId };
@@ -124,7 +156,14 @@ export async function sendEmail({ to, subject, html, attachments, requestId }: E
     to,
     subject,
     pdfAttached: hasAttachments,
+    cc: ccRecipients,
+    bcc: bccRecipients,
     error: (lastError as Error)?.message,
   });
+
+  if (throwOnFailure) {
+    throw new Error(`E-Mail-Versand fehlgeschlagen: ${(lastError as Error)?.message || "Unbekannter SMTP-Fehler"}`);
+  }
+
   return { success: false, error: lastError };
 }

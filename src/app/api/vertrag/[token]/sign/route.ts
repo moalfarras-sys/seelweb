@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { createInvoiceForSignedContract } from "@/lib/workflow";
-import { generateSignedContractPDF } from "@/lib/pdf";
-import { sendEmail } from "@/lib/email";
-import { CONTACT } from "@/config/contact";
 import crypto from "crypto";
+import { NextRequest, NextResponse } from "next/server";
+import { CONTACT } from "@/config/contact";
+import { prisma } from "@/lib/db";
+import { getInternalNotificationBcc, sendEmail } from "@/lib/email";
+import { generateSignedContractPDF } from "@/lib/pdf";
+import { createInvoiceForSignedContract } from "@/lib/workflow";
 
 type Params = { params: Promise<{ token: string }> };
 
@@ -19,22 +19,13 @@ export async function POST(req: NextRequest, { params }: Params) {
     const agreed = body.agreed === true;
 
     if (!name) {
-      return NextResponse.json(
-        { error: "Name ist erforderlich" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Name ist erforderlich" }, { status: 400 });
     }
     if (!agreed) {
-      return NextResponse.json(
-        { error: "AGB-Zustimmung ist erforderlich" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "AGB-Zustimmung ist erforderlich" }, { status: 400 });
     }
     if (signatureType === "DRAWN" && !signatureDataUrl) {
-      return NextResponse.json(
-        { error: "Gezeichnete Signatur fehlt" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Gezeichnete Signatur fehlt" }, { status: 400 });
     }
 
     const contract = await prisma.contract.findUnique({
@@ -46,17 +37,11 @@ export async function POST(req: NextRequest, { params }: Params) {
     });
 
     if (!contract) {
-      return NextResponse.json(
-        { error: "Vertrag nicht gefunden" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Vertrag nicht gefunden" }, { status: 404 });
     }
 
     if (contract.status === "SIGNED" || contract.status === "LOCKED") {
-      return NextResponse.json(
-        { error: "Vertrag wurde bereits unterschrieben" },
-        { status: 409 }
-      );
+      return NextResponse.json({ error: "Vertrag wurde bereits unterschrieben" }, { status: 409 });
     }
 
     const ip =
@@ -86,7 +71,10 @@ export async function POST(req: NextRequest, { params }: Params) {
 
     const offer = await prisma.offer.findUnique({
       where: { id: contract.offerId },
-      include: { items: { orderBy: { position: "asc" } }, order: { include: { fromAddress: true, toAddress: true } } },
+      include: {
+        items: { orderBy: { position: "asc" } },
+        order: { include: { fromAddress: true, toAddress: true } },
+      },
     });
 
     const signedPdf = await generateSignedContractPDF({
@@ -118,8 +106,14 @@ export async function POST(req: NextRequest, { params }: Params) {
             .filter(Boolean)
             .join(", ")
         : null,
-      items: offer?.items.map(i => ({ title: i.title, description: i.description, quantity: i.quantity, unitPrice: i.unitPrice, totalPrice: i.totalPrice })),
-      subtotal: offer?.items.reduce((s, i) => s + i.totalPrice, 0),
+      items: offer?.items.map((item) => ({
+        title: item.title,
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        totalPrice: item.totalPrice,
+      })),
+      subtotal: offer?.items.reduce((sum, item) => sum + item.totalPrice, 0),
       discountAmount: offer?.discountAmount ?? 0,
       extraFees: offer?.extraFees ?? 0,
       totalPrice: contract.finalTotalPrice,
@@ -151,10 +145,11 @@ export async function POST(req: NextRequest, { params }: Params) {
     ]);
 
     const invoice = await createInvoiceForSignedContract(contract.id);
-
-    await sendEmail({
+    const internalBcc = getInternalNotificationBcc(contract.customer.email);
+    const emailResult = await sendEmail({
       to: contract.customer.email,
-      subject: `Vertrag ${contract.contractNumber} bestätigt – SEEL Transport`,
+      bcc: internalBcc,
+      subject: `Vertrag ${contract.contractNumber} bestaetigt - SEEL Transport`,
       html: `<!DOCTYPE html>
 <html lang="de">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -170,17 +165,18 @@ export async function POST(req: NextRequest, { params }: Params) {
   <div style="padding:30px 35px;">
     <p style="color:#5a6b80;font-size:15px;line-height:1.7;">
       Sehr geehrte/r <strong style="color:#0f2550;">${contract.customer.name}</strong>,<br><br>
-      Ihr Vertrag <strong style="color:#0d9ea0;">${contract.contractNumber}</strong> wurde erfolgreich bestätigt und digital unterschrieben.
+      Ihr Vertrag <strong style="color:#0d9ea0;">${contract.contractNumber}</strong> wurde erfolgreich bestaetigt und digital unterschrieben.
     </p>
     <div style="background:#f7f8fa;border-radius:14px;padding:18px;margin:20px 0;border:1px solid #e8ecf1;">
       <p style="margin:0 0 6px;color:#8b9bb5;font-size:12px;">Vertragsnummer</p>
       <p style="margin:0;color:#0f2550;font-weight:700;font-size:16px;">${contract.contractNumber}</p>
     </div>
     <p style="color:#5a6b80;font-size:14px;line-height:1.6;">
-      Den unterzeichneten Vertrag finden Sie als PDF im Anhang dieser E-Mail. Bitte bewahren Sie dieses Dokument für Ihre Unterlagen auf.
+      Den unterzeichneten Vertrag finden Sie als PDF im Anhang dieser E-Mail. Bitte bewahren Sie dieses Dokument fuer Ihre Unterlagen auf.
     </p>
     <p style="color:#8b9bb5;font-size:12px;margin-top:20px;">
-      Bei Fragen: <a href="mailto:${CONTACT.EMAIL}" style="color:#0d9ea0;">${CONTACT.EMAIL}</a> | <a href="tel:${CONTACT.PRIMARY_PHONE}" style="color:#0d9ea0;">${CONTACT.PRIMARY_PHONE_DISPLAY}</a>
+      Bei Fragen: <a href="mailto:${CONTACT.EMAIL}" style="color:#0d9ea0;">${CONTACT.EMAIL}</a> |
+      <a href="tel:${CONTACT.PRIMARY_PHONE}" style="color:#0d9ea0;">${CONTACT.PRIMARY_PHONE_DISPLAY}</a>
     </p>
   </div>
   <div style="padding:16px 35px;text-align:center;border-top:1px solid #e8ecf1;">
@@ -196,6 +192,8 @@ export async function POST(req: NextRequest, { params }: Params) {
           contentType: "application/pdf",
         },
       ],
+      requestId: `contract-signed-${contract.id}`,
+      throwOnFailure: false,
     });
 
     await prisma.communication.create({
@@ -205,18 +203,24 @@ export async function POST(req: NextRequest, { params }: Params) {
         contractId: contract.id,
         channel: "EMAIL",
         direction: "OUTBOUND",
-        subject: "Vertrag bestätigt - Seel Transport",
-        message: `Vertrag unterschrieben und bestätigt. Rechnung ${invoice.invoiceNumber} erstellt.`,
+        subject: "Vertrag bestaetigt - SEEL Transport",
+        message: emailResult.success
+          ? `Vertrag unterschrieben und bestaetigt. Rechnung ${invoice.invoiceNumber} erstellt.`
+          : `Vertrag unterschrieben, aber E-Mail-Versand fehlgeschlagen. Rechnung ${invoice.invoiceNumber} erstellt.`,
+        metaJson: {
+          invoiceNumber: invoice.invoiceNumber,
+          emailDelivered: emailResult.success,
+          messageId: "messageId" in emailResult ? emailResult.messageId : null,
+          internalBcc,
+          emailError: emailResult.success ? null : (emailResult.error as Error | undefined)?.message || "Unbekannter Fehler",
+        },
         sentBy: "system",
       },
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, emailDelivered: emailResult.success });
   } catch (error) {
     console.error("POST /api/vertrag/[token]/sign error:", error);
-    return NextResponse.json(
-      { error: "Interner Serverfehler" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Interner Serverfehler" }, { status: 500 });
   }
 }
