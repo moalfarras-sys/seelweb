@@ -49,7 +49,7 @@ const fmt = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" 
 
 const statusLabels: Record<string, { label: string; color: string; bg: string }> = {
   PENDING:  { label: "Ausstehend",  color: "text-amber-700 dark:text-amber-400",   bg: "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20" },
-  MODIFIED: { label: "Ãœberarbeitet", color: "text-blue-700 dark:text-blue-400",     bg: "bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20" },
+  MODIFIED: { label: "Überarbeitet", color: "text-blue-700 dark:text-blue-400",     bg: "bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20" },
   APPROVED: { label: "Freigegeben", color: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20" },
   REJECTED: { label: "Abgelehnt",   color: "text-red-700 dark:text-red-400",       bg: "bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20" },
   ACCEPTED: { label: "Angenommen",  color: "text-teal-700 dark:text-teal-400",     bg: "bg-teal-50 dark:bg-teal-500/10 border-teal-200 dark:border-teal-500/20" },
@@ -79,7 +79,7 @@ export default function AngebotePage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "ok" | "err" } | null>(null);
-  const [messageSubject, setMessageSubject] = useState("RÃ¼ckfrage zu Ihrem Angebot");
+  const [messageSubject, setMessageSubject] = useState("Rückfrage zu Ihrem Angebot");
   const [messageBody, setMessageBody] = useState("");
   const [showContact, setShowContact] = useState(false);
   const [exportingAll, setExportingAll] = useState(false);
@@ -154,7 +154,7 @@ export default function AngebotePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Speichern fehlgeschlagen");
       setOffers((prev) => prev.map((o) => (o.id === data.id ? data : o)));
-      showToast("Ã„nderungen gespeichert.");
+      showToast("Änderungen gespeichert.");
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Speichern fehlgeschlagen", "err");
     } finally {
@@ -332,7 +332,7 @@ export default function AngebotePage() {
           {!selected ? (
             <div className="bg-white dark:bg-navy-800/60 rounded-2xl border border-gray-100 dark:border-navy-700/50 p-12 text-center">
               <FileText size={48} className="text-silver-300 dark:text-navy-600 mx-auto mb-4" />
-              <p className="text-silver-500">Bitte ein Angebot aus der Liste wÃ¤hlen.</p>
+              <p className="text-silver-500">Bitte ein Angebot aus der Liste wählen.</p>
             </div>
           ) : (
             <>
@@ -344,10 +344,10 @@ export default function AngebotePage() {
                       <h2 className="text-xl font-bold font-mono text-teal-600 dark:text-teal-400">{selected.offerNumber}</h2>
                       <StatusBadge status={selected.status} />
                     </div>
-                    <p className="text-sm text-silver-500">{selected.customer.name} Â· {selected.customer.email}</p>
+                    <p className="text-sm text-silver-500">{selected.customer.name} · {selected.customer.email}</p>
                     <p className="text-xs text-silver-400 mt-1">
-                      Erstellt: {new Date(selected.createdAt).toLocaleDateString("de-DE")} Â· 
-                      GÃ¼ltig bis: {new Date(selected.validUntil).toLocaleDateString("de-DE")}
+                      Erstellt: {new Date(selected.createdAt).toLocaleDateString("de-DE")} · 
+                      Gültig bis: {new Date(selected.validUntil).toLocaleDateString("de-DE")}
                     </p>
                   </div>
                 </div>
@@ -486,7 +486,7 @@ export default function AngebotePage() {
                   )}
                   {selected.extraFees > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-silver-600 dark:text-silver-400">ZuschlÃ¤ge</span>
+                      <span className="text-silver-600 dark:text-silver-400">Zuschläge</span>
                       <span className="font-medium">+{fmt.format(selected.extraFees)}</span>
                     </div>
                   )}
@@ -579,7 +579,7 @@ export default function AngebotePage() {
               {selected.contracts.length > 0 && (
                 <div className="bg-white dark:bg-navy-800/60 rounded-2xl border border-gray-100 dark:border-navy-700/50 p-5">
                   <h3 className="text-sm font-semibold text-navy-800 dark:text-white mb-3 flex items-center gap-2">
-                    <PenTool size={16} className="text-teal-500" /> VertrÃ¤ge
+                    <PenTool size={16} className="text-teal-500" /> Verträge
                   </h3>
                   <div className="space-y-3">
                     {selected.contracts.map((c) => (
@@ -599,7 +599,7 @@ export default function AngebotePage() {
                             <p className="text-sm font-medium">{contractStateLabel(c)}</p>
                             <p className="text-xs text-silver-500 mt-1">
                               {c.signedByName ? `Signer: ${c.signedByName}` : "Signaturlink aktiv"}
-                              {c.signedAt ? ` Â· ${new Date(c.signedAt).toLocaleString("de-DE")}` : ""}
+                              {c.signedAt ? ` · ${new Date(c.signedAt).toLocaleString("de-DE")}` : ""}
                             </p>
                           </div>
                         </div>
