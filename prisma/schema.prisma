@@ -80,6 +80,21 @@ enum PaymentState {
   REFUNDED
 }
 
+enum ManualDocumentType {
+  OFFER
+  CONTRACT
+  INVOICE
+}
+
+enum ManualDocumentStatus {
+  DRAFT
+  SENT
+  APPROVED
+  SIGNED
+  PAID
+  CANCELLED
+}
+
 model Customer {
   id        String   @id @default(cuid())
   name      String
@@ -95,6 +110,7 @@ model Customer {
   offerContracts Contract[]
   communications Communication[]
   discountAssignments DiscountAssignment[]
+  manualDocuments ManualDocument[]
 
   @@map("customers")
 }
@@ -653,4 +669,45 @@ model DiscountAssignment {
   @@index([email])
   @@index([phone])
   @@map("discount_assignments")
+}
+
+model ManualDocument {
+  id              String               @id @default(cuid())
+  type            ManualDocumentType
+  status          ManualDocumentStatus @default(DRAFT)
+  documentNumber  String               @unique @map("document_number")
+  customerId      String?              @map("customer_id")
+  sourceOrderId   String?              @map("source_order_id")
+  title           String
+  introText       String?              @map("intro_text")
+  customerName    String               @map("customer_name")
+  customerEmail   String               @map("customer_email")
+  customerPhone   String?              @map("customer_phone")
+  customerCompany String?              @map("customer_company")
+  serviceSummary  String               @map("service_summary")
+  serviceDate     DateTime?            @map("service_date")
+  timeSlot        String?              @map("time_slot")
+  fromAddress     String?              @map("from_address")
+  toAddress       String?              @map("to_address")
+  routeDistanceKm Float?               @map("route_distance_km")
+  issueDate       DateTime             @default(now()) @map("issue_date")
+  validUntil      DateTime?            @map("valid_until")
+  dueDate         DateTime?            @map("due_date")
+  taxRate         Float                @default(19) @map("tax_rate")
+  subtotal        Float                @default(0)
+  taxAmount       Float                @default(0) @map("tax_amount")
+  totalAmount     Float                @default(0) @map("total_amount")
+  currency        String               @default("EUR")
+  itemsJson       Json                 @map("items_json")
+  notes           String?
+  footerNote      String?              @map("footer_note")
+  sentAt          DateTime?            @map("sent_at")
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+
+  customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@index([customerId])
+  @@index([type, status])
+  @@map("manual_documents")
 }

@@ -99,11 +99,21 @@ interface ContractPDFData {
   totalPrice: number;
   netto: number;
   mwst: number;
-  signedByName: string;
-  signedAt: string;
+  signedByName?: string | null;
+  signedAt?: string | null;
   ipAddress?: string | null;
   signatureDataUrl?: string | null;
+  companyExecutedAt?: string | null;
+  notes?: string | null;
 }
+
+type InvoicePDFItem = {
+  description: string;
+  amount: number;
+  quantity?: number;
+  unitPrice?: number;
+  detail?: string | null;
+};
 
 const NAVY = [15, 37, 80] as const;
 const TEAL = [13, 158, 160] as const;
@@ -622,7 +632,7 @@ export async function generateSignedContractPDF(data: ContractPDFData): Promise<
   ]);
 
   y = 53;
-  drawMetaRow(doc, "Angebot", data.offerNumber, "Signiert am", data.signedAt, y);
+  drawMetaRow(doc, "Angebot", data.offerNumber, "Signiert am", data.signedAt || "Ausstehend", y);
   y += 16;
 
   doc.setFillColor(...LIGHT);
@@ -735,6 +745,12 @@ export async function generateSignedContractPDF(data: ContractPDFData): Promise<
     y += 1.8;
   });
 
+  if (data.notes) {
+    y += 2;
+    y = writeParagraph(doc, `Hinweis: ${data.notes}`, 20, y, pw - 40);
+    y += 2;
+  }
+
   y += 3;
   doc.setFillColor(240, 249, 255);
   doc.roundedRect(15, y - 2, pw - 30, 18, 4, 4, "F");
@@ -743,11 +759,17 @@ export async function generateSignedContractPDF(data: ContractPDFData): Promise<
   doc.setTextColor(...INK);
   setBrandFont(doc, "bold");
   doc.setFontSize(8.7);
-  doc.text(`Digitale Signatur des Auftraggebers: ${data.signedByName}`, 20, y + 4);
+  doc.text(
+    data.signedByName
+      ? `Digitale Signatur des Auftraggebers: ${data.signedByName}`
+      : "Digitale Signatur des Auftraggebers: noch ausstehend",
+    20,
+    y + 4
+  );
   setBrandFont(doc, "normal");
   doc.setTextColor(...MUTED);
   doc.setFontSize(8);
-  doc.text(`Zeitpunkt: ${data.signedAt}`, 20, y + 9);
+  doc.text(`Zeitpunkt: ${data.signedAt || "Wird nach digitaler Unterschrift ergänzt"}`, 20, y + 9);
   if (data.ipAddress) {
     doc.text(`IP-Adresse: ${data.ipAddress}`, 20, y + 13.5);
   }
@@ -773,18 +795,18 @@ export async function generateSignedContractPDF(data: ContractPDFData): Promise<
   setBrandFont(doc, "normal");
   doc.setTextColor(...MUTED);
   doc.setFontSize(7.4);
-  doc.text(data.signedByName, 20, boxY + 11);
-  doc.text(data.signedAt, 20, boxY + 15.5);
-  doc.text(`Berlin, ${new Date().toLocaleDateString("de-DE")}`, rightX + 5, boxY + 11);
+  doc.text(data.signedByName || "Digitale Kundensignatur ausstehend", 20, boxY + 11);
+  doc.text(data.signedAt || "Wird nach Unterzeichnung eingetragen", 20, boxY + 15.5);
+  doc.text(`Berlin, ${data.companyExecutedAt || new Date().toLocaleDateString("de-DE")}`, rightX + 5, boxY + 11);
   doc.text("Firmenunterschrift und Stempel", rightX + 5, boxY + 15.5);
 
   if (data.signatureDataUrl) {
     addImageIfPossible(doc, data.signatureDataUrl, "PNG", 22, boxY + 18, 70, 15);
   } else {
     setBrandFont(doc, "bold");
-    doc.setFontSize(13);
-    doc.setTextColor(...NAVY);
-    doc.text(data.signedByName, 24, boxY + 27);
+    doc.setFontSize(9.5);
+    doc.setTextColor(...MUTED);
+    doc.text("Digitale Signatur folgt nach Freigabe", 24, boxY + 27);
   }
 
   addImageIfPossible(doc, companySignature, "PNG", rightX + 5, boxY + 17, 56, 16);
@@ -795,7 +817,12 @@ export async function generateSignedContractPDF(data: ContractPDFData): Promise<
   doc.setTextColor(...WHITE);
   setBrandFont(doc, "bold");
   doc.setFontSize(7.5);
-  doc.text(`Ausgefuehrt am ${new Date().toLocaleDateString("de-DE")}`, rightX + boxWidth / 2, boxY + 37.1, { align: "center" });
+  doc.text(
+    `Ausgefuehrt am ${data.companyExecutedAt || new Date().toLocaleDateString("de-DE")}`,
+    rightX + boxWidth / 2,
+    boxY + 37.1,
+    { align: "center" }
+  );
 
   drawFooter(
     doc,
@@ -808,24 +835,28 @@ export async function generateSignedContractPDF(data: ContractPDFData): Promise<
 
 export function generateInvoicePDF(data: {
   invoiceNumber: string;
-  orderNumber: string;
+  orderNumber?: string;
   customerName: string;
   customerEmail: string;
   customerCompany?: string;
+  customerPhone?: string;
   service: string;
+  title?: string;
   date: string;
   netto: number;
   mwst: number;
   total: number;
-  items: { description: string; amount: number }[];
+  taxRate?: number;
+  items: InvoicePDFItem[];
   dueDate: string;
+  notes?: string;
 }): Buffer {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pw = doc.internal.pageSize.getWidth();
   let y = 0;
 
   registerBrandFonts(doc);
-  drawHeader(doc, "Rechnung", "RECHNUNG", data.invoiceNumber);
+  drawHeader(doc, data.title || "Rechnung", "RECHNUNG", data.invoiceNumber);
 
   y = 54;
   drawMetaRow(doc, "Rechnungsdatum", data.date, "Faellig", data.dueDate, y);
@@ -846,6 +877,10 @@ export function generateInvoicePDF(data: {
     y += 4.5;
   }
   doc.text(data.customerEmail, 20, y);
+  if (data.customerPhone) {
+    y += 4.5;
+    doc.text(data.customerPhone, 20, y);
+  }
   y += 9;
 
   sectionHeading(doc, "Leistungen", 20, y);
@@ -856,28 +891,49 @@ export function generateInvoicePDF(data: {
   setBrandFont(doc, "bold");
   doc.setFontSize(8);
   doc.text("Beschreibung", 20, y + 5.2);
+  doc.text("Menge", 112, y + 5.2);
+  doc.text("Einzelpreis", 138, y + 5.2);
   doc.text("Betrag", pw - 20, y + 5.2, { align: "right" });
   y += 10.5;
 
   data.items.forEach((item, index) => {
+    const rowHeight = item.detail ? 10 : 6.6;
     if (index % 2 === 0) {
       doc.setFillColor(...LIGHT);
-      doc.roundedRect(15, y - 2.2, pw - 30, 6.6, 1.5, 1.5, "F");
+      doc.roundedRect(15, y - 2.2, pw - 30, rowHeight, 1.5, 1.5, "F");
     }
     doc.setTextColor(...INK);
     setBrandFont(doc, "normal");
     doc.text(item.description, 20, y + 1);
+    doc.text(String(item.quantity ?? 1), 112, y + 1);
+    doc.text(fmt(item.unitPrice ?? item.amount), 138, y + 1);
     doc.text(fmt(item.amount), pw - 20, y + 1, { align: "right" });
-    y += 6.2;
+    y += 5.2;
+    if (item.detail) {
+      doc.setTextColor(...MUTED);
+      doc.setFontSize(7.2);
+      y = writeParagraph(doc, item.detail, 20, y, pw - 48, 3.6);
+      y += 1;
+    }
+    y += 1;
   });
 
   drawMoneySummary(doc, y + 3, [
     { label: "Netto", value: fmt(data.netto) },
-    { label: "MwSt. (19%)", value: fmt(data.mwst) },
+    { label: `MwSt. (${data.taxRate ?? 19}%)`, value: fmt(data.mwst) },
     { label: "Rechnungsbetrag", value: fmt(data.total), accent: "teal" },
   ]);
 
   y += 36;
+  if (data.notes) {
+    sectionHeading(doc, "Hinweise", 20, y);
+    y += 9;
+    doc.setTextColor(...MUTED);
+    setBrandFont(doc, "normal");
+    doc.setFontSize(8.4);
+    y = writeParagraph(doc, data.notes, 20, y, pw - 40);
+    y += 6;
+  }
   sectionHeading(doc, "Zahlungsinformationen", 20, y);
   y += 9;
   doc.setTextColor(...MUTED);
@@ -895,7 +951,7 @@ export function generateInvoicePDF(data: {
     y += 4.6;
   });
 
-  drawFooter(doc, `Leistung: ${data.service}`, `Auftrag ${data.orderNumber}`);
+  drawFooter(doc, `Leistung: ${data.service}`, data.orderNumber ? `Auftrag ${data.orderNumber}` : data.invoiceNumber);
   return Buffer.from(doc.output("arraybuffer"));
 }
 
