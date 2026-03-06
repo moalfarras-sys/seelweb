@@ -89,7 +89,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       include: { items: { orderBy: { position: "asc" } }, order: { include: { fromAddress: true, toAddress: true } } },
     });
 
-    const signedPdf = generateSignedContractPDF({
+    const signedPdf = await generateSignedContractPDF({
       contractNumber: contract.contractNumber,
       offerNumber: contract.offer.offerNumber,
       customerName: contract.customer.name,
@@ -98,8 +98,26 @@ export async function POST(req: NextRequest, { params }: Params) {
       serviceSummary: contract.offer.order.service.nameDe,
       serviceDate: contract.offer.order.scheduledAt?.toLocaleDateString("de-DE") ?? null,
       timeSlot: contract.offer.order.timeSlot,
-      fromAddress: (offer?.order?.fromAddress as Record<string, string> | null)?.street ?? null,
-      toAddress: (offer?.order?.toAddress as Record<string, string> | null)?.street ?? null,
+      fromAddress: offer?.order?.fromAddress
+        ? [
+            offer.order.fromAddress.street,
+            offer.order.fromAddress.houseNumber,
+            offer.order.fromAddress.zip,
+            offer.order.fromAddress.city,
+          ]
+            .filter(Boolean)
+            .join(", ")
+        : null,
+      toAddress: offer?.order?.toAddress
+        ? [
+            offer.order.toAddress.street,
+            offer.order.toAddress.houseNumber,
+            offer.order.toAddress.zip,
+            offer.order.toAddress.city,
+          ]
+            .filter(Boolean)
+            .join(", ")
+        : null,
       items: offer?.items.map(i => ({ title: i.title, description: i.description, quantity: i.quantity, unitPrice: i.unitPrice, totalPrice: i.totalPrice })),
       subtotal: offer?.items.reduce((s, i) => s + i.totalPrice, 0),
       discountAmount: offer?.discountAmount ?? 0,

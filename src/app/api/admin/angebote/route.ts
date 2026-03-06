@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
+import { toContractSummary } from "@/lib/contracts";
 import { prisma } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
@@ -39,12 +40,23 @@ export async function GET(req: NextRequest) {
         customer: true,
         order: { include: { service: true } },
         items: true,
-        contracts: true,
+        contracts: { orderBy: { createdAt: "desc" } },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(offers);
+    return NextResponse.json(
+      offers.map((offer) => ({
+        ...offer,
+        contracts: offer.contracts.map((contract) =>
+          toContractSummary({
+            ...contract,
+            signedByName: contract.signedByName,
+            createdAt: contract.createdAt,
+          })
+        ),
+      }))
+    );
   } catch (error) {
     console.error("GET /api/admin/angebote error:", error);
     return NextResponse.json({ error: "Interner Serverfehler" }, { status: 500 });

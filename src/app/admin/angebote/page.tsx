@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -30,14 +30,26 @@ type Offer = {
     unitPrice: number;
     totalPrice: number;
   }>;
-  contracts: Array<{ id: string; token: string; status: string }>;
+  contracts: Array<{
+    id: string;
+    token: string;
+    status: string;
+    contractNumber: string;
+    signedAt: string | null;
+    signedByName: string | null;
+    createdAt: string | null;
+    pageUrl: string;
+    pdfUrl: string;
+    pdfPreviewUrl: string;
+    isSigned: boolean;
+  }>;
 };
 
 const fmt = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" });
 
 const statusLabels: Record<string, { label: string; color: string; bg: string }> = {
   PENDING:  { label: "Ausstehend",  color: "text-amber-700 dark:text-amber-400",   bg: "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20" },
-  MODIFIED: { label: "Überarbeitet", color: "text-blue-700 dark:text-blue-400",     bg: "bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20" },
+  MODIFIED: { label: "Ãœberarbeitet", color: "text-blue-700 dark:text-blue-400",     bg: "bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20" },
   APPROVED: { label: "Freigegeben", color: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20" },
   REJECTED: { label: "Abgelehnt",   color: "text-red-700 dark:text-red-400",       bg: "bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20" },
   ACCEPTED: { label: "Angenommen",  color: "text-teal-700 dark:text-teal-400",     bg: "bg-teal-50 dark:bg-teal-500/10 border-teal-200 dark:border-teal-500/20" },
@@ -52,6 +64,13 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+function contractStateLabel(contract: Offer["contracts"][number]) {
+  if (contract.isSigned) return "Unterschrieben";
+  if (contract.status === "PENDING_SIGNATURE") return "Warte auf Unterschrift";
+  if (contract.status === "DRAFT") return "Entwurf";
+  return contract.status;
+}
+
 export default function AngebotePage() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +79,7 @@ export default function AngebotePage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "ok" | "err" } | null>(null);
-  const [messageSubject, setMessageSubject] = useState("Rückfrage zu Ihrem Angebot");
+  const [messageSubject, setMessageSubject] = useState("RÃ¼ckfrage zu Ihrem Angebot");
   const [messageBody, setMessageBody] = useState("");
   const [showContact, setShowContact] = useState(false);
   const [exportingAll, setExportingAll] = useState(false);
@@ -74,6 +93,7 @@ export default function AngebotePage() {
     () => offers.find((o) => o.id === selectedId) || null,
     [offers, selectedId]
   );
+  const latestContract = selected?.contracts?.[0] || null;
 
   const fetchOffers = useCallback(async () => {
     setLoading(true);
@@ -102,7 +122,7 @@ export default function AngebotePage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Aktion fehlgeschlagen");
       await fetchOffers();
-      showToast("Aktion erfolgreich ausgeführt.");
+      showToast(data.message || "Aktion erfolgreich ausgefuehrt.");
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Aktion fehlgeschlagen", "err");
     } finally {
@@ -134,7 +154,7 @@ export default function AngebotePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Speichern fehlgeschlagen");
       setOffers((prev) => prev.map((o) => (o.id === data.id ? data : o)));
-      showToast("Änderungen gespeichert.");
+      showToast("Ã„nderungen gespeichert.");
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Speichern fehlgeschlagen", "err");
     } finally {
@@ -210,7 +230,7 @@ export default function AngebotePage() {
   });
 
   const itemsTotal = selected ? selected.items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0) : 0;
-  const hasContract = selected?.contracts?.some((c) => c.status === "SIGNED" || c.status === "LOCKED");
+  const hasContract = selected?.contracts?.some((c) => c.isSigned);
 
   if (loading) {
     return (
@@ -312,7 +332,7 @@ export default function AngebotePage() {
           {!selected ? (
             <div className="bg-white dark:bg-navy-800/60 rounded-2xl border border-gray-100 dark:border-navy-700/50 p-12 text-center">
               <FileText size={48} className="text-silver-300 dark:text-navy-600 mx-auto mb-4" />
-              <p className="text-silver-500">Bitte ein Angebot aus der Liste wählen.</p>
+              <p className="text-silver-500">Bitte ein Angebot aus der Liste wÃ¤hlen.</p>
             </div>
           ) : (
             <>
@@ -324,10 +344,10 @@ export default function AngebotePage() {
                       <h2 className="text-xl font-bold font-mono text-teal-600 dark:text-teal-400">{selected.offerNumber}</h2>
                       <StatusBadge status={selected.status} />
                     </div>
-                    <p className="text-sm text-silver-500">{selected.customer.name} · {selected.customer.email}</p>
+                    <p className="text-sm text-silver-500">{selected.customer.name} Â· {selected.customer.email}</p>
                     <p className="text-xs text-silver-400 mt-1">
-                      Erstellt: {new Date(selected.createdAt).toLocaleDateString("de-DE")} · 
-                      Gültig bis: {new Date(selected.validUntil).toLocaleDateString("de-DE")}
+                      Erstellt: {new Date(selected.createdAt).toLocaleDateString("de-DE")} Â· 
+                      GÃ¼ltig bis: {new Date(selected.validUntil).toLocaleDateString("de-DE")}
                     </p>
                   </div>
                 </div>
@@ -345,7 +365,7 @@ export default function AngebotePage() {
                   {(selected.status === "APPROVED" || selected.status === "ACCEPTED") && !hasContract && (
                     <button onClick={() => runAction(`/api/admin/angebote/${selected.id}/send-contract-signature`)} disabled={saving}
                       className="px-4 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50">
-                      <PenTool size={15} /> Vertrag zur Unterschrift
+                      <PenTool size={15} /> {latestContract ? "Signaturlink erneut senden" : "Vertrag zur Unterschrift"}
                     </button>
                   )}
                   {hasContract && (
@@ -357,6 +377,41 @@ export default function AngebotePage() {
                     className="px-4 py-2.5 rounded-xl border border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2 disabled:opacity-50">
                     <XCircle size={15} /> Ablehnen
                   </button>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-3 mt-4">
+                  <div className="rounded-2xl border border-gray-100 dark:border-navy-700/50 bg-gray-50/80 dark:bg-navy-900/30 p-4">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-silver-500 mb-2">Angebotsstatus</p>
+                    <StatusBadge status={selected.status} />
+                    <p className="text-xs text-silver-500 mt-3">
+                      {selected.status === "APPROVED" ? "Freigabe sendet den Signaturlink automatisch." : "Alle Aktionen bleiben im Verlauf nachvollziehbar."}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-gray-100 dark:border-navy-700/50 bg-gray-50/80 dark:bg-navy-900/30 p-4">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-silver-500 mb-2">Vertrag</p>
+                    {latestContract ? (
+                      <>
+                        <p className="text-base font-semibold text-navy-800 dark:text-white">{latestContract.contractNumber}</p>
+                        <p className="text-sm text-silver-500 mt-1">{contractStateLabel(latestContract)}</p>
+                        {latestContract.signedAt && (
+                          <p className="text-xs text-silver-500 mt-2">{new Date(latestContract.signedAt).toLocaleString("de-DE")}</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-sm text-silver-500">Noch kein Vertrag erzeugt.</p>
+                    )}
+                  </div>
+                  <div className="rounded-2xl border border-gray-100 dark:border-navy-700/50 bg-gray-50/80 dark:bg-navy-900/30 p-4">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-silver-500 mb-2">Signatur</p>
+                    {latestContract?.signedByName ? (
+                      <>
+                        <p className="text-base font-semibold text-navy-800 dark:text-white">{latestContract.signedByName}</p>
+                        <p className="text-xs text-silver-500 mt-2">Digitale Unterschrift im Vertrags-PDF archiviert.</p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-silver-500">Noch keine Kundensignatur vorhanden.</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -431,7 +486,7 @@ export default function AngebotePage() {
                   )}
                   {selected.extraFees > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-silver-600 dark:text-silver-400">Zuschläge</span>
+                      <span className="text-silver-600 dark:text-silver-400">ZuschlÃ¤ge</span>
                       <span className="font-medium">+{fmt.format(selected.extraFees)}</span>
                     </div>
                   )}
@@ -524,35 +579,57 @@ export default function AngebotePage() {
               {selected.contracts.length > 0 && (
                 <div className="bg-white dark:bg-navy-800/60 rounded-2xl border border-gray-100 dark:border-navy-700/50 p-5">
                   <h3 className="text-sm font-semibold text-navy-800 dark:text-white mb-3 flex items-center gap-2">
-                    <PenTool size={16} className="text-teal-500" /> Verträge
+                    <PenTool size={16} className="text-teal-500" /> VertrÃ¤ge
                   </h3>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {selected.contracts.map((c) => (
-                      <div key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-navy-900/40 border border-gray-100 dark:border-navy-700/30">
-                        <div className="flex items-center gap-3">
+                      <div key={c.id} className="p-4 rounded-2xl bg-gray-50 dark:bg-navy-900/40 border border-gray-100 dark:border-navy-700/30">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-center gap-3">
                           <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center",
-                            c.status === "SIGNED" || c.status === "LOCKED"
+                            c.isSigned
                               ? "bg-emerald-100 dark:bg-emerald-500/10" : "bg-amber-100 dark:bg-amber-500/10"
                           )}>
-                            {c.status === "SIGNED" || c.status === "LOCKED"
+                            {c.isSigned
                               ? <CheckCircle2 size={16} className="text-emerald-600" />
                               : <PenTool size={16} className="text-amber-600" />}
                           </div>
                           <div>
-                            <p className="text-sm font-medium">{c.status === "SIGNED" || c.status === "LOCKED" ? "Unterschrieben" : "Warte auf Unterschrift"}</p>
+                            <p className="text-sm font-semibold text-navy-800 dark:text-white">{c.contractNumber}</p>
+                            <p className="text-sm font-medium">{contractStateLabel(c)}</p>
+                            <p className="text-xs text-silver-500 mt-1">
+                              {c.signedByName ? `Signer: ${c.signedByName}` : "Signaturlink aktiv"}
+                              {c.signedAt ? ` Â· ${new Date(c.signedAt).toLocaleString("de-DE")}` : ""}
+                            </p>
                           </div>
                         </div>
-                        <a href={`/vertrag/${c.token}`} target="_blank" rel="noopener noreferrer"
-                          className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-navy-700">
-                          <ExternalLink size={16} className="text-silver-500" />
-                        </a>
-                        <a
-                          href={`/api/vertrag/${c.token}/pdf?download=1`}
-                          className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-navy-700"
-                          title="Vertrag als PDF herunterladen"
-                        >
-                          <Download size={16} className="text-silver-500" />
-                        </a>
+                          {!c.isSigned && (
+                            <button
+                              onClick={() => runAction(`/api/admin/angebote/${selected.id}/send-contract-signature`)}
+                              disabled={saving}
+                              className="px-3 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
+                            >
+                              Link senden
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-2 mt-4">
+                          <a href={c.pageUrl} target="_blank" rel="noopener noreferrer"
+                            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-navy-700 text-sm font-medium flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-navy-800">
+                            <ExternalLink size={14} /> Vertragsseite
+                          </a>
+                          <a href={c.pdfPreviewUrl} target="_blank" rel="noopener noreferrer"
+                            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-navy-700 text-sm font-medium flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-navy-800">
+                            <Eye size={14} /> PDF ansehen
+                          </a>
+                          <a
+                            href={c.pdfUrl}
+                            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-navy-700 text-sm font-medium flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-navy-800"
+                            title="Vertrag als PDF herunterladen"
+                          >
+                            <Download size={14} /> PDF herunterladen
+                          </a>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -565,3 +642,4 @@ export default function AngebotePage() {
     </div>
   );
 }
+

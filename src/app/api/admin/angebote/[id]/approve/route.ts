@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { createContractFromOffer } from "@/lib/workflow";
 import { sendEmail } from "@/lib/email";
+import { buildContractSignatureEmail, getContractSignatureSubject } from "@/lib/contract-email";
+import { toContractSummary } from "@/lib/contracts";
+import { createContractFromOffer } from "@/lib/workflow";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -16,13 +18,21 @@ export async function POST(_req: NextRequest, { params }: Params) {
     const { id } = await params;
     const offer = await prisma.offer.findUnique({
       where: { id },
-      include: { customer: true, order: true },
+      include: { customer: true, order: true, contracts: true },
     });
+
     if (!offer) {
       return NextResponse.json({ error: "Angebot nicht gefunden" }, { status: 404 });
     }
 
-    const contract = await createContractFromOffer(offer.id);
+    const contract = offer.contracts[0] || (await createContractFromOffer(offer.id));
+    const pendingContract =
+      contract.status === "SIGNED" || contract.status === "LOCKED"
+        ? contract
+        : await prisma.contract.update({
+            where: { id: contract.id },
+            data: { status: "PENDING_SIGNATURE" },
+          });
 
     const updated = await prisma.offer.update({
       where: { id: offer.id },
@@ -34,31 +44,42 @@ export async function POST(_req: NextRequest, { params }: Params) {
     });
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const acceptUrl = `${baseUrl}/angebot/${offer.token}`;
+    const signUrl = `${baseUrl}/vertrag/${pendingContract.token}`;
+
     await sendEmail({
       to: offer.customer.email,
-      subject: "Angebot freigegeben - Seel Transport",
-      html: `<p>Sehr geehrte/r ${offer.customer.name},</p><p>Ihr Angebot ${offer.offerNumber} wurde final freigegeben.</p><p><a href=\"${acceptUrl}\">Angebot annehmen</a></p><p>Nach Annahme gelangen Sie zur Vertragsunterzeichnung.</p>`,
+      subject: getContractSignatureSubject(offer.offerNumber),
+      html: buildContractSignatureEmail({
+        customerName: offer.customer.name,
+        offerNumber: offer.offerNumber,
+        contractNumber: pendingContract.contractNumber,
+        totalPrice: offer.totalPrice,
+        signUrl,
+      }),
     });
 
     await prisma.communication.create({
       data: {
         customerId: offer.customerId,
         offerId: offer.id,
-        contractId: contract.id,
+        contractId: pendingContract.id,
         channel: "EMAIL",
         direction: "OUTBOUND",
-        subject: `Angebot ${offer.offerNumber} freigegeben`,
-        message: "Freigabe an Kunden versendet.",
-        metaJson: { acceptUrl },
+        subject: `Freigabe und Signaturlink fuer ${offer.offerNumber}`,
+        message: "Angebot freigegeben und Vertrag zur digitalen Unterschrift automatisch versendet.",
+        metaJson: { signUrl },
         sentBy: session.email || "admin",
       },
     });
 
-    return NextResponse.json({ success: true, offer: updated, contract });
+    return NextResponse.json({
+      success: true,
+      message: "Angebot freigegeben und Signaturlink automatisch versendet.",
+      offer: updated,
+      contract: toContractSummary(pendingContract),
+    });
   } catch (error) {
     console.error("POST /api/admin/angebote/[id]/approve error:", error);
     return NextResponse.json({ error: "Interner Serverfehler" }, { status: 500 });
   }
 }
-

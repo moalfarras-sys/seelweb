@@ -1,7 +1,14 @@
-import jsPDF from "jspdf";
-import { COMPANY_BANK, COMPANY_LEGAL, CONTACT } from "@/config/contact";
-import fs from "fs";
+﻿import fs from "fs";
 import path from "path";
+import jsPDF from "jspdf";
+import sharp from "sharp";
+import { COMPANY_BANK, COMPANY_LEGAL, CONTACT } from "@/config/contact";
+import {
+  SEEL_AGB_SECTIONS,
+  SEEL_AGB_VERSION,
+  SEEL_CANCELLATION_RULES,
+  SEEL_CONTRACT_HIGHLIGHTS,
+} from "@/lib/legal";
 
 interface BookingPDFData {
   orderNumber: string;
@@ -101,12 +108,18 @@ interface ContractPDFData {
 const NAVY = [15, 37, 80] as const;
 const TEAL = [13, 158, 160] as const;
 const WHITE = [255, 255, 255] as const;
-const GRAY = [107, 119, 135] as const;
-const LIGHT_BG = [248, 249, 251] as const;
-const BORDER = [220, 225, 232] as const;
+const INK = [31, 41, 55] as const;
+const MUTED = [100, 116, 139] as const;
+const LIGHT = [248, 250, 252] as const;
+const BORDER = [226, 232, 240] as const;
+const SUCCESS = [16, 185, 129] as const;
 
-let fontsRegistered = false;
+const logoPath = path.join(process.cwd(), "public", "images", "logo.jpeg");
+const signaturePath = path.join(process.cwd(), "public", "images", "sing", "WhatsApp Image 2026-03-05 at 17.06.22.jpeg");
+const sealPath = path.join(process.cwd(), "public", "images", "sing", "WhatsApp Image 2026-03-05 at 17.06.24.jpeg");
+
 let logoDataUrl: string | null = null;
+const processedAssetCache = new Map<string, Promise<string | null>>();
 
 function safeReadBase64(filePath: string) {
   try {
@@ -117,11 +130,11 @@ function safeReadBase64(filePath: string) {
 }
 
 function registerBrandFonts(doc: jsPDF) {
-  if (fontsRegistered) return;
   const regularPath = path.join(process.cwd(), "public", "fonts", "NotoSans-Regular.ttf");
   const boldPath = path.join(process.cwd(), "public", "fonts", "NotoSans-Bold.ttf");
   const regularB64 = safeReadBase64(regularPath);
   const boldB64 = safeReadBase64(boldPath);
+
   if (regularB64) {
     doc.addFileToVFS("NotoSans-Regular.ttf", regularB64);
     doc.addFont("NotoSans-Regular.ttf", "NotoSans", "normal");
@@ -130,7 +143,7 @@ function registerBrandFonts(doc: jsPDF) {
     doc.addFileToVFS("NotoSans-Bold.ttf", boldB64);
     doc.addFont("NotoSans-Bold.ttf", "NotoSans", "bold");
   }
-  fontsRegistered = true;
+
 }
 
 function setBrandFont(doc: jsPDF, style: "normal" | "bold") {
@@ -143,286 +156,316 @@ function setBrandFont(doc: jsPDF, style: "normal" | "bold") {
 
 function getLogoDataUrl() {
   if (logoDataUrl) return logoDataUrl;
-  const filePath = path.join(process.cwd(), "public", "images", "logo.jpeg");
-  const b64 = safeReadBase64(filePath);
-  if (!b64) return null;
-  logoDataUrl = `data:image/jpeg;base64,${b64}`;
+  const logoB64 = safeReadBase64(logoPath);
+  if (!logoB64) return null;
+  logoDataUrl = `data:image/jpeg;base64,${logoB64}`;
   return logoDataUrl;
 }
 
-function drawBrandHeader(doc: jsPDF, title: string, rightLabel: string, rightValue: string) {
-  const pw = doc.internal.pageSize.getWidth();
-  doc.setFillColor(...NAVY);
-  doc.rect(0, 0, pw, 46, "F");
+async function getProcessedAssetDataUrl(filePath: string) {
+  const cached = processedAssetCache.get(filePath);
+  if (cached) return cached;
 
-  const logo = getLogoDataUrl();
-  if (logo) {
+  const assetPromise = (async () => {
     try {
-      doc.addImage(logo, "JPEG", 14, 8, 22, 22);
+      const base = sharp(filePath).trim({ background: { r: 238, g: 238, b: 238, alpha: 1 } }).ensureAlpha();
+      const { data, info } = await base.raw().toBuffer({ resolveWithObject: true });
+
+      for (let i = 0; i < data.length; i += info.channels) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        if (max > 225 && max - min < 24) {
+          data[i + 3] = 0;
+        }
+      }
+
+      const png = await sharp(data, {
+        raw: {
+          width: info.width,
+          height: info.height,
+          channels: info.channels,
+        },
+      })
+        .png()
+        .toBuffer();
+
+      return `data:image/png;base64,${png.toString("base64")}`;
     } catch {
-      // continue without logo rendering
+      return null;
     }
-  }
+  })();
 
-  doc.setTextColor(...WHITE);
-  setBrandFont(doc, "bold");
-  doc.setFontSize(18);
-  doc.text("SEEL Transport & Reinigung", 40, 18);
-  setBrandFont(doc, "normal");
-  doc.setFontSize(8.5);
-  doc.text(title, 40, 26);
-  doc.text(`${CONTACT.EMAIL} | ${CONTACT.PRIMARY_PHONE_DISPLAY} | ${CONTACT.WEBSITE_DISPLAY}`, 40, 33);
-
-  doc.setFillColor(...TEAL);
-  doc.roundedRect(pw - 72, 10, 56, 24, 3, 3, "F");
-  doc.setTextColor(...WHITE);
-  setBrandFont(doc, "bold");
-  doc.setFontSize(9);
-  doc.text(rightLabel, pw - 58, 19);
-  doc.setFontSize(10);
-  doc.text(rightValue, pw - 64, 27);
+  processedAssetCache.set(filePath, assetPromise);
+  return assetPromise;
 }
 
 function fmt(amount: number) {
   return new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(amount);
 }
 
+function addImageIfPossible(doc: jsPDF, dataUrl: string | null | undefined, format: "JPEG" | "PNG", x: number, y: number, w: number, h: number) {
+  if (!dataUrl) return;
+  try {
+    doc.addImage(dataUrl, format, x, y, w, h);
+  } catch {
+    // Ignore optional image failures.
+  }
+}
+
+function drawPageBackground(doc: jsPDF) {
+  const pw = doc.internal.pageSize.getWidth();
+  const ph = doc.internal.pageSize.getHeight();
+  doc.setFillColor(250, 252, 255);
+  doc.rect(0, 0, pw, ph, "F");
+  doc.setFillColor(233, 244, 249);
+  doc.circle(pw - 10, 18, 28, "F");
+}
+
+function drawHeader(doc: jsPDF, title: string, badgeLabel: string, badgeValue: string) {
+  const pw = doc.internal.pageSize.getWidth();
+  drawPageBackground(doc);
+
+  doc.setFillColor(...NAVY);
+  doc.roundedRect(10, 10, pw - 20, 34, 6, 6, "F");
+
+  addImageIfPossible(doc, getLogoDataUrl(), "JPEG", 16, 15, 18, 18);
+
+  doc.setTextColor(...WHITE);
+  setBrandFont(doc, "bold");
+  doc.setFontSize(18);
+  doc.text("SEEL Transport & Reinigung", 39, 22);
+  setBrandFont(doc, "normal");
+  doc.setFontSize(8.5);
+  doc.text(`${CONTACT.EMAIL}  |  ${CONTACT.PRIMARY_PHONE_DISPLAY}  |  ${CONTACT.WEBSITE_DISPLAY}`, 39, 29);
+  doc.text(title, 39, 35);
+
+  doc.setFillColor(...WHITE);
+  doc.roundedRect(pw - 66, 15, 50, 20, 4, 4, "F");
+  doc.setTextColor(...NAVY);
+  setBrandFont(doc, "bold");
+  doc.setFontSize(8);
+  doc.text(badgeLabel, pw - 41, 23, { align: "center" });
+  doc.setFontSize(10);
+  doc.text(badgeValue, pw - 41, 29.5, { align: "center" });
+}
+
+function drawFooter(doc: jsPDF, footerLeft?: string, footerRight?: string) {
+  const pw = doc.internal.pageSize.getWidth();
+  const ph = doc.internal.pageSize.getHeight();
+  doc.setDrawColor(...BORDER);
+  doc.line(14, ph - 17, pw - 14, ph - 17);
+  doc.setTextColor(...MUTED);
+  doc.setFontSize(7);
+  setBrandFont(doc, "normal");
+  doc.text(`${COMPANY_LEGAL.NAME} | ${COMPANY_LEGAL.ADDRESS_LINE_1} | USt-IdNr.: ${COMPANY_LEGAL.VAT_ID}`, 14, ph - 12);
+  doc.text(`Bank: ${COMPANY_BANK.BANK_NAME} | IBAN: ${COMPANY_BANK.IBAN} | BIC: ${COMPANY_BANK.BIC}`, 14, ph - 8);
+  if (footerLeft) {
+    doc.text(footerLeft, 14, ph - 4);
+  }
+  if (footerRight) {
+    doc.text(footerRight, pw - 14, ph - 4, { align: "right" });
+  }
+}
+
+function sectionHeading(doc: jsPDF, label: string, x: number, y: number) {
+  doc.setDrawColor(...TEAL);
+  doc.setLineWidth(0.8);
+  doc.line(x, y + 0.8, x + 14, y + 0.8);
+  setBrandFont(doc, "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(...NAVY);
+  doc.text(label, x + 18, y + 2);
+}
+
+function writeParagraph(doc: jsPDF, text: string, x: number, y: number, width: number, lineHeight = 4.5) {
+  const lines = doc.splitTextToSize(text, width);
+  doc.text(lines, x, y);
+  return y + lines.length * lineHeight;
+}
+
+function drawMetaRow(doc: jsPDF, leftLabel: string, leftValue: string, rightLabel: string, rightValue: string, y: number) {
+  const pw = doc.internal.pageSize.getWidth();
+  doc.setTextColor(...MUTED);
+  setBrandFont(doc, "normal");
+  doc.setFontSize(8);
+  doc.text(leftLabel, 20, y);
+  doc.text(rightLabel, pw / 2 + 4, y);
+  setBrandFont(doc, "bold");
+  doc.setTextColor(...INK);
+  doc.text(leftValue, 20, y + 4.6);
+  doc.text(rightValue, pw / 2 + 4, y + 4.6);
+}
+
+function drawMoneySummary(doc: jsPDF, y: number, values: Array<{ label: string; value: string; accent?: "default" | "teal" | "red" }>) {
+  const pw = doc.internal.pageSize.getWidth();
+  doc.setFillColor(...LIGHT);
+  doc.roundedRect(pw - 78, y - 3, 58, values.length * 7.2 + 10, 4, 4, "F");
+  let cursor = y + 1;
+  values.forEach(({ label, value, accent }) => {
+    doc.setTextColor(...MUTED);
+    setBrandFont(doc, "normal");
+    doc.setFontSize(8);
+    doc.text(label, pw - 72, cursor);
+    if (accent === "red") {
+      doc.setTextColor(185, 28, 28);
+    } else if (accent === "teal") {
+      doc.setTextColor(...TEAL);
+    } else {
+      doc.setTextColor(...NAVY);
+    }
+    setBrandFont(doc, accent === "teal" ? "bold" : "normal");
+    doc.text(value, pw - 24, cursor, { align: "right" });
+    cursor += 6.8;
+  });
+}
+
+function buildJobFacts(data: OfferPDFData) {
+  const facts: Array<[string, string]> = [];
+  facts.push(["Service", data.serviceSummary]);
+  if (data.serviceDate) facts.push(["Termin", `${data.serviceDate}${data.timeSlot ? `, ${data.timeSlot}` : ""}`]);
+  if (data.fromAddress) facts.push(["Start", data.fromAddress]);
+  if (data.toAddress) facts.push(["Ziel", data.toAddress]);
+  if (typeof data.routeDistanceKm === "number") facts.push(["Route", `${data.routeDistanceKm.toFixed(1)} km`]);
+  if (data.jobDetails?.computedDurationHours) facts.push(["Dauer", `${data.jobDetails.computedDurationHours.toFixed(2)} Std.`]);
+  if (data.jobDetails?.routeDurationMin) facts.push(["Fahrzeit", `${Math.round(data.jobDetails.routeDurationMin)} Min.`]);
+  if (data.jobDetails?.addons?.length) facts.push(["Add-ons", data.jobDetails.addons.join(", ")]);
+  return facts;
+}
+
+function maybeAddPage(doc: jsPDF, y: number, threshold = 44) {
+  const ph = doc.internal.pageSize.getHeight();
+  if (y <= ph - threshold) return y;
+  doc.addPage();
+  return 24;
+}
+
 export function generateBookingPDF(data: BookingPDFData): Buffer {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pw = doc.internal.pageSize.getWidth();
-  const ph = doc.internal.pageSize.getHeight();
   let y = 0;
 
   registerBrandFonts(doc);
+  drawHeader(doc, "Buchungsuebersicht", "AUFTRAG", data.orderNumber);
 
-  doc.setFillColor(...NAVY);
-  doc.rect(0, 0, pw, 48, "F");
+  y = 52;
+  drawMetaRow(doc, "Erstellt am", new Date().toLocaleDateString("de-DE"), "Leistungsdatum", data.date, y);
+  y += 15;
 
-  const logo = getLogoDataUrl();
-  if (logo) {
-    try { doc.addImage(logo, "JPEG", 14, 8, 22, 22); } catch { /* skip */ }
-  }
-
-  doc.setTextColor(...WHITE);
-  doc.setFontSize(22);
-  setBrandFont(doc, "bold");
-  doc.text("SEEL Transport & Reinigung", logo ? 40 : 20, 20);
-
-  doc.setFontSize(9);
-  setBrandFont(doc, "normal");
-  doc.text(`${CONTACT.PRIMARY_PHONE_DISPLAY}  |  ${CONTACT.EMAIL}  |  seeltransport.de`, logo ? 40 : 20, 30);
-  doc.text(`${CONTACT.COUNTRY}`, logo ? 40 : 20, 36);
-
-  // ANGEBOT badge
-  doc.setFillColor(...TEAL);
-  doc.roundedRect(pw - 68, 10, 54, 28, 3, 3, "F");
-  doc.setTextColor(...WHITE);
-  doc.setFontSize(9);
-  setBrandFont(doc, "bold");
-  doc.text("ANGEBOT", pw - 55, 20);
-  doc.setFontSize(11);
-  doc.text(data.orderNumber, pw - 60, 29);
-
-  y = 58;
-
-  // Validity
-  const validUntil = new Date();
-  validUntil.setDate(validUntil.getDate() + 14);
-  doc.setTextColor(...GRAY);
-  doc.setFontSize(8);
-  setBrandFont(doc, "normal");
-  doc.text(`Erstellt am: ${new Date().toLocaleDateString("de-DE")} |  Gültig bis: ${validUntil.toLocaleDateString("de-DE")}`, 20, y);
-  y += 10;
-
-  // Customer Info
-  doc.setTextColor(...NAVY);
-  doc.setFontSize(11);
-  setBrandFont(doc, "bold");
-  doc.text("Kundendaten", 20, y);
-  y += 7;
-
-  doc.setFontSize(9);
-  setBrandFont(doc, "normal");
-  doc.setTextColor(...GRAY);
-  const custLines = [
-    `Name: ${data.customerName}`,
-    `E-Mail: ${data.customerEmail}`,
-    `Telefon: ${data.customerPhone}`,
-  ];
-  if (data.customerCompany) custLines.push(`Firma: ${data.customerCompany}`);
-  custLines.forEach(l => {
-    doc.text(l, 20, y);
-    y += 5;
-  });
-  y += 5;
-
-  // Booking Details Box
-  const boxHeight = 30 + (data.addressTo ? 10 : 0) + (data.distance ? 5 : 0);
-  doc.setFillColor(...LIGHT_BG);
-  doc.roundedRect(15, y - 3, pw - 30, boxHeight, 3, 3, "F");
-
-  doc.setTextColor(...NAVY);
-  doc.setFontSize(11);
-  setBrandFont(doc, "bold");
-  doc.text("Buchungsdetails", 20, y + 5);
-  y += 12;
-
-  doc.setFontSize(9);
-  setBrandFont(doc, "normal");
-  doc.setTextColor(...GRAY);
-
-  const details = [`Service: ${data.service}`, `Datum: ${data.date}`];
-  if (data.time) details.push(`Uhrzeit: ${data.time}`);
-  if (data.addressFrom) details.push(`Von: ${data.addressFrom}`);
-  if (data.addressTo) details.push(`Nach: ${data.addressTo}`);
-  if (data.distance) details.push(`Entfernung: ${data.distance}`);
-  const paymentLabel =
-    data.paymentMethod === "STRIPE" ? "Online-Zahlung" : data.paymentMethod === "PAYPAL" ? "PayPal" : data.paymentMethod === "BAR" ? "Barzahlung" : "Überweisung";
-  details.push(`Zahlungsart: ${paymentLabel}`);
-
-  details.forEach(l => {
-    doc.text(l, 20, y);
-    y += 5;
-  });
-  y += 10;
-
-  // Line-Item Table
-  doc.setTextColor(...NAVY);
-  doc.setFontSize(11);
-  setBrandFont(doc, "bold");
-  doc.text("Leistungsübersicht", 20, y);
-  y += 3;
-
-  // Table header
-  doc.setFillColor(...NAVY);
-  doc.rect(15, y, pw - 30, 8, "F");
-  doc.setTextColor(...WHITE);
-  doc.setFontSize(8);
-  setBrandFont(doc, "bold");
-  doc.text("Position", 20, y + 5.5);
-  doc.text("Menge", 100, y + 5.5);
-  doc.text("Einzelpreis", 130, y + 5.5);
-  doc.text("Gesamt", pw - 20, y + 5.5, { align: "right" });
-  y += 10;
-
-  setBrandFont(doc, "normal");
-  doc.setFontSize(8);
-  let rowBg = false;
-
-  const addRow = (pos: string, qty: string, unit: string, total: string) => {
-    if (y > ph - 60) {
-      doc.addPage();
-      y = 20;
-    }
-    if (rowBg) {
-      doc.setFillColor(248, 249, 251);
-      doc.rect(15, y - 3, pw - 30, 7, "F");
-    }
-    doc.setTextColor(...GRAY);
-    doc.text(pos, 20, y + 1);
-    doc.text(qty, 100, y + 1);
-    doc.text(unit, 130, y + 1);
-    doc.setTextColor(...NAVY);
-    doc.text(total, pw - 20, y + 1, { align: "right" });
-    y += 7;
-    rowBg = !rowBg;
-  };
-
-  addRow(data.service, `${data.breakdown.totalHours} Std.`, fmt(data.breakdown.hourlyRate), fmt(data.breakdown.totalHours * data.breakdown.hourlyRate));
-
-  if (data.breakdown.weekendSurcharge > 0) {
-    addRow("Wochenendzuschlag (25%)", "1", "", `+${fmt(data.breakdown.weekendSurcharge)}`);
-  }
-  if (data.breakdown.movingSurcharges > 0) {
-    addRow("Zuschlaege (Etage, Entfernung)", "1", "", fmt(data.breakdown.movingSurcharges));
-  }
-
-  data.extras.forEach(extra => {
-    addRow(`+ ${extra}`, "1", "Inkl.", "Inkl.");
-  });
-
-  if (data.breakdown.discountAmount && data.breakdown.discountAmount > 0) {
-    addRow("Rabatt", "1", "", `-${fmt(data.breakdown.discountAmount)}`);
-  }
-
-  // Totals
-  y += 2;
-  doc.setDrawColor(...BORDER);
-  doc.line(15, y, pw - 15, y);
-  y += 6;
-
-  doc.setTextColor(...GRAY);
-  doc.setFontSize(9);
-  doc.text("Nettobetrag", 20, y);
-  doc.setTextColor(...NAVY);
-  doc.text(fmt(data.breakdown.netto), pw - 20, y, { align: "right" });
-  y += 6;
-
-  doc.setTextColor(...GRAY);
-  doc.text("MwSt. (19%)", 20, y);
-  doc.setTextColor(...NAVY);
-  doc.text(fmt(data.breakdown.mwst), pw - 20, y, { align: "right" });
-  y += 8;
-
-  // Total bar
-  doc.setFillColor(...TEAL);
-  doc.roundedRect(15, y - 4, pw - 30, 14, 3, 3, "F");
-  doc.setTextColor(...WHITE);
+  sectionHeading(doc, "Kunde", 20, y);
+  y += 9;
+  doc.setTextColor(...INK);
   setBrandFont(doc, "bold");
   doc.setFontSize(12);
-  doc.text("Gesamtbetrag (brutto)", 20, y + 5);
-  doc.text(fmt(data.breakdown.total), pw - 20, y + 5, { align: "right" });
-  y += 22;
-
-  // Notes
-  if (data.notes) {
-    doc.setTextColor(...NAVY);
-    doc.setFontSize(10);
-    setBrandFont(doc, "bold");
-    doc.text("Anmerkungen", 20, y);
+  doc.text(data.customerName, 20, y);
+  y += 5;
+  setBrandFont(doc, "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(...MUTED);
+  doc.text(data.customerEmail, 20, y);
+  y += 4.8;
+  doc.text(data.customerPhone, 20, y);
+  y += 4.8;
+  if (data.customerCompany) {
+    doc.text(data.customerCompany, 20, y);
     y += 5;
-    doc.setFontSize(9);
-    setBrandFont(doc, "normal");
-    doc.setTextColor(...GRAY);
-    const noteLines = doc.splitTextToSize(data.notes, pw - 40);
-    doc.text(noteLines, 20, y);
-    y += noteLines.length * 4 + 8;
   }
 
-  // Payment Terms
-  if (y < ph - 60) {
-    doc.setTextColor(...NAVY);
-    doc.setFontSize(9);
-    setBrandFont(doc, "bold");
-    doc.text("Zahlungsbedingungen", 20, y);
-    y += 5;
+  const serviceFacts = [
+    ["Leistung", data.service],
+    ["Zeit", data.time || "Nach Absprache"],
+    ["Start", data.addressFrom || "-"],
+    ["Ziel", data.addressTo || "-"],
+    ["Distanz", data.distance || "-"],
+    [
+      "Zahlungsart",
+      data.paymentMethod === "STRIPE"
+        ? "Online-Zahlung"
+        : data.paymentMethod === "PAYPAL"
+          ? "PayPal"
+          : data.paymentMethod === "BAR"
+            ? "Barzahlung"
+            : "Ueberweisung",
+    ],
+  ];
+
+  doc.setFillColor(...LIGHT);
+  doc.roundedRect(pw / 2, 57, pw / 2 - 20, 46, 5, 5, "F");
+  let rowY = 65;
+  serviceFacts.forEach(([label, value]) => {
+    doc.setTextColor(...MUTED);
     setBrandFont(doc, "normal");
-    doc.setTextColor(...GRAY);
     doc.setFontSize(8);
-    const terms = [
-      "Zahlungsziel: 14 Tage nach Rechnungsstellung",
-      "Bankverbindung wird mit der Rechnung mitgeteilt",
-      "Dieses Angebot ist 14 Tage gültig",
-      "Alle Preise in EUR inkl. 19% MwSt.",
-    ];
-    terms.forEach(t => {
-      doc.text(t, 20, y);
-      y += 4;
-    });
+    doc.text(label, pw / 2 + 6, rowY);
+    doc.setTextColor(...INK);
+    setBrandFont(doc, "bold");
+    doc.setFontSize(8.5);
+    doc.text(value, pw - 18, rowY, { align: "right" });
+    rowY += 6.6;
+  });
+
+  y = 113;
+  sectionHeading(doc, "Preisuebersicht", 20, y);
+  y += 10;
+
+  const bookingItems = [
+    { title: data.service, detail: `${data.breakdown.totalHours} Std.`, unit: fmt(data.breakdown.hourlyRate), total: fmt(data.breakdown.totalHours * data.breakdown.hourlyRate) },
+    ...(data.breakdown.weekendSurcharge > 0
+      ? [{ title: "Wochenendzuschlag", detail: "1", unit: "-", total: fmt(data.breakdown.weekendSurcharge) }]
+      : []),
+    ...(data.breakdown.movingSurcharges > 0
+      ? [{ title: "Zuschlaege", detail: "1", unit: "-", total: fmt(data.breakdown.movingSurcharges) }]
+      : []),
+    ...data.extras.map((extra) => ({ title: extra, detail: "1", unit: "inkl.", total: "inkl." })),
+    ...(data.breakdown.discountAmount
+      ? [{ title: "Rabatt", detail: "1", unit: "-", total: `-${fmt(data.breakdown.discountAmount)}` }]
+      : []),
+  ];
+
+  doc.setFillColor(...NAVY);
+  doc.roundedRect(16, y, pw - 32, 8, 2, 2, "F");
+  doc.setTextColor(...WHITE);
+  setBrandFont(doc, "bold");
+  doc.setFontSize(8);
+  doc.text("Position", 20, y + 5.3);
+  doc.text("Menge", 108, y + 5.3);
+  doc.text("Einzelpreis", 133, y + 5.3);
+  doc.text("Gesamt", pw - 20, y + 5.3, { align: "right" });
+  y += 11;
+
+  bookingItems.forEach((item, index) => {
+    if (index % 2 === 0) {
+      doc.setFillColor(...LIGHT);
+      doc.roundedRect(16, y - 2.2, pw - 32, 7, 1.5, 1.5, "F");
+    }
+    doc.setTextColor(...INK);
+    setBrandFont(doc, "normal");
+    doc.text(item.title, 20, y + 1);
+    doc.text(item.detail, 108, y + 1);
+    doc.text(item.unit, 133, y + 1);
+    doc.text(item.total, pw - 20, y + 1, { align: "right" });
+    y += 6.4;
+  });
+
+  drawMoneySummary(doc, y + 3, [
+    { label: "Netto", value: fmt(data.breakdown.netto) },
+    { label: "MwSt. (19%)", value: fmt(data.breakdown.mwst) },
+    { label: "Gesamt", value: fmt(data.breakdown.total), accent: "teal" },
+  ]);
+
+  y += 28;
+  if (data.notes) {
+    sectionHeading(doc, "Anmerkungen", 20, y);
+    y += 9;
+    doc.setTextColor(...MUTED);
+    setBrandFont(doc, "normal");
+    doc.setFontSize(9);
+    y = writeParagraph(doc, data.notes, 20, y, pw - 40);
   }
 
-  // Footer
-  const fy = ph - 18;
-  doc.setDrawColor(...BORDER);
-  doc.line(20, fy - 5, pw - 20, fy - 5);
-  doc.setFontSize(7);
-  doc.setTextColor(...GRAY);
-  doc.text(
-    `Seel Transport & Reinigung  ·  ${CONTACT.COUNTRY}  ·  ${CONTACT.EMAIL}  ·  ${CONTACT.PRIMARY_PHONE_DISPLAY}`,
-    pw / 2, fy, { align: "center" }
-  );
-  doc.text("Dieses Angebot wurde automatisch generiert. Es gelten unsere AGB.", pw / 2, fy + 4, { align: "center" });
-
+  drawFooter(doc, "Diese Uebersicht wurde digital erstellt.", `Seite ${doc.getCurrentPageInfo().pageNumber}`);
   return Buffer.from(doc.output("arraybuffer"));
 }
 
@@ -433,438 +476,332 @@ export function generateOfferPDF(data: OfferPDFData): Buffer {
   let y = 0;
 
   registerBrandFonts(doc);
-  drawBrandHeader(doc, "Professionelles Angebot", "ANGEBOT", data.offerNumber);
+  drawHeader(doc, "Professionelles Angebot", "ANGEBOT", data.offerNumber);
 
-  y = 56;
-  setBrandFont(doc, "normal");
-  doc.setTextColor(...GRAY);
-  doc.setFontSize(8);
-  doc.text(`Erstellt: ${new Date().toLocaleDateString("de-DE")} | Gültig bis: ${data.validUntil}`, 20, y);
+  y = 53;
+  drawMetaRow(doc, "Gueltig bis", data.validUntil, "Erstellt", new Date().toLocaleDateString("de-DE"), y);
+  y += 16;
+
+  doc.setFillColor(...LIGHT);
+  doc.roundedRect(14, y - 2, 88, 26, 5, 5, "F");
+  sectionHeading(doc, "Kunde", 20, y);
   y += 8;
-
-  doc.setTextColor(...NAVY);
+  doc.setTextColor(...INK);
   setBrandFont(doc, "bold");
-  doc.setFontSize(11);
-  doc.text("Kunde", 20, y);
-  y += 6;
+  doc.setFontSize(11.5);
+  doc.text(data.customerName, 20, y);
+  y += 4.7;
   setBrandFont(doc, "normal");
-  doc.setTextColor(...GRAY);
-  doc.setFontSize(9);
-  doc.text(`Name: ${data.customerName}`, 20, y);
-  y += 4.5;
-  doc.text(`E-Mail: ${data.customerEmail}`, 20, y);
-  y += 4.5;
+  doc.setTextColor(...MUTED);
+  doc.setFontSize(8.6);
+  doc.text(data.customerEmail, 20, y);
+  y += 4.4;
   if (data.customerPhone) {
-    doc.text(`Telefon: ${data.customerPhone}`, 20, y);
-    y += 4.5;
+    doc.text(data.customerPhone, 20, y);
+    y += 4.4;
   }
   if (data.customerCompany) {
-    doc.text(`Firma: ${data.customerCompany}`, 20, y);
-    y += 4.5;
+    doc.text(data.customerCompany, 20, y);
   }
-  y += 3;
 
-  doc.setFillColor(...LIGHT_BG);
-  doc.roundedRect(15, y - 2.5, pw - 30, 28, 3, 3, "F");
-  doc.setTextColor(...NAVY);
-  setBrandFont(doc, "bold");
-  doc.setFontSize(10);
-  doc.text("Leistungszusammenfassung", 20, y + 3);
-  y += 9;
-  doc.setTextColor(...GRAY);
-  setBrandFont(doc, "normal");
-  doc.setFontSize(8.5);
-  if (data.trackingNumber) {
-    doc.text(`Tracking: ${data.trackingNumber}`, 20, y);
-    y += 4.5;
-  }
-  doc.text(`Services: ${data.serviceSummary}`, 20, y);
-  y += 4.5;
-  if (data.serviceDate) {
-    doc.text(`Termin: ${data.serviceDate}${data.timeSlot ? `, ${data.timeSlot}` : ""}`, 20, y);
-    y += 4.5;
-  }
-  if (data.fromAddress) {
-    doc.text(`Von: ${data.fromAddress}`, 20, y);
-    y += 4.5;
-  }
-  if (data.toAddress) {
-    doc.text(`Nach: ${data.toAddress}`, 20, y);
-    y += 4.5;
-  }
-  if (data.routeDistanceKm != null) {
-    doc.text(`Route: ${data.routeDistanceKm.toFixed(1)} km`, 20, y);
-    y += 4.5;
-  }
-  if (data.jobDetails?.computedDurationHours) {
-    doc.text(`Geplante Dauer: ${data.jobDetails.computedDurationHours.toFixed(2)} Std.`, 20, y);
-    y += 4.5;
-  }
-  if (data.jobDetails?.routeDurationMin) {
-    doc.text(`Fahrzeit (geschätzt): ${Math.round(data.jobDetails.routeDurationMin)} Min.`, 20, y);
-    y += 4.5;
-  }
-  if (typeof data.jobDetails?.floorFrom === "number" || typeof data.jobDetails?.floorTo === "number") {
-    const floorFrom = data.jobDetails.floorFrom ?? 0;
-    const floorTo = data.jobDetails.floorTo ?? 0;
-    doc.text(`Stockwerke: Start ${floorFrom} / Ziel ${floorTo}`, 20, y);
-    y += 4.5;
-  }
-  if (typeof data.jobDetails?.hasElevatorFrom === "boolean" || typeof data.jobDetails?.hasElevatorTo === "boolean") {
-    const from = data.jobDetails.hasElevatorFrom ? "Ja" : "Nein";
-    const to = data.jobDetails.hasElevatorTo ? "Ja" : "Nein";
-    doc.text(`Aufzug: Start ${from} / Ziel ${to}`, 20, y);
-    y += 4.5;
-  }
-  if (data.jobDetails?.parkingFrom || data.jobDetails?.parkingTo) {
-    doc.text(`Parken: Start ${data.jobDetails.parkingFrom || "-"} / Ziel ${data.jobDetails.parkingTo || "-"}`, 20, y);
-    y += 4.5;
-  }
-  if (data.jobDetails?.addons && data.jobDetails.addons.length > 0) {
-    doc.text(`Add-ons: ${data.jobDetails.addons.join(", ")}`, 20, y);
-    y += 4.5;
-  }
-  y += 4;
+  const facts = buildJobFacts(data).slice(0, 6);
+  doc.setFillColor(...WHITE);
+  doc.roundedRect(108, 67, 88, 36, 5, 5, "F");
+  doc.setDrawColor(...BORDER);
+  doc.roundedRect(108, 67, 88, 36, 5, 5, "S");
+  let factY = 74;
+  facts.forEach(([label, value]) => {
+    doc.setTextColor(...MUTED);
+    setBrandFont(doc, "normal");
+    doc.setFontSize(7.5);
+    doc.text(label, 114, factY);
+    setBrandFont(doc, "bold");
+    doc.setTextColor(...INK);
+    doc.text(value, 192, factY, { align: "right", maxWidth: 68 });
+    factY += 5.2;
+  });
 
+  y = 112;
+  sectionHeading(doc, "Leistungspositionen", 20, y);
+  y += 10;
   doc.setFillColor(...NAVY);
-  doc.rect(15, y, pw - 30, 8, "F");
+  doc.roundedRect(15, y, pw - 30, 8, 2, 2, "F");
   doc.setTextColor(...WHITE);
   setBrandFont(doc, "bold");
   doc.setFontSize(8);
   doc.text("Position", 20, y + 5.2);
-  doc.text("Menge", 105, y + 5.2);
-  doc.text("Einzelpreis", 130, y + 5.2);
+  doc.text("Menge", 107, y + 5.2);
+  doc.text("Einzelpreis", 132, y + 5.2);
   doc.text("Gesamt", pw - 20, y + 5.2, { align: "right" });
-  y += 10;
+  y += 11;
 
-  setBrandFont(doc, "normal");
-  let striped = false;
-  for (const item of data.items) {
-    if (y > ph - 80) {
+  data.items.forEach((item, index) => {
+    if (y > ph - 84) {
       doc.addPage();
-      y = 20;
+      drawHeader(doc, "Professionelles Angebot", "ANGEBOT", data.offerNumber);
+      y = 32;
     }
-    if (striped) {
-      doc.setFillColor(...LIGHT_BG);
-      doc.rect(15, y - 2.8, pw - 30, 7, "F");
+    if (index % 2 === 0) {
+      doc.setFillColor(...LIGHT);
+      doc.roundedRect(15, y - 2.3, pw - 30, item.description ? 10 : 6.8, 1.5, 1.5, "F");
     }
-    doc.setTextColor(...GRAY);
+
+    doc.setTextColor(...INK);
+    setBrandFont(doc, "bold");
+    doc.setFontSize(8.5);
     doc.text(item.title, 20, y + 1);
-    doc.text(String(item.quantity), 105, y + 1);
+    setBrandFont(doc, "normal");
+    doc.text(String(item.quantity), 107, y + 1);
+    doc.text(item.unitPrice === 0 && item.totalPrice === 0 ? "inklusive" : fmt(item.unitPrice), 132, y + 1);
+    doc.text(item.unitPrice === 0 && item.totalPrice === 0 ? "im Paket" : fmt(item.totalPrice), pw - 20, y + 1, { align: "right" });
 
-    const isZeroPrice = item.unitPrice === 0 && item.totalPrice === 0;
-    doc.text(isZeroPrice ? "Inklusive" : fmt(item.unitPrice), 130, y + 1);
-    doc.setTextColor(...NAVY);
-    doc.text(isZeroPrice ? "Im Paket" : fmt(item.totalPrice), pw - 20, y + 1, { align: "right" });
-
+    y += 5.2;
     if (item.description) {
-      doc.setTextColor(...GRAY);
-      doc.setFontSize(7.5);
-      doc.text(item.description, 20, y + 4.5);
-      doc.setFontSize(8);
+      doc.setTextColor(...MUTED);
+      setBrandFont(doc, "normal");
+      doc.setFontSize(7.3);
+      y = writeParagraph(doc, item.description, 20, y, pw - 48, 3.6);
     }
-    y += 7;
-    striped = !striped;
-  }
+    y += 1.8;
+  });
 
-  y += 2;
-  doc.setDrawColor(...BORDER);
-  doc.line(15, y, pw - 15, y);
-  y += 6;
-  doc.setFontSize(9);
-  doc.setTextColor(...GRAY);
-  doc.text("Zwischensumme", 20, y);
-  doc.setTextColor(...NAVY);
-  doc.text(fmt(data.subtotal), pw - 20, y, { align: "right" });
-  y += 5.5;
-  if (data.discountAmount > 0) {
-    doc.setTextColor(...GRAY);
-    doc.text("Rabatt", 20, y);
-    doc.setTextColor(180, 50, 50);
-    doc.text(`-${fmt(data.discountAmount)}`, pw - 20, y, { align: "right" });
-    y += 5.5;
-  }
-  if (data.extraFees > 0) {
-    doc.setTextColor(...GRAY);
-    doc.text("Manuelle Gebühren", 20, y);
-    doc.setTextColor(...NAVY);
-    doc.text(fmt(data.extraFees), pw - 20, y, { align: "right" });
-    y += 5.5;
-  }
-  doc.setTextColor(...GRAY);
-  doc.text("Netto", 20, y);
-  doc.setTextColor(...NAVY);
-  doc.text(fmt(data.netto), pw - 20, y, { align: "right" });
-  y += 5.5;
-  doc.setTextColor(...GRAY);
-  doc.text("MwSt. (19%)", 20, y);
-  doc.setTextColor(...NAVY);
-  doc.text(fmt(data.mwst), pw - 20, y, { align: "right" });
-  y += 7;
+  drawMoneySummary(doc, y + 2, [
+    { label: "Zwischensumme", value: fmt(data.subtotal) },
+    ...(data.discountAmount > 0 ? [{ label: "Rabatt", value: `-${fmt(data.discountAmount)}`, accent: "red" as const }] : []),
+    ...(data.extraFees > 0 ? [{ label: "Zusatzkosten", value: fmt(data.extraFees) }] : []),
+    { label: "Netto", value: fmt(data.netto) },
+    { label: "MwSt. (19%)", value: fmt(data.mwst) },
+    { label: "Gesamt", value: fmt(data.totalPrice), accent: "teal" },
+  ]);
 
-  doc.setFillColor(...TEAL);
-  doc.roundedRect(15, y - 3.5, pw - 30, 12, 3, 3, "F");
-  doc.setTextColor(...WHITE);
-  setBrandFont(doc, "bold");
-  doc.setFontSize(11.5);
-  doc.text("Gesamtbetrag", 20, y + 3.8);
-  doc.text(fmt(data.totalPrice), pw - 20, y + 3.8, { align: "right" });
-  y += 16;
-
-  doc.setTextColor(...NAVY);
-  setBrandFont(doc, "bold");
-  doc.setFontSize(9);
-  doc.text("Allgemeine Geschäftsbedingungen", 20, y);
-  y += 5;
-
-  doc.setTextColor(...GRAY);
-  setBrandFont(doc, "normal");
-  doc.setFontSize(8);
-  doc.text("Bitte beachten Sie unsere Allgemeinen Geschäftsbedingungen (AGB),", 20, y);
-  y += 4;
-  doc.text("welche diesem Angebot als separates Dokument beigefügt sind.", 20, y);
-  y += 4;
-  doc.text("Für Rückfragen stehen wir Ihnen jederzeit gerne zur Verfügung.", 20, y);
-  y += 4;
+  y += 45;
+  y = maybeAddPage(doc, y, 74);
+  sectionHeading(doc, "Vertrags- und Servicehinweise", 20, y);
+  y += 10;
+  const notes = [
+    "Dieses Angebot basiert auf den aktuell dokumentierten Leistungsdaten. Zusatzaufwand durch abweichende Objekt- oder Zugangssituationen wird nach Abstimmung nachberechnet.",
+    `Es gelten unsere AGB in Version ${SEEL_AGB_VERSION}. Die vollstaendigen Bedingungen werden als separates PDF beigefuegt und sind online unter ${CONTACT.WEBSITE_DISPLAY}/agb abrufbar.`,
+    `Stornierung: ${SEEL_CANCELLATION_RULES.map((rule) => `${rule.fee} (${rule.label})`).join(", ")}.`,
+  ];
 
   if (data.statusNote) {
-    doc.setTextColor(...GRAY);
-    doc.setFontSize(8);
-    setBrandFont(doc, "bold");
-    doc.text(`Status: ${data.statusNote}`, 20, y);
-    y += 5;
+    notes.unshift(`Status: ${data.statusNote}.`);
   }
-
   if (data.jobDetails?.estimateNote) {
-    doc.setTextColor(...GRAY);
-    doc.setFontSize(8);
-    setBrandFont(doc, "normal");
-    doc.text(data.jobDetails.estimateNote, 20, y);
-    y += 4.5;
+    notes.push(data.jobDetails.estimateNote);
+  }
+  if (data.notes) {
+    notes.push(`Kundenhinweis: ${data.notes}`);
   }
 
-  const fy = ph - 18;
-  doc.setDrawColor(...BORDER);
-  doc.line(20, fy - 3, pw - 20, fy - 3);
-  doc.setFontSize(7);
-  doc.setTextColor(...GRAY);
+  doc.setTextColor(...MUTED);
   setBrandFont(doc, "normal");
-  doc.text(
-    `${COMPANY_LEGAL.NAME} | ${COMPANY_LEGAL.ADDRESS_LINE_1} | USt-IdNr.: ${COMPANY_LEGAL.VAT_ID}`,
-    pw / 2,
-    fy, { align: "center" }
-  );
-  doc.text(
-    `Bank: ${COMPANY_BANK.BANK_NAME} | IBAN: ${COMPANY_BANK.IBAN} | BIC: ${COMPANY_BANK.BIC}`,
-    pw / 2,
-    fy + 4, { align: "center" }
-  );
-  doc.text("Die vollständigen AGB finden Sie unter: " + CONTACT.WEBSITE_DISPLAY + "/agb", pw / 2, fy + 8, { align: "center" });
+  doc.setFontSize(8.4);
+  notes.forEach((note) => {
+    y = maybeAddPage(doc, y, 36);
+    y = writeParagraph(doc, `- ${note}`, 20, y, pw - 40);
+    y += 2;
+  });
 
+  drawFooter(doc, "Angebot digital erstellt fuer SEEL Transport & Reinigung.", `Seite ${doc.getCurrentPageInfo().pageNumber}`);
   return Buffer.from(doc.output("arraybuffer"));
 }
 
-export function generateSignedContractPDF(data: ContractPDFData): Buffer {
+export async function generateSignedContractPDF(data: ContractPDFData): Promise<Buffer> {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pw = doc.internal.pageSize.getWidth();
   const ph = doc.internal.pageSize.getHeight();
   let y = 0;
 
   registerBrandFonts(doc);
-  drawBrandHeader(doc, "Dienstleistungsvertrag", "VERTRAG", data.contractNumber);
+  drawHeader(doc, "Dienstleistungsvertrag", "VERTRAG", data.contractNumber);
 
-  y = 56;
+  const [companySignature, companySeal] = await Promise.all([
+    getProcessedAssetDataUrl(signaturePath),
+    getProcessedAssetDataUrl(sealPath),
+  ]);
 
-  doc.setTextColor(...GRAY);
-  setBrandFont(doc, "normal");
-  doc.setFontSize(8);
-  doc.text(`Vertrag ${data.contractNumber} | Angebot ${data.offerNumber} | Datum: ${new Date().toLocaleDateString("de-DE")}`, 20, y);
-  y += 8;
-
-  // ── Vertragsparteien ──
-  doc.setTextColor(...NAVY);
-  setBrandFont(doc, "bold");
-  doc.setFontSize(11);
-  doc.text("Vertragsparteien", 20, y);
-  y += 7;
-
-  const boxH = 28;
-  const halfW = (pw - 45) / 2;
-  doc.setFillColor(...LIGHT_BG);
-  doc.roundedRect(15, y - 2, halfW, boxH, 2, 2, "F");
-  doc.roundedRect(20 + halfW, y - 2, halfW, boxH, 2, 2, "F");
-
-  doc.setFontSize(7);
-  doc.setTextColor(...TEAL);
-  setBrandFont(doc, "bold");
-  doc.text("AUFTRAGNEHMER", 19, y + 3);
-  doc.text("AUFTRAGGEBER", 24 + halfW, y + 3);
-
-  doc.setFontSize(8.5);
-  doc.setTextColor(...NAVY);
-  doc.text(COMPANY_LEGAL.NAME, 19, y + 9);
-  doc.text(data.customerName, 24 + halfW, y + 9);
-
-  setBrandFont(doc, "normal");
-  doc.setTextColor(...GRAY);
-  doc.setFontSize(7.5);
-  doc.text(COMPANY_LEGAL.ADDRESS_LINE_1, 19, y + 13.5);
-  doc.text(CONTACT.EMAIL, 19, y + 17.5);
-  doc.text(CONTACT.PRIMARY_PHONE_DISPLAY, 19, y + 21.5);
-
-  doc.text(data.customerEmail, 24 + halfW, y + 13.5);
-  if (data.customerCompany) doc.text(data.customerCompany, 24 + halfW, y + 17.5);
-
-  y += boxH + 6;
-
-  // ── Leistungsumfang ──
-  doc.setTextColor(...NAVY);
-  setBrandFont(doc, "bold");
-  doc.setFontSize(11);
-  doc.text("§1 Leistungsumfang", 20, y);
-  y += 6;
-
-  doc.setTextColor(...GRAY);
-  setBrandFont(doc, "normal");
-  doc.setFontSize(8.5);
-  doc.text(`Leistung: ${data.serviceSummary}`, 20, y);
-  y += 4.5;
-  if (data.serviceDate) { doc.text(`Termin: ${data.serviceDate}${data.timeSlot ? ` (${data.timeSlot})` : ""}`, 20, y); y += 4.5; }
-  if (data.fromAddress) { doc.text(`Von: ${data.fromAddress}`, 20, y); y += 4.5; }
-  if (data.toAddress) { doc.text(`Nach: ${data.toAddress}`, 20, y); y += 4.5; }
-  y += 3;
-
-  if (data.items && data.items.length > 0) {
-    doc.setFillColor(...NAVY);
-    doc.rect(15, y, pw - 30, 7, "F");
-    doc.setTextColor(...WHITE);
-    setBrandFont(doc, "bold");
-    doc.setFontSize(7.5);
-    doc.text("Position", 19, y + 4.8);
-    doc.text("Menge", 110, y + 4.8);
-    doc.text("Preis", 135, y + 4.8);
-    doc.text("Gesamt", pw - 20, y + 4.8, { align: "right" });
-    y += 9;
-
-    setBrandFont(doc, "normal");
-    let striped = false;
-    for (const item of data.items) {
-      if (y > ph - 80) { doc.addPage(); y = 20; }
-      if (striped) { doc.setFillColor(...LIGHT_BG); doc.rect(15, y - 2.5, pw - 30, 6.5, "F"); }
-      doc.setTextColor(...GRAY);
-      doc.setFontSize(8);
-      doc.text(item.title, 19, y + 1);
-      doc.text(String(item.quantity), 110, y + 1);
-      doc.text(fmt(item.unitPrice), 135, y + 1);
-      doc.setTextColor(...NAVY);
-      doc.text(fmt(item.totalPrice), pw - 20, y + 1, { align: "right" });
-      y += 6.5;
-      striped = !striped;
-    }
-    y += 2;
-  }
-
-  // ── Vergütung ──
-  doc.setDrawColor(...BORDER);
-  doc.line(15, y, pw - 15, y);
-  y += 5;
-
-  doc.setTextColor(...NAVY);
-  setBrandFont(doc, "bold");
-  doc.setFontSize(10);
-  doc.text("§2 Vergütung", 20, y);
-  y += 6;
-
-  doc.setFontSize(8.5);
-  setBrandFont(doc, "normal");
-  doc.setTextColor(...GRAY);
-  if (data.subtotal != null) { doc.text("Zwischensumme", 20, y); doc.text(fmt(data.subtotal), pw - 20, y, { align: "right" }); y += 4.5; }
-  if (data.discountAmount && data.discountAmount > 0) { doc.text("Rabatt", 20, y); doc.setTextColor(180, 50, 50); doc.text(`-${fmt(data.discountAmount)}`, pw - 20, y, { align: "right" }); doc.setTextColor(...GRAY); y += 4.5; }
-  doc.text("Netto", 20, y); doc.setTextColor(...NAVY); doc.text(fmt(data.netto), pw - 20, y, { align: "right" }); y += 4.5;
-  doc.setTextColor(...GRAY); doc.text("MwSt. (19%)", 20, y); doc.setTextColor(...NAVY); doc.text(fmt(data.mwst), pw - 20, y, { align: "right" }); y += 6;
-
-  doc.setFillColor(...TEAL);
-  doc.roundedRect(15, y - 3, pw - 30, 11, 2, 2, "F");
-  doc.setTextColor(...WHITE);
-  setBrandFont(doc, "bold");
-  doc.setFontSize(11);
-  doc.text("Gesamtbetrag (brutto)", 20, y + 4);
-  doc.text(fmt(data.totalPrice), pw - 20, y + 4, { align: "right" });
+  y = 53;
+  drawMetaRow(doc, "Angebot", data.offerNumber, "Signiert am", data.signedAt, y);
   y += 16;
 
-  // ── Bedingungen ──
-  if (y > ph - 90) { doc.addPage(); y = 20; }
-  doc.setTextColor(...NAVY);
+  doc.setFillColor(...LIGHT);
+  doc.roundedRect(14, y - 2, pw - 28, 30, 5, 5, "F");
+  sectionHeading(doc, "Vertragsparteien", 20, y);
+  y += 8;
+
+  doc.setTextColor(...INK);
   setBrandFont(doc, "bold");
-  doc.setFontSize(10);
-  doc.text("§3 Vertragsbedingungen", 20, y);
-  y += 5;
-  doc.setTextColor(...GRAY);
-  setBrandFont(doc, "normal");
-  doc.setFontSize(7.5);
-  const terms = [
-    "Die Zahlung erfolgt gemäß den vereinbarten Zahlungsbedingungen (14 Tage nach Rechnungsstellung).",
-    "Der Auftraggeber akzeptiert die AGB der SEEL Transport & Reinigung.",
-    "Stornierungsgebühren: 7+ Tage: 20%, 3-6 Tage: 40%, 24-48h: 60%, unter 24h: 80% des Auftragswertes.",
-    "Es gilt deutsches Recht. Gerichtsstand ist Berlin, soweit gesetzlich zulässig.",
-  ];
-  terms.forEach(t => { doc.text(t, 20, y); y += 4; });
-  y += 6;
-
-  // ── Digitale Signatur ──
-  if (y > ph - 65) { doc.addPage(); y = 20; }
-  doc.setTextColor(...NAVY);
+  doc.setFontSize(10.5);
+  doc.text("Auftragnehmer", 20, y);
+  doc.text("Auftraggeber", pw / 2 + 4, y);
+  y += 5.5;
   setBrandFont(doc, "bold");
-  doc.setFontSize(10);
-  doc.text("§4 Digitale Signatur", 20, y);
-  y += 6;
-  doc.setTextColor(...GRAY);
+  doc.text(COMPANY_LEGAL.NAME, 20, y);
+  doc.text(data.customerName, pw / 2 + 4, y);
+  y += 4.8;
   setBrandFont(doc, "normal");
-  doc.setFontSize(8.5);
-  doc.text(`Unterzeichnet von: ${data.signedByName}`, 20, y); y += 4.5;
-  doc.text(`Zeitpunkt: ${data.signedAt}`, 20, y); y += 4.5;
-  if (data.ipAddress) { doc.text(`IP-Adresse: ${data.ipAddress}`, 20, y); y += 4.5; }
-  doc.text("Rechtsverbindliche digitale Unterschrift nach eIDAS-Verordnung", 20, y); y += 6;
-
-  doc.setDrawColor(...NAVY);
-  doc.setLineWidth(0.3);
-  doc.roundedRect(18, y, 100, 32, 3, 3, "S");
-  doc.setFontSize(6.5);
-  doc.setTextColor(...GRAY);
-  doc.text("Unterschrift des Auftraggebers:", 20, y + 4);
-
-  if (data.signatureDataUrl) {
-    try { doc.addImage(data.signatureDataUrl, "PNG", 22, y + 6, 92, 22); } catch { doc.text("Unterschrift konnte nicht dargestellt werden", 30, y + 18); }
-  } else {
-    doc.setFontSize(14);
-    doc.setTextColor(...NAVY);
-    doc.text(data.signedByName, 30, y + 22);
+  doc.setTextColor(...MUTED);
+  doc.setFontSize(8.2);
+  doc.text(COMPANY_LEGAL.ADDRESS_LINE_1, 20, y);
+  doc.text(data.customerEmail, pw / 2 + 4, y);
+  y += 4.2;
+  doc.text(`${CONTACT.EMAIL} | ${CONTACT.PRIMARY_PHONE_DISPLAY}`, 20, y);
+  if (data.customerCompany) {
+    doc.text(data.customerCompany, pw / 2 + 4, y);
   }
 
-  doc.setDrawColor(...NAVY);
-  doc.roundedRect(125, y, 68, 32, 3, 3, "S");
-  doc.setFontSize(6.5);
-  doc.setTextColor(...GRAY);
-  doc.text("Auftragnehmer:", 127, y + 4);
-  doc.setFontSize(9);
-  doc.setTextColor(...NAVY);
-  setBrandFont(doc, "bold");
-  doc.text(COMPANY_LEGAL.NAME, 129, y + 14);
-  setBrandFont(doc, "normal");
-  doc.setFontSize(7.5);
-  doc.setTextColor(...GRAY);
-  doc.text("Autorisierter Vertreter", 129, y + 20);
-  doc.text(`Berlin, ${new Date().toLocaleDateString("de-DE")}`, 129, y + 25);
+  y = 98;
+  sectionHeading(doc, "Leistungsbeschreibung", 20, y);
+  y += 10;
+  const performanceFacts = [
+    `Leistungsart: ${data.serviceSummary}`,
+    data.serviceDate ? `Termin: ${data.serviceDate}${data.timeSlot ? ` (${data.timeSlot})` : ""}` : null,
+    data.fromAddress ? `Startadresse: ${data.fromAddress}` : null,
+    data.toAddress ? `Zieladresse: ${data.toAddress}` : null,
+  ].filter(Boolean) as string[];
 
-  // ── Footer ──
-  const fy = ph - 22;
+  doc.setTextColor(...MUTED);
+  setBrandFont(doc, "normal");
+  doc.setFontSize(8.8);
+  performanceFacts.forEach((line) => {
+    y = writeParagraph(doc, line, 20, y, pw - 40);
+    y += 1.5;
+  });
+
+  if (data.items?.length) {
+    y += 3;
+    doc.setFillColor(...NAVY);
+    doc.roundedRect(15, y, pw - 30, 8, 2, 2, "F");
+    doc.setTextColor(...WHITE);
+    setBrandFont(doc, "bold");
+    doc.setFontSize(8);
+    doc.text("Position", 20, y + 5.2);
+    doc.text("Menge", 106, y + 5.2);
+    doc.text("Preis", 132, y + 5.2);
+    doc.text("Gesamt", pw - 20, y + 5.2, { align: "right" });
+    y += 10.8;
+
+    data.items.forEach((item, index) => {
+      if (y > ph - 110) {
+        doc.addPage();
+        drawHeader(doc, "Dienstleistungsvertrag", "VERTRAG", data.contractNumber);
+        y = 28;
+      }
+
+      if (index % 2 === 0) {
+        doc.setFillColor(...LIGHT);
+        doc.roundedRect(15, y - 2.2, pw - 30, item.description ? 10 : 6.6, 1.5, 1.5, "F");
+      }
+
+      doc.setTextColor(...INK);
+      setBrandFont(doc, "bold");
+      doc.setFontSize(8.4);
+      doc.text(item.title, 20, y + 1);
+      setBrandFont(doc, "normal");
+      doc.text(String(item.quantity), 106, y + 1);
+      doc.text(fmt(item.unitPrice), 132, y + 1);
+      doc.text(fmt(item.totalPrice), pw - 20, y + 1, { align: "right" });
+      y += 5.1;
+
+      if (item.description) {
+        doc.setTextColor(...MUTED);
+        doc.setFontSize(7.2);
+        y = writeParagraph(doc, item.description, 20, y, pw - 45, 3.6);
+      }
+      y += 1.6;
+    });
+  }
+
+  y += 4;
+  drawMoneySummary(doc, y + 1, [
+    ...(typeof data.subtotal === "number" ? [{ label: "Zwischensumme", value: fmt(data.subtotal) }] : []),
+    ...(data.discountAmount ? [{ label: "Rabatt", value: `-${fmt(data.discountAmount)}`, accent: "red" as const }] : []),
+    ...(data.extraFees ? [{ label: "Zusatzkosten", value: fmt(data.extraFees) }] : []),
+    { label: "Netto", value: fmt(data.netto) },
+    { label: "MwSt. (19%)", value: fmt(data.mwst) },
+    { label: "Gesamt", value: fmt(data.totalPrice), accent: "teal" },
+  ]);
+
+  y += 46;
+  y = maybeAddPage(doc, y, 98);
+  sectionHeading(doc, "Vertragsbedingungen", 20, y);
+  y += 10;
+  doc.setTextColor(...MUTED);
+  setBrandFont(doc, "normal");
+  doc.setFontSize(8.5);
+  SEEL_CONTRACT_HIGHLIGHTS.forEach((line) => {
+    y = writeParagraph(doc, `- ${line}`, 20, y, pw - 40);
+    y += 1.8;
+  });
+
+  y += 3;
+  doc.setFillColor(240, 249, 255);
+  doc.roundedRect(15, y - 2, pw - 30, 18, 4, 4, "F");
+  doc.setDrawColor(191, 219, 254);
+  doc.roundedRect(15, y - 2, pw - 30, 18, 4, 4, "S");
+  doc.setTextColor(...INK);
+  setBrandFont(doc, "bold");
+  doc.setFontSize(8.7);
+  doc.text(`Digitale Signatur des Auftraggebers: ${data.signedByName}`, 20, y + 4);
+  setBrandFont(doc, "normal");
+  doc.setTextColor(...MUTED);
+  doc.setFontSize(8);
+  doc.text(`Zeitpunkt: ${data.signedAt}`, 20, y + 9);
+  if (data.ipAddress) {
+    doc.text(`IP-Adresse: ${data.ipAddress}`, 20, y + 13.5);
+  }
+
+  y += 24;
+  y = maybeAddPage(doc, y, 74);
+  sectionHeading(doc, "Unterschriften", 20, y);
+  y += 10;
+
+  const boxY = y;
+  const boxWidth = 84;
+  const rightX = pw - 20 - boxWidth;
   doc.setDrawColor(...BORDER);
-  doc.line(15, fy - 6, pw - 15, fy - 6);
-  doc.setFontSize(6.5);
-  doc.setTextColor(...GRAY);
-  doc.text(`${COMPANY_LEGAL.NAME} | ${COMPANY_LEGAL.ADDRESS_LINE_1} | USt-IdNr.: ${COMPANY_LEGAL.VAT_ID}`, pw / 2, fy - 1, { align: "center" });
-  doc.text(`Bank: ${COMPANY_BANK.BANK_NAME} | IBAN: ${COMPANY_BANK.IBAN} | BIC: ${COMPANY_BANK.BIC}`, pw / 2, fy + 3, { align: "center" });
-  doc.text(`${CONTACT.EMAIL} | ${CONTACT.PRIMARY_PHONE_DISPLAY} | ${CONTACT.WEBSITE_DISPLAY}`, pw / 2, fy + 7, { align: "center" });
+  doc.roundedRect(15, boxY, boxWidth, 42, 4, 4, "S");
+  doc.roundedRect(rightX, boxY, boxWidth, 42, 4, 4, "S");
+
+  setBrandFont(doc, "bold");
+  doc.setFontSize(8.8);
+  doc.setTextColor(...NAVY);
+  doc.text("Auftraggeber", 20, boxY + 6);
+  doc.text("SEEL autorisiert", rightX + 5, boxY + 6);
+
+  setBrandFont(doc, "normal");
+  doc.setTextColor(...MUTED);
+  doc.setFontSize(7.4);
+  doc.text(data.signedByName, 20, boxY + 11);
+  doc.text(data.signedAt, 20, boxY + 15.5);
+  doc.text(`Berlin, ${new Date().toLocaleDateString("de-DE")}`, rightX + 5, boxY + 11);
+  doc.text("Firmenunterschrift und Stempel", rightX + 5, boxY + 15.5);
+
+  if (data.signatureDataUrl) {
+    addImageIfPossible(doc, data.signatureDataUrl, "PNG", 22, boxY + 18, 70, 15);
+  } else {
+    setBrandFont(doc, "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(...NAVY);
+    doc.text(data.signedByName, 24, boxY + 27);
+  }
+
+  addImageIfPossible(doc, companySignature, "PNG", rightX + 5, boxY + 17, 56, 16);
+  addImageIfPossible(doc, companySeal, "PNG", rightX + 54, boxY + 15, 22, 22);
+
+  doc.setFillColor(...SUCCESS);
+  doc.roundedRect(rightX + 4, boxY + 33, boxWidth - 8, 6, 2, 2, "F");
+  doc.setTextColor(...WHITE);
+  setBrandFont(doc, "bold");
+  doc.setFontSize(7.5);
+  doc.text(`Ausgefuehrt am ${new Date().toLocaleDateString("de-DE")}`, rightX + boxWidth / 2, boxY + 37.1, { align: "center" });
+
+  drawFooter(
+    doc,
+    `AGB Version ${SEEL_AGB_VERSION} | ${CONTACT.WEBSITE_DISPLAY}/agb`,
+    `Seite ${doc.getCurrentPageInfo().pageNumber}`
+  );
 
   return Buffer.from(doc.output("arraybuffer"));
 }
@@ -885,122 +822,80 @@ export function generateInvoicePDF(data: {
 }): Buffer {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pw = doc.internal.pageSize.getWidth();
-  const ph = doc.internal.pageSize.getHeight();
   let y = 0;
 
   registerBrandFonts(doc);
-  drawBrandHeader(doc, "Professionelle Rechnung", "RECHNUNG", data.invoiceNumber);
+  drawHeader(doc, "Rechnung", "RECHNUNG", data.invoiceNumber);
 
-  y = 58;
+  y = 54;
+  drawMetaRow(doc, "Rechnungsdatum", data.date, "Faellig", data.dueDate, y);
+  y += 16;
 
-  doc.setTextColor(...GRAY);
-  doc.setFontSize(8);
-  setBrandFont(doc, "normal");
-  doc.text(`Rechnungsdatum: ${new Date().toLocaleDateString("de-DE")} |  Fällig: ${data.dueDate} |  Buchung: ${data.orderNumber}`, 20, y);
-  y += 12;
-
-  doc.setTextColor(...NAVY);
-  doc.setFontSize(11);
+  sectionHeading(doc, "Rechnungsempfaenger", 20, y);
+  y += 10;
+  doc.setTextColor(...INK);
   setBrandFont(doc, "bold");
-  doc.text("Rechnungsempfaenger", 20, y);
-  y += 7;
-  doc.setFontSize(9);
-  setBrandFont(doc, "normal");
-  doc.setTextColor(...GRAY);
+  doc.setFontSize(11);
   doc.text(data.customerName, 20, y);
   y += 5;
+  setBrandFont(doc, "normal");
+  doc.setTextColor(...MUTED);
+  doc.setFontSize(8.8);
   if (data.customerCompany) {
     doc.text(data.customerCompany, 20, y);
-    y += 5;
+    y += 4.5;
   }
   doc.text(data.customerEmail, 20, y);
-  y += 10;
+  y += 9;
 
-  // Table
+  sectionHeading(doc, "Leistungen", 20, y);
+  y += 10;
   doc.setFillColor(...NAVY);
-  doc.rect(15, y, pw - 30, 8, "F");
+  doc.roundedRect(15, y, pw - 30, 8, 2, 2, "F");
   doc.setTextColor(...WHITE);
-  doc.setFontSize(8);
   setBrandFont(doc, "bold");
-  doc.text("Beschreibung", 20, y + 5.5);
-  doc.text("Betrag", pw - 20, y + 5.5, { align: "right" });
-  y += 10;
+  doc.setFontSize(8);
+  doc.text("Beschreibung", 20, y + 5.2);
+  doc.text("Betrag", pw - 20, y + 5.2, { align: "right" });
+  y += 10.5;
 
-  setBrandFont(doc, "normal");
-  data.items.forEach((item, i) => {
-    if (i % 2 === 0) {
-      doc.setFillColor(248, 249, 251);
-      doc.rect(15, y - 3, pw - 30, 7, "F");
+  data.items.forEach((item, index) => {
+    if (index % 2 === 0) {
+      doc.setFillColor(...LIGHT);
+      doc.roundedRect(15, y - 2.2, pw - 30, 6.6, 1.5, 1.5, "F");
     }
-    doc.setTextColor(...GRAY);
+    doc.setTextColor(...INK);
+    setBrandFont(doc, "normal");
     doc.text(item.description, 20, y + 1);
-    doc.setTextColor(...NAVY);
     doc.text(fmt(item.amount), pw - 20, y + 1, { align: "right" });
-    y += 7;
+    y += 6.2;
   });
 
-  y += 4;
-  doc.setDrawColor(...BORDER);
-  doc.line(15, y, pw - 15, y);
-  y += 6;
+  drawMoneySummary(doc, y + 3, [
+    { label: "Netto", value: fmt(data.netto) },
+    { label: "MwSt. (19%)", value: fmt(data.mwst) },
+    { label: "Rechnungsbetrag", value: fmt(data.total), accent: "teal" },
+  ]);
 
-  doc.setTextColor(...GRAY);
-  doc.setFontSize(9);
-  doc.text("Netto", 20, y);
-  doc.setTextColor(...NAVY);
-  doc.text(fmt(data.netto), pw - 20, y, { align: "right" });
-  y += 6;
-  doc.setTextColor(...GRAY);
-  doc.text("MwSt. (19%)", 20, y);
-  doc.setTextColor(...NAVY);
-  doc.text(fmt(data.mwst), pw - 20, y, { align: "right" });
-  y += 8;
-
-  doc.setFillColor(...TEAL);
-  doc.roundedRect(15, y - 4, pw - 30, 14, 3, 3, "F");
-  doc.setTextColor(...WHITE);
-  doc.setFontSize(12);
-  setBrandFont(doc, "bold");
-  doc.text("Rechnungsbetrag", 20, y + 5);
-  doc.text(fmt(data.total), pw - 20, y + 5, { align: "right" });
-  y += 20;
-
-  doc.setTextColor(...NAVY);
-  doc.setFontSize(9);
-  setBrandFont(doc, "bold");
-  doc.text("Zahlungsinformationen", 20, y);
-  y += 5;
+  y += 36;
+  sectionHeading(doc, "Zahlungsinformationen", 20, y);
+  y += 9;
+  doc.setTextColor(...MUTED);
   setBrandFont(doc, "normal");
-  doc.setTextColor(...GRAY);
-  doc.setFontSize(8);
-  const bankLines = [
+  doc.setFontSize(8.4);
+  [
     `Zahlungsziel: ${data.dueDate}`,
     `Kontoinhaber: ${COMPANY_BANK.ACCOUNT_HOLDER}`,
     `Bank: ${COMPANY_BANK.BANK_NAME}`,
     `IBAN: ${COMPANY_BANK.IBAN}`,
     `BIC: ${COMPANY_BANK.BIC}`,
     `Verwendungszweck: ${data.invoiceNumber}`,
-  ];
-  bankLines.forEach(l => {
-    doc.text(l, 20, y);
-    y += 4;
+  ].forEach((line) => {
+    doc.text(line, 20, y);
+    y += 4.6;
   });
 
-  const fy = ph - 22;
-  doc.setDrawColor(...BORDER);
-  doc.line(20, fy - 5, pw - 20, fy - 5);
-  doc.setFontSize(7);
-  doc.setTextColor(...GRAY);
-  doc.text(
-    `${COMPANY_LEGAL.NAME} | ${COMPANY_LEGAL.ADDRESS_LINE_1} | USt-IdNr.: ${COMPANY_LEGAL.VAT_ID}`,
-    pw / 2, fy, { align: "center" }
-  );
-  doc.text(
-    `Bank: ${COMPANY_BANK.BANK_NAME} | IBAN: ${COMPANY_BANK.IBAN} | BIC: ${COMPANY_BANK.BIC}`,
-    pw / 2, fy + 4, { align: "center" }
-  );
-  doc.text(`${CONTACT.EMAIL} | ${CONTACT.PRIMARY_PHONE_DISPLAY}`, pw / 2, fy + 8, { align: "center" });
-
+  drawFooter(doc, `Leistung: ${data.service}`, `Auftrag ${data.orderNumber}`);
   return Buffer.from(doc.output("arraybuffer"));
 }
 
@@ -1008,54 +903,60 @@ export function generateAgbPDF(): Buffer {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pw = doc.internal.pageSize.getWidth();
   const ph = doc.internal.pageSize.getHeight();
+  let y = 0;
 
   registerBrandFonts(doc);
-  drawBrandHeader(doc, "Allgemeine Geschaeftsbedingungen", "AGB", "v1.0");
+  drawHeader(doc, "Allgemeine Geschaeftsbedingungen", "AGB", SEEL_AGB_VERSION);
 
-  let y = 56;
+  y = 53;
+  doc.setTextColor(...MUTED);
+  setBrandFont(doc, "normal");
+  doc.setFontSize(8.5);
+  doc.text("Verbindliche Vertragsbedingungen fuer Transport, Reinigung und begleitende Dienstleistungen.", 20, y);
 
+  y += 10;
+  doc.setFillColor(240, 249, 255);
+  doc.roundedRect(15, y - 2.5, pw - 30, 18, 5, 5, "F");
+  doc.setDrawColor(186, 230, 253);
+  doc.roundedRect(15, y - 2.5, pw - 30, 18, 5, 5, "S");
   setBrandFont(doc, "bold");
-  doc.setTextColor(...NAVY);
-  doc.setFontSize(14);
-  doc.text("Allgemeine Geschaeftsbedingungen (AGB)", 20, y);
-  y += 7;
-  doc.setFontSize(10);
-  setBrandFont(doc, "normal");
-  doc.setTextColor(...GRAY);
-  doc.text("SEEL Transport & Reinigung", 20, y);
-  y += 8;
-
-  const paragraphs = [
-    "1. Geltungsbereich: Diese AGB gelten für alle Leistungen von SEEL Transport & Reinigung gegenüber Verbraucherinnen, Verbrauchern und Unternehmen.",
-    "2. Vertragsschluss: Ein Vertrag kommt erst durch schriftliche Freigabe des Angebots und anschließende Vertragsbestätigung zustande.",
-    "3. Leistungsumfang: Maßgeblich sind die Positionen im freigegebenen Angebot einschließlich dokumentierter Zusatzleistungen.",
-    "4. Preise und Zahlung: Alle Preise verstehen sich in Euro. Sofern nicht anders ausgewiesen, enthalten sie 19 % MwSt.",
-    "5. Stornierung: Stornierungsbedingungen gemäß AGB: bis 7 Tage vor Termin 20 %, 6–3 Tage 40 %, 48–24 Stunden 60 %, unter 24 Stunden 80 % des Auftragswerts.",
-    "6. Haftung: Es gelten die gesetzlichen Haftungsregelungen; bei Umzügen zusätzlich die einschlägigen Bestimmungen des HGB.",
-    "7. Höhere Gewalt: Bei höherer Gewalt oder behördlichen Maßnahmen können Termine angepasst werden, ohne dass Schadensersatzansprüche entstehen.",
-    "8. Datenschutz: Es gelten die Datenschutzhinweise auf der Website.",
-    "9. Schlussbestimmungen: Es gilt deutsches Recht. Gerichtsstand ist, soweit zulaessig, Deutschland.",
-  ];
-
-  setBrandFont(doc, "normal");
   doc.setFontSize(9);
-  for (const p of paragraphs) {
-    const lines = doc.splitTextToSize(p, pw - 40);
-    if (y + lines.length * 4 > ph - 30) {
+  doc.setTextColor(...NAVY);
+  doc.text("Stornierungsstaffel", 20, y + 2);
+  setBrandFont(doc, "normal");
+  doc.setTextColor(...MUTED);
+  doc.setFontSize(7.5);
+  doc.text(SEEL_CANCELLATION_RULES.map((rule) => `${rule.fee}: ${rule.label}`).join(" | "), 20, y + 8);
+  y += 24;
+
+  SEEL_AGB_SECTIONS.forEach((section) => {
+    const estimatedHeight = 10 + section.paragraphs.length * 11;
+    if (y > ph - estimatedHeight) {
       doc.addPage();
-      y = 20;
+      drawHeader(doc, "Allgemeine Geschaeftsbedingungen", "AGB", SEEL_AGB_VERSION);
+      y = 28;
     }
-    doc.text(lines, 20, y);
-    y += lines.length * 4 + 4;
-  }
 
-  doc.setFontSize(8);
-  doc.setTextColor(...GRAY);
-  doc.text(
-    `${COMPANY_LEGAL.NAME} | USt-IdNr.: ${COMPANY_LEGAL.VAT_ID} | ${COMPANY_BANK.BANK_NAME} | IBAN ${COMPANY_BANK.IBAN}`,
-    pw / 2,
-    ph - 10, { align: "center" }
-  );
+    doc.setFillColor(...WHITE);
+    doc.roundedRect(15, y - 2, pw - 30, Math.max(18, section.paragraphs.length * 11 + 6), 4, 4, "F");
+    doc.setDrawColor(...BORDER);
+    doc.roundedRect(15, y - 2, pw - 30, Math.max(18, section.paragraphs.length * 11 + 6), 4, 4, "S");
+    setBrandFont(doc, "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(...NAVY);
+    doc.text(section.title, 20, y + 3);
+    y += 9;
 
+    setBrandFont(doc, "normal");
+    doc.setFontSize(8.2);
+    doc.setTextColor(...MUTED);
+    section.paragraphs.forEach((paragraph) => {
+      y = writeParagraph(doc, paragraph, 20, y, pw - 40, 4.2);
+      y += 2.5;
+    });
+    y += 3;
+  });
+
+  drawFooter(doc, `${CONTACT.WEBSITE_DISPLAY}/agb`, `Seite ${doc.getCurrentPageInfo().pageNumber}`);
   return Buffer.from(doc.output("arraybuffer"));
 }

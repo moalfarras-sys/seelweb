@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
+import { toContractSummary } from "@/lib/contracts";
 import { prisma } from "@/lib/db";
 import { createOfferVersion } from "@/lib/workflow";
 
@@ -20,14 +21,23 @@ export async function GET(_req: NextRequest, { params }: Params) {
         order: { include: { fromAddress: true, toAddress: true, service: true } },
         items: { orderBy: { position: "asc" } },
         versions: { orderBy: { versionNo: "desc" }, take: 10 },
-        contracts: true,
+        contracts: { orderBy: { createdAt: "desc" } },
         communications: { orderBy: { createdAt: "desc" }, take: 50 },
       },
     });
     if (!offer) {
       return NextResponse.json({ error: "Angebot nicht gefunden" }, { status: 404 });
     }
-    return NextResponse.json(offer);
+    return NextResponse.json({
+      ...offer,
+      contracts: offer.contracts.map((contract) =>
+        toContractSummary({
+          ...contract,
+          signedByName: contract.signedByName,
+          createdAt: contract.createdAt,
+        })
+      ),
+    });
   } catch (error) {
     console.error("GET /api/admin/angebote/[id] error:", error);
     return NextResponse.json({ error: "Interner Serverfehler" }, { status: 500 });

@@ -167,7 +167,7 @@ export async function GET() {
           if (contract.signedPdfBase64) {
             contractPdf = Buffer.from(contract.signedPdfBase64, "base64");
           } else {
-            contractPdf = generateSignedContractPDF({
+            contractPdf = await generateSignedContractPDF({
               contractNumber: contract.contractNumber,
               offerNumber: offer.offerNumber,
               customerName: order.customer.name,
@@ -290,4 +290,3 @@ export async function GET() {
     return NextResponse.json({ error: "Export fehlgeschlagen" }, { status: 500 });
   }
 }
-

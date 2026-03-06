@@ -12,6 +12,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     const contract = await prisma.contract.findUnique({
       where: { token },
       include: {
+        signatures: { orderBy: { signedAt: "desc" }, take: 1 },
         customer: true,
         offer: {
           include: {
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     if (contract.signedPdfBase64) {
       pdfBuffer = Buffer.from(contract.signedPdfBase64, "base64");
     } else {
-      pdfBuffer = generateSignedContractPDF({
+      pdfBuffer = await generateSignedContractPDF({
         contractNumber: contract.contractNumber,
         offerNumber: contract.offer.offerNumber,
         customerName: contract.customer.name,
@@ -75,7 +76,7 @@ export async function GET(req: NextRequest, { params }: Params) {
         signedByName: contract.signedByName || "Nicht unterschrieben",
         signedAt: contract.signedAt?.toLocaleString("de-DE") || "Nicht unterschrieben",
         ipAddress: contract.signedByIp,
-        signatureDataUrl: null,
+        signatureDataUrl: contract.signatures[0]?.imageDataUrl ?? null,
       });
     }
 
@@ -90,4 +91,3 @@ export async function GET(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Interner Serverfehler" }, { status: 500 });
   }
 }
-
