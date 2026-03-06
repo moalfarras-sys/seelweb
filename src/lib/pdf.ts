@@ -962,57 +962,135 @@ export function generateAgbPDF(): Buffer {
   let y = 0;
 
   registerBrandFonts(doc);
-  drawHeader(doc, "Allgemeine Geschaeftsbedingungen", "AGB", SEEL_AGB_VERSION);
+  const drawAgbHeader = (firstPage: boolean) => {
+    drawHeader(doc, "Allgemeine Geschaeftsbedingungen", "AGB", SEEL_AGB_VERSION);
+    y = 53;
 
-  y = 53;
-  doc.setTextColor(...MUTED);
-  setBrandFont(doc, "normal");
-  doc.setFontSize(8.5);
-  doc.text("Verbindliche Vertragsbedingungen fuer Transport, Reinigung und begleitende Dienstleistungen.", 20, y);
+    if (firstPage) {
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(15, y - 2, pw - 30, 34, 7, 7, "F");
+      doc.setDrawColor(...BORDER);
+      doc.roundedRect(15, y - 2, pw - 30, 34, 7, 7, "S");
 
-  y += 10;
-  doc.setFillColor(240, 249, 255);
-  doc.roundedRect(15, y - 2.5, pw - 30, 18, 5, 5, "F");
-  doc.setDrawColor(186, 230, 253);
-  doc.roundedRect(15, y - 2.5, pw - 30, 18, 5, 5, "S");
-  setBrandFont(doc, "bold");
-  doc.setFontSize(9);
-  doc.setTextColor(...NAVY);
-  doc.text("Stornierungsstaffel", 20, y + 2);
-  setBrandFont(doc, "normal");
-  doc.setTextColor(...MUTED);
-  doc.setFontSize(7.5);
-  doc.text(SEEL_CANCELLATION_RULES.map((rule) => `${rule.fee}: ${rule.label}`).join(" | "), 20, y + 8);
-  y += 24;
+      setBrandFont(doc, "bold");
+      doc.setFontSize(12.5);
+      doc.setTextColor(...NAVY);
+      doc.text("Vertragsgrundlage fuer Transport, Reinigung und Zusatzleistungen", 20, y + 5);
 
-  SEEL_AGB_SECTIONS.forEach((section) => {
-    const estimatedHeight = 10 + section.paragraphs.length * 11;
-    if (y > ph - estimatedHeight) {
+      setBrandFont(doc, "normal");
+      doc.setTextColor(...MUTED);
+      doc.setFontSize(8.8);
+      const intro = doc.splitTextToSize(
+        "Diese AGB definieren den verbindlichen rechtlichen Rahmen fuer freigegebene Angebote, digitale Vertragsabschluesse, Einsatzplanung, Stornierungen, Haftung und Datenschutz bei SEEL Transport & Reinigung.",
+        pw - 48,
+      );
+      doc.text(intro, 20, y + 12);
+
+      doc.setFillColor(241, 245, 249);
+      doc.roundedRect(pw - 62, y + 2, 37, 18, 5, 5, "F");
+      setBrandFont(doc, "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(...NAVY);
+      doc.text("Dokumentenstand", pw - 43.5, y + 8, { align: "center" });
+      doc.setFontSize(10);
+      doc.text("Maerz 2026", pw - 43.5, y + 14, { align: "center" });
+
+      y += 42;
+
+      setBrandFont(doc, "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(...NAVY);
+      doc.text("Stornierungsstaffel", 20, y);
+
+      const cardY = y + 5;
+      const cardW = (pw - 36) / 2;
+      const cardPositions = [
+        { x: 15, y: cardY },
+        { x: 19 + cardW, y: cardY },
+        { x: 15, y: cardY + 21 },
+        { x: 19 + cardW, y: cardY + 21 },
+      ];
+
+      SEEL_CANCELLATION_RULES.forEach((rule, index) => {
+        const pos = cardPositions[index];
+        doc.setFillColor(index < 2 ? 240 : 248, index < 2 ? 249 : 250, 255);
+        doc.roundedRect(pos.x, pos.y, cardW, 16, 5, 5, "F");
+        doc.setDrawColor(...BORDER);
+        doc.roundedRect(pos.x, pos.y, cardW, 16, 5, 5, "S");
+        setBrandFont(doc, "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(...TEAL);
+        doc.text(rule.fee, pos.x + 4, pos.y + 6.5);
+        setBrandFont(doc, "normal");
+        doc.setFontSize(7.6);
+        doc.setTextColor(...MUTED);
+        const ruleLines = doc.splitTextToSize(rule.label, cardW - 8);
+        doc.text(ruleLines, pos.x + 4, pos.y + 11);
+      });
+
+      y = cardY + 44;
+    } else {
+      doc.setFillColor(...LIGHT);
+      doc.roundedRect(15, y - 2, pw - 30, 12, 5, 5, "F");
+      doc.setDrawColor(...BORDER);
+      doc.roundedRect(15, y - 2, pw - 30, 12, 5, 5, "S");
+      setBrandFont(doc, "normal");
+      doc.setFontSize(8.2);
+      doc.setTextColor(...MUTED);
+      doc.text("Fortsetzung der Allgemeinen Geschaeftsbedingungen", 20, y + 3);
+      y += 16;
+    }
+  };
+
+  drawAgbHeader(true);
+
+  SEEL_AGB_SECTIONS.forEach((section, index) => {
+    const titleLines = doc.splitTextToSize(section.title, pw - 62);
+    const paragraphLineCounts = section.paragraphs.map((paragraph) => doc.splitTextToSize(paragraph, pw - 48).length);
+    const contentHeight =
+      20 +
+      titleLines.length * 5 +
+      paragraphLineCounts.reduce((sum, lines) => sum + lines * 4.2 + 3.4, 0);
+
+    if (y + contentHeight > ph - 28) {
       doc.addPage();
-      drawHeader(doc, "Allgemeine Geschaeftsbedingungen", "AGB", SEEL_AGB_VERSION);
-      y = 28;
+      drawAgbHeader(false);
     }
 
+    const blockHeight = Math.max(26, contentHeight);
     doc.setFillColor(...WHITE);
-    doc.roundedRect(15, y - 2, pw - 30, Math.max(18, section.paragraphs.length * 11 + 6), 4, 4, "F");
+    doc.roundedRect(15, y - 2, pw - 30, blockHeight, 6, 6, "F");
     doc.setDrawColor(...BORDER);
-    doc.roundedRect(15, y - 2, pw - 30, Math.max(18, section.paragraphs.length * 11 + 6), 4, 4, "S");
-    setBrandFont(doc, "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(...NAVY);
-    doc.text(section.title, 20, y + 3);
-    y += 9;
+    doc.roundedRect(15, y - 2, pw - 30, blockHeight, 6, 6, "S");
 
+    doc.setFillColor(...NAVY);
+    doc.roundedRect(20, y + 2, 10, 10, 3, 3, "F");
+    setBrandFont(doc, "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(...WHITE);
+    doc.text(String(index + 1), 25, y + 8.2, { align: "center" });
+
+    setBrandFont(doc, "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(...NAVY);
+    doc.text(titleLines, 34, y + 7);
+
+    let cursorY = y + 16;
     setBrandFont(doc, "normal");
-    doc.setFontSize(8.2);
+    doc.setFontSize(8.4);
     doc.setTextColor(...MUTED);
     section.paragraphs.forEach((paragraph) => {
-      y = writeParagraph(doc, paragraph, 20, y, pw - 40, 4.2);
-      y += 2.5;
+      cursorY = writeParagraph(doc, paragraph, 20, cursorY, pw - 40, 4.2);
+      cursorY += 3.4;
     });
-    y += 3;
+
+    y += blockHeight + 6;
   });
 
-  drawFooter(doc, `${CONTACT.WEBSITE_DISPLAY}/agb`, `Seite ${doc.getCurrentPageInfo().pageNumber}`);
+  const totalPages = doc.getNumberOfPages();
+  for (let page = 1; page <= totalPages; page++) {
+    doc.setPage(page);
+    drawFooter(doc, `${CONTACT.WEBSITE_DISPLAY}/agb`, `Seite ${page} / ${totalPages}`);
+  }
   return Buffer.from(doc.output("arraybuffer"));
 }
