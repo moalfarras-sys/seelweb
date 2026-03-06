@@ -16,7 +16,7 @@ export const SEEL_AGB_SECTIONS: LegalSection[] = [
   {
     title: "§ 1 Geltungsbereich",
     paragraphs: [
-      "Diese Allgemeinen Geschäftsbedingungen gelten fuer alle Vertraege zwischen SEEL Transport & Reinigung, nachfolgend \"Auftragnehmer\", und dem Kunden, nachfolgend \"Auftraggeber\", ueber Transport-, Umzugs-, Reinigungs-, Entsorgungs-, Montage- sowie sonstige begleitende Dienstleistungen.",
+      "Diese Allgemeinen Geschaeftsbedingungen gelten fuer alle Vertraege zwischen SEEL Transport & Reinigung, nachfolgend \"Auftragnehmer\", und dem Kunden, nachfolgend \"Auftraggeber\", ueber Transport-, Umzugs-, Reinigungs-, Entsorgungs-, Montage- sowie sonstige begleitende Dienstleistungen.",
       "Abweichende Bedingungen des Auftraggebers werden nur Vertragsbestandteil, wenn SEEL Transport & Reinigung deren Geltung ausdruecklich in Textform bestaetigt.",
     ],
   },
