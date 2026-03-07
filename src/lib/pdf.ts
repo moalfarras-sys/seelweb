@@ -635,153 +635,198 @@ export async function generateSignedContractPDF(data: ContractPDFData): Promise<
     getProcessedAssetDataUrl(sealPath),
   ]);
 
-  y = 53;
-  drawMetaRow(doc, "Angebot", data.offerNumber, "Status", data.signedAt ? "Signiert" : "Ausstehend", y);
-  y += 12;
+  const contentLeft = 20;
+  const contentRight = pw - 20;
+  const contentWidth = contentRight - contentLeft;
 
-  doc.setFillColor(...LIGHT);
-  doc.roundedRect(14, y - 2, pw - 28, 24, 5, 5, "F");
-  sectionHeading(doc, "Vertragsparteien", 20, y);
-  y += 8;
-
-  doc.setTextColor(...INK);
-  setBrandFont(doc, "bold");
-  doc.setFontSize(10.5);
-  doc.text("Auftragnehmer", 20, y);
-  doc.text("Auftraggeber", pw / 2 + 4, y);
-  y += 5.5;
-  setBrandFont(doc, "bold");
-  doc.text(COMPANY_LEGAL.NAME, 20, y);
-  doc.text(data.customerName, pw / 2 + 4, y);
-  y += 4.8;
-  setBrandFont(doc, "normal");
-  doc.setTextColor(...MUTED);
-  doc.setFontSize(8.2);
-  doc.text(COMPANY_LEGAL.ADDRESS_LINE_1, 20, y);
-  doc.text(data.customerEmail, pw / 2 + 4, y);
-  y += 4.2;
-  doc.text(`${CONTACT.EMAIL} | ${CONTACT.PRIMARY_PHONE_DISPLAY}`, 20, y);
-  if (data.customerCompany) {
-    doc.text(data.customerCompany, pw / 2 + 4, y);
+  function drawContractHeading(label: string, top: number) {
+    sectionHeading(doc, label, contentLeft, top);
+    return top + 7;
   }
 
-  y = 88;
-  sectionHeading(doc, "Leistungsbeschreibung", 20, y);
-  y += 8;
-  const performanceFacts = [
-    ["Leistung", data.serviceSummary],
-    ["Termin", data.serviceDate ? `${data.serviceDate}${data.timeSlot ? `, ${data.timeSlot}` : ""}` : "Nach Absprache"],
-    ["Start", data.fromAddress || "-"],
-    ["Ziel", data.toAddress || "-"],
-  ] as const;
+  function drawWrappedKeyValueRows(
+    rows: Array<{ label: string; value: string }>,
+    top: number,
+    options?: { x?: number; width?: number; labelWidth?: number; rowGap?: number; valueStyle?: "normal" | "bold" }
+  ) {
+    const x = options?.x ?? contentLeft;
+    const width = options?.width ?? contentWidth;
+    const labelWidth = options?.labelWidth ?? 24;
+    const rowGap = options?.rowGap ?? 1.5;
+    const valueStyle = options?.valueStyle ?? "bold";
+    let cursor = top;
+
+    rows.forEach(({ label, value }) => {
+      doc.setTextColor(...MUTED);
+      setBrandFont(doc, "normal");
+      doc.setFontSize(7.8);
+      doc.text(label, x, cursor);
+
+      doc.setTextColor(...INK);
+      setBrandFont(doc, valueStyle);
+      doc.setFontSize(8.2);
+      const valueLines = doc.splitTextToSize(value, width - labelWidth);
+      doc.text(valueLines, x + labelWidth, cursor);
+      cursor += valueLines.length * 3.8 + rowGap;
+    });
+
+    return cursor;
+  }
+
+  y = 53;
+  drawMetaRow(doc, "Angebot", data.offerNumber, "Status", data.signedAt ? "Signiert" : "Ausstehend", y);
+  y += 14;
+
+  y = drawContractHeading("Vertragsparteien", y);
+  const partyCardY = y - 1;
+  const partyCardHeight = 26;
+  const partyCardWidth = (contentWidth - 6) / 2;
+  const partyRightX = contentLeft + partyCardWidth + 6;
+
+  doc.setFillColor(...LIGHT);
+  doc.roundedRect(contentLeft - 2, partyCardY - 2, partyCardWidth + 2, partyCardHeight, 5, 5, "F");
+  doc.roundedRect(partyRightX - 2, partyCardY - 2, partyCardWidth + 2, partyCardHeight, 5, 5, "F");
+
+  doc.setTextColor(...NAVY);
+  setBrandFont(doc, "bold");
+  doc.setFontSize(10);
+  doc.text("Auftragnehmer", contentLeft, partyCardY + 4);
+  doc.text("Auftraggeber", partyRightX, partyCardY + 4);
+
+  doc.setFontSize(8.8);
+  doc.text(COMPANY_LEGAL.NAME, contentLeft, partyCardY + 9);
+  doc.text(data.customerName, partyRightX, partyCardY + 9);
+
+  doc.setTextColor(...MUTED);
+  setBrandFont(doc, "normal");
+  doc.setFontSize(7.8);
+  doc.text(COMPANY_LEGAL.ADDRESS_LINE_1, contentLeft, partyCardY + 14);
+  doc.text(data.customerCompany || data.customerEmail, partyRightX, partyCardY + 14);
+  doc.text(`${CONTACT.EMAIL} | ${CONTACT.PRIMARY_PHONE_DISPLAY}`, contentLeft, partyCardY + 18.5);
+  if (data.customerCompany) {
+    doc.text(data.customerEmail, partyRightX, partyCardY + 18.5);
+  }
+
+  y = partyCardY + partyCardHeight + 6;
+  y = drawContractHeading("Leistungsbeschreibung", y);
+
+  const factRows = [
+    { label: "Leistung", value: data.serviceSummary },
+    { label: "Termin", value: data.serviceDate ? `${data.serviceDate}${data.timeSlot ? `, ${data.timeSlot}` : ""}` : "Nach Absprache" },
+    { label: "Start", value: data.fromAddress || "-" },
+    { label: "Ziel", value: data.toAddress || "-" },
+  ];
+  const measuredFactRows = factRows.map(({ label, value }) => ({
+    label,
+    lines: doc.splitTextToSize(value, contentWidth - 34).length,
+  }));
+  const factHeight = measuredFactRows.reduce((sum, row) => sum + row.lines * 3.8 + 1.5, 0) + 5;
 
   doc.setFillColor(...WHITE);
-  doc.roundedRect(15, y - 3, pw - 30, 19, 4, 4, "F");
   doc.setDrawColor(...BORDER);
-  doc.roundedRect(15, y - 3, pw - 30, 19, 4, 4, "S");
-  let factY = y + 2;
-  performanceFacts.forEach(([label, value]) => {
-    doc.setTextColor(...MUTED);
-    setBrandFont(doc, "normal");
-    doc.setFontSize(7.8);
-    doc.text(label, 20, factY);
-    doc.setTextColor(...INK);
-    setBrandFont(doc, "bold");
-    doc.text(value, pw - 20, factY, { align: "right", maxWidth: 120 });
-    factY += 4.2;
-  });
-  y += 20;
+  doc.roundedRect(contentLeft - 2, y - 3, contentWidth + 4, factHeight, 6, 6, "FD");
+  y = drawWrappedKeyValueRows(factRows, y + 1, { labelWidth: 26, rowGap: 1.2 });
+  y += 3;
+
+  const tableX = contentLeft;
+  const tableWidth = 118;
+  const summaryWidth = 58;
 
   if (data.items?.length) {
-    y += 2;
     doc.setFillColor(...NAVY);
-    doc.roundedRect(15, y, pw - 30, 8, 2, 2, "F");
+    doc.roundedRect(tableX - 1, y, tableWidth + 1, 8, 2, 2, "F");
     doc.setTextColor(...WHITE);
     setBrandFont(doc, "bold");
     doc.setFontSize(8);
-    doc.text("Position", 20, y + 5.2);
-    doc.text("Menge", 106, y + 5.2);
-    doc.text("Preis", 132, y + 5.2);
-    doc.text("Gesamt", pw - 20, y + 5.2, { align: "right" });
-    y += 9.2;
+    doc.text("Position", tableX, y + 5.2);
+    doc.text("Menge", tableX + 74, y + 5.2);
+    doc.text("Preis", tableX + 92, y + 5.2);
+    doc.text("Gesamt", tableX + tableWidth - 4, y + 5.2, { align: "right" });
+    y += 10;
 
     const visibleItems = data.items.slice(0, 5);
+    const itemStartY = y;
     visibleItems.forEach((item, index) => {
-      if (y > ph - 112) {
+      if (y > ph - 108) {
         doc.addPage();
         drawHeader(doc, "Dienstleistungsvertrag", "VERTRAG", data.contractNumber);
-        y = 28;
+        y = 30;
       }
 
       if (index % 2 === 0) {
         doc.setFillColor(...LIGHT);
-        doc.roundedRect(15, y - 1.8, pw - 30, item.description ? 8.4 : 5.6, 1.5, 1.5, "F");
+        doc.roundedRect(tableX - 1, y - 1.5, tableWidth + 1, item.description ? 8.2 : 5.6, 1.5, 1.5, "F");
       }
 
       doc.setTextColor(...INK);
       setBrandFont(doc, "bold");
-      doc.setFontSize(8.4);
-      doc.text(item.title, 20, y + 1);
+      doc.setFontSize(8.2);
+      const titleLines = doc.splitTextToSize(item.title, 68);
+      doc.text(titleLines, tableX, y + 1);
       setBrandFont(doc, "normal");
-      doc.text(String(item.quantity), 106, y + 1);
-      doc.text(fmt(item.unitPrice), 132, y + 1);
-      doc.text(fmt(item.totalPrice), pw - 20, y + 1, { align: "right" });
-      y += 4.2;
+      doc.text(String(item.quantity), tableX + 74, y + 1);
+      doc.text(fmt(item.unitPrice), tableX + 92, y + 1);
+      doc.text(fmt(item.totalPrice), tableX + tableWidth - 4, y + 1, { align: "right" });
+      y += titleLines.length * 3.3;
 
       if (item.description) {
         doc.setTextColor(...MUTED);
-        doc.setFontSize(7.2);
-        y = writeParagraph(doc, item.description, 20, y, pw - 45, 3.2);
+        doc.setFontSize(7);
+        y = writeParagraph(doc, item.description, tableX, y, 68, 3.2);
       }
-      y += 0.8;
+      y += 1.4;
     });
 
     if (data.items.length > visibleItems.length) {
       doc.setTextColor(...MUTED);
       setBrandFont(doc, "normal");
       doc.setFontSize(7.2);
-      doc.text(
-        `Weitere Positionen: ${data.items.length - visibleItems.length}. Vollstaendige Aufstellung gemaess Angebot ${data.offerNumber}.`,
-        20,
-        y + 2.5,
+      y = writeParagraph(
+        doc,
+        `Weitere Positionen: ${data.items.length - visibleItems.length}. Vollständige Aufstellung gemäß Angebot ${data.offerNumber}.`,
+        tableX,
+        y,
+        68,
+        3.2,
       );
-      y += 4;
+      y += 1.6;
     }
+
+    const summaryTop = itemStartY + 1;
+    drawMoneySummary(doc, summaryTop, [
+      ...(typeof data.subtotal === "number" ? [{ label: "Zwischensumme", value: fmt(data.subtotal) }] : []),
+      ...(data.discountAmount ? [{ label: "Rabatt", value: `-${fmt(data.discountAmount)}`, accent: "red" as const }] : []),
+      ...(data.extraFees ? [{ label: "Zusatzkosten", value: fmt(data.extraFees) }] : []),
+      { label: "Netto", value: fmt(data.netto) },
+      { label: "MwSt. (19%)", value: fmt(data.mwst) },
+      { label: "Gesamt", value: fmt(data.totalPrice), accent: "teal" },
+    ]);
+
+    const summaryHeight =
+      ([typeof data.subtotal === "number", !!data.discountAmount, !!data.extraFees].filter(Boolean).length + 3) * 7.2 + 10;
+    y = Math.max(y, summaryTop - 1 + summaryHeight) + 8;
   }
-
-  y += 2;
-  drawMoneySummary(doc, y + 1, [
-    ...(typeof data.subtotal === "number" ? [{ label: "Zwischensumme", value: fmt(data.subtotal) }] : []),
-    ...(data.discountAmount ? [{ label: "Rabatt", value: `-${fmt(data.discountAmount)}`, accent: "red" as const }] : []),
-    ...(data.extraFees ? [{ label: "Zusatzkosten", value: fmt(data.extraFees) }] : []),
-    { label: "Netto", value: fmt(data.netto) },
-    { label: "MwSt. (19%)", value: fmt(data.mwst) },
-    { label: "Gesamt", value: fmt(data.totalPrice), accent: "teal" },
-  ]);
-
-  y += 26;
-  y = maybeAddPage(doc, y, 74);
-  sectionHeading(doc, "Vertragsbedingungen", 20, y);
-  y += 7;
+  y = maybeAddPage(doc, y, 66);
+  y = drawContractHeading("Vertragsbedingungen", y);
   doc.setTextColor(...MUTED);
   setBrandFont(doc, "normal");
-  doc.setFontSize(7.1);
+  doc.setFontSize(7.2);
   SEEL_CONTRACT_HIGHLIGHTS.forEach((line) => {
-    y = writeParagraph(doc, `- ${line}`, 20, y, pw - 40, 3.5);
-    y += 0.7;
+    y = writeParagraph(doc, `- ${line}`, contentLeft, y, contentWidth, 3.5);
+    y += 0.6;
   });
 
   if (data.notes) {
+    y += 0.4;
+    y = writeParagraph(doc, `Hinweis: ${data.notes}`, contentLeft, y, contentWidth, 3.5);
     y += 0.6;
-    y = writeParagraph(doc, `Hinweis: ${data.notes}`, 20, y, pw - 40, 3.5);
-    y += 0.8;
   }
 
-  y += 0.5;
+  y += 1.2;
   doc.setFillColor(240, 249, 255);
-  doc.roundedRect(15, y - 2, pw - 30, 11, 4, 4, "F");
+  doc.roundedRect(contentLeft - 2, y - 2, contentWidth + 4, 11, 5, 5, "F");
   doc.setDrawColor(191, 219, 254);
-  doc.roundedRect(15, y - 2, pw - 30, 11, 4, 4, "S");
+  doc.roundedRect(contentLeft - 2, y - 2, contentWidth + 4, 11, 5, 5, "S");
   doc.setTextColor(...INK);
   setBrandFont(doc, "bold");
   doc.setFontSize(8.2);
@@ -789,64 +834,63 @@ export async function generateSignedContractPDF(data: ContractPDFData): Promise<
     data.signedByName
       ? `Digitale Signatur des Auftraggebers: ${data.signedByName}`
       : "Digitale Signatur des Auftraggebers: noch ausstehend",
-    20,
+    contentLeft,
     y + 4
   );
   setBrandFont(doc, "normal");
   doc.setTextColor(...MUTED);
   doc.setFontSize(6.9);
-  doc.text(`Zeitpunkt: ${data.signedAt || "Wird nach digitaler Unterschrift ergänzt"}`, 20, y + 7.3);
+  doc.text(`Zeitpunkt: ${data.signedAt || "Wird nach digitaler Unterschrift ergänzt"}`, contentLeft, y + 7.3);
   if (data.ipAddress) {
-    doc.text(`IP-Adresse: ${data.ipAddress}`, pw - 20, y + 7.3, { align: "right" });
+    doc.text(`IP-Adresse: ${data.ipAddress}`, contentRight, y + 7.3, { align: "right" });
   }
 
-  y += 13;
-  y = maybeAddPage(doc, y, 44);
-  sectionHeading(doc, "Unterschriften", 20, y);
-  y += 6;
+  y += 14;
+  y = maybeAddPage(doc, y, 42);
+  y = drawContractHeading("Unterschriften", y);
 
   const boxY = y;
-  const boxWidth = 84;
-  const rightX = pw - 20 - boxWidth;
+  const boxWidth = 82;
+  const rightX = contentRight - boxWidth;
   doc.setDrawColor(...BORDER);
-  doc.roundedRect(15, boxY, boxWidth, 28, 4, 4, "S");
+  doc.roundedRect(contentLeft - 2, boxY, boxWidth + 2, 26, 5, 5, "S");
   doc.roundedRect(rightX, boxY, boxWidth, 28, 4, 4, "S");
 
   setBrandFont(doc, "bold");
-  doc.setFontSize(8.8);
+  doc.setFontSize(8.4);
   doc.setTextColor(...NAVY);
-  doc.text("Auftraggeber", 20, boxY + 6);
+  doc.text("Auftraggeber", contentLeft, boxY + 6);
   doc.text("SEEL autorisiert", rightX + 5, boxY + 6);
 
   setBrandFont(doc, "normal");
   doc.setTextColor(...MUTED);
-  doc.setFontSize(7.4);
-  doc.text(data.signedByName || "Digitale Kundensignatur ausstehend", 20, boxY + 11);
-  doc.text(data.signedAt || "Wird nach Unterzeichnung eingetragen", 20, boxY + 14);
+  doc.setFontSize(7.1);
+  doc.text(data.signedByName || "Digitale Kundensignatur ausstehend", contentLeft, boxY + 11);
+  doc.text(data.signedAt || "Wird nach Unterzeichnung eingetragen", contentLeft, boxY + 14.5);
   doc.text(`Berlin, ${data.companyExecutedAt || new Date().toLocaleDateString("de-DE")}`, rightX + 5, boxY + 11);
-  doc.text("Firmenunterschrift und Stempel", rightX + 5, boxY + 14);
+  doc.text("Firmenunterschrift und Stempel", rightX + 5, boxY + 14.5);
 
   if (data.signatureDataUrl) {
-    addImageIfPossible(doc, data.signatureDataUrl, "PNG", 22, boxY + 16, 64, 7);
+    addImageIfPossible(doc, data.signatureDataUrl, "PNG", contentLeft + 10, boxY + 16.5, 36, 6);
   } else {
     setBrandFont(doc, "bold");
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(...MUTED);
-    doc.text("Digitale Signatur folgt nach Freigabe", 24, boxY + 21);
+    doc.text("Digitale Signatur folgt nach Freigabe", contentLeft, boxY + 20);
   }
 
-  addImageIfPossible(doc, companySignature, "PNG", rightX + 5, boxY + 16, 48, 8);
-  addImageIfPossible(doc, companySeal, "PNG", rightX + 55, boxY + 14.5, 13, 13);
+  addImageIfPossible(doc, companySignature, "PNG", rightX + 12, boxY + 16.5, 30, 6);
+  addImageIfPossible(doc, companySeal, "PNG", rightX + 50, boxY + 14.2, 10.5, 10.5);
 
   doc.setFillColor(...SUCCESS);
-  doc.roundedRect(rightX + 4, boxY + 22, boxWidth - 8, 4, 2, 2, "F");
+  doc.roundedRect(rightX + 4, boxY + 22.2, boxWidth - 8, 3.8, 2, 2, "F");
   doc.setTextColor(...WHITE);
   setBrandFont(doc, "bold");
-  doc.setFontSize(6.2);
+  doc.setFontSize(5.8);
   doc.text(
     `Ausgefuehrt am ${data.companyExecutedAt || new Date().toLocaleDateString("de-DE")}`,
     rightX + boxWidth / 2,
-    boxY + 24.7,
+    boxY + 24.8,
     { align: "center" }
   );
 
