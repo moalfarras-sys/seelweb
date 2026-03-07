@@ -31,17 +31,17 @@ export const COMPANY_LEGAL = {
   NAME: "SEEL Transport & Reinigung",
   ADDRESS_LINE_1: "Berlin, Deutschland",
   VAT_ID: "DE454962817",
-  TAX_NO: "DE454962817",
+  TAX_NO: "33/205/02397",
   REGISTER_COURT: "Berlin",
   REGISTER_NO: "",
-};
+} as const;
 
 export const COMPANY_BANK = {
   BANK_NAME: "Deutsche Bank",
   IBAN: "DE44 1007 1324 0066 0068 00",
   BIC: "DEUTDEDBP31",
   ACCOUNT_HOLDER: "Lisaveta Al-Shamaileh",
-};
+} as const;
 
 export const WHATSAPP_DEFAULT_MESSAGE = `Hallo 👋
 Ich habe Ihre Website besucht und interessiere mich für einen Umzug.
@@ -61,13 +61,13 @@ export function whatsappUrl(message?: string): string {
     return `${base}?text=${encodeURIComponent(message)}`;
   }
   return base;
-};
+}
 
 export function whatsappDefaultUrl(): string {
   return whatsappUrl(WHATSAPP_DEFAULT_MESSAGE);
 }
 
-export function whatsappBookingUrl(params : {
+export function whatsappBookingUrl(params: {
   service?: string;
   date?: string;
   pickup?: string;

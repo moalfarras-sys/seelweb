@@ -3,6 +3,8 @@ import { getSession } from "@/lib/auth";
 import { toContractSummary } from "@/lib/contracts";
 import { prisma } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession();

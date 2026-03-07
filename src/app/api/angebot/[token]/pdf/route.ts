@@ -16,6 +16,7 @@ export async function GET(req: NextRequest, { params }: Params) {
         items: { orderBy: { position: "asc" } },
       },
     });
+
     if (!offer) {
       return NextResponse.json({ error: "Angebot nicht gefunden" }, { status: 404 });
     }
@@ -74,7 +75,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     return new NextResponse(new Uint8Array(pdf), {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `${download ? "attachment" : "inline"}; filename=\"Angebot-${offer.offerNumber}.pdf\"`,
+        "Content-Disposition": `${download ? "attachment" : "inline"}; filename="Angebot-${offer.offerNumber}.pdf"`,
       },
     });
   } catch (error) {

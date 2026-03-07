@@ -270,7 +270,11 @@ function drawFooter(doc: jsPDF, footerLeft?: string, footerRight?: string) {
   doc.setTextColor(...MUTED);
   doc.setFontSize(7);
   setBrandFont(doc, "normal");
-  doc.text(`${COMPANY_LEGAL.NAME} | ${COMPANY_LEGAL.ADDRESS_LINE_1} | USt-IdNr.: ${COMPANY_LEGAL.VAT_ID}`, 14, ph - 12);
+  doc.text(
+    `${COMPANY_LEGAL.NAME} | ${COMPANY_LEGAL.ADDRESS_LINE_1} | USt-IdNr.: ${COMPANY_LEGAL.VAT_ID} | Steuer-Nr.: ${COMPANY_LEGAL.TAX_NO}`,
+    14,
+    ph - 12,
+  );
   doc.text(`Bank: ${COMPANY_BANK.BANK_NAME} | IBAN: ${COMPANY_BANK.IBAN} | BIC: ${COMPANY_BANK.BIC}`, 14, ph - 8);
   if (footerLeft) {
     doc.text(footerLeft, 14, ph - 4);
@@ -632,11 +636,11 @@ export async function generateSignedContractPDF(data: ContractPDFData): Promise<
   ]);
 
   y = 53;
-  drawMetaRow(doc, "Angebot", data.offerNumber, "Signiert am", data.signedAt || "Ausstehend", y);
-  y += 16;
+  drawMetaRow(doc, "Angebot", data.offerNumber, "Status", data.signedAt ? "Signiert" : "Ausstehend", y);
+  y += 12;
 
   doc.setFillColor(...LIGHT);
-  doc.roundedRect(14, y - 2, pw - 28, 30, 5, 5, "F");
+  doc.roundedRect(14, y - 2, pw - 28, 24, 5, 5, "F");
   sectionHeading(doc, "Vertragsparteien", 20, y);
   y += 8;
 
@@ -661,26 +665,35 @@ export async function generateSignedContractPDF(data: ContractPDFData): Promise<
     doc.text(data.customerCompany, pw / 2 + 4, y);
   }
 
-  y = 98;
+  y = 88;
   sectionHeading(doc, "Leistungsbeschreibung", 20, y);
-  y += 10;
+  y += 8;
   const performanceFacts = [
-    `Leistungsart: ${data.serviceSummary}`,
-    data.serviceDate ? `Termin: ${data.serviceDate}${data.timeSlot ? ` (${data.timeSlot})` : ""}` : null,
-    data.fromAddress ? `Startadresse: ${data.fromAddress}` : null,
-    data.toAddress ? `Zieladresse: ${data.toAddress}` : null,
-  ].filter(Boolean) as string[];
+    ["Leistung", data.serviceSummary],
+    ["Termin", data.serviceDate ? `${data.serviceDate}${data.timeSlot ? `, ${data.timeSlot}` : ""}` : "Nach Absprache"],
+    ["Start", data.fromAddress || "-"],
+    ["Ziel", data.toAddress || "-"],
+  ] as const;
 
-  doc.setTextColor(...MUTED);
-  setBrandFont(doc, "normal");
-  doc.setFontSize(8.8);
-  performanceFacts.forEach((line) => {
-    y = writeParagraph(doc, line, 20, y, pw - 40);
-    y += 1.5;
+  doc.setFillColor(...WHITE);
+  doc.roundedRect(15, y - 3, pw - 30, 19, 4, 4, "F");
+  doc.setDrawColor(...BORDER);
+  doc.roundedRect(15, y - 3, pw - 30, 19, 4, 4, "S");
+  let factY = y + 2;
+  performanceFacts.forEach(([label, value]) => {
+    doc.setTextColor(...MUTED);
+    setBrandFont(doc, "normal");
+    doc.setFontSize(7.8);
+    doc.text(label, 20, factY);
+    doc.setTextColor(...INK);
+    setBrandFont(doc, "bold");
+    doc.text(value, pw - 20, factY, { align: "right", maxWidth: 120 });
+    factY += 4.2;
   });
+  y += 20;
 
   if (data.items?.length) {
-    y += 3;
+    y += 2;
     doc.setFillColor(...NAVY);
     doc.roundedRect(15, y, pw - 30, 8, 2, 2, "F");
     doc.setTextColor(...WHITE);
@@ -690,10 +703,11 @@ export async function generateSignedContractPDF(data: ContractPDFData): Promise<
     doc.text("Menge", 106, y + 5.2);
     doc.text("Preis", 132, y + 5.2);
     doc.text("Gesamt", pw - 20, y + 5.2, { align: "right" });
-    y += 10.8;
+    y += 9.2;
 
-    data.items.forEach((item, index) => {
-      if (y > ph - 110) {
+    const visibleItems = data.items.slice(0, 5);
+    visibleItems.forEach((item, index) => {
+      if (y > ph - 112) {
         doc.addPage();
         drawHeader(doc, "Dienstleistungsvertrag", "VERTRAG", data.contractNumber);
         y = 28;
@@ -701,7 +715,7 @@ export async function generateSignedContractPDF(data: ContractPDFData): Promise<
 
       if (index % 2 === 0) {
         doc.setFillColor(...LIGHT);
-        doc.roundedRect(15, y - 2.2, pw - 30, item.description ? 10 : 6.6, 1.5, 1.5, "F");
+        doc.roundedRect(15, y - 1.8, pw - 30, item.description ? 8.4 : 5.6, 1.5, 1.5, "F");
       }
 
       doc.setTextColor(...INK);
@@ -712,18 +726,30 @@ export async function generateSignedContractPDF(data: ContractPDFData): Promise<
       doc.text(String(item.quantity), 106, y + 1);
       doc.text(fmt(item.unitPrice), 132, y + 1);
       doc.text(fmt(item.totalPrice), pw - 20, y + 1, { align: "right" });
-      y += 5.1;
+      y += 4.2;
 
       if (item.description) {
         doc.setTextColor(...MUTED);
         doc.setFontSize(7.2);
-        y = writeParagraph(doc, item.description, 20, y, pw - 45, 3.6);
+        y = writeParagraph(doc, item.description, 20, y, pw - 45, 3.2);
       }
-      y += 1.6;
+      y += 0.8;
     });
+
+    if (data.items.length > visibleItems.length) {
+      doc.setTextColor(...MUTED);
+      setBrandFont(doc, "normal");
+      doc.setFontSize(7.2);
+      doc.text(
+        `Weitere Positionen: ${data.items.length - visibleItems.length}. Vollstaendige Aufstellung gemaess Angebot ${data.offerNumber}.`,
+        20,
+        y + 2.5,
+      );
+      y += 4;
+    }
   }
 
-  y += 4;
+  y += 2;
   drawMoneySummary(doc, y + 1, [
     ...(typeof data.subtotal === "number" ? [{ label: "Zwischensumme", value: fmt(data.subtotal) }] : []),
     ...(data.discountAmount ? [{ label: "Rabatt", value: `-${fmt(data.discountAmount)}`, accent: "red" as const }] : []),
@@ -733,32 +759,32 @@ export async function generateSignedContractPDF(data: ContractPDFData): Promise<
     { label: "Gesamt", value: fmt(data.totalPrice), accent: "teal" },
   ]);
 
-  y += 46;
-  y = maybeAddPage(doc, y, 98);
+  y += 26;
+  y = maybeAddPage(doc, y, 74);
   sectionHeading(doc, "Vertragsbedingungen", 20, y);
-  y += 10;
+  y += 7;
   doc.setTextColor(...MUTED);
   setBrandFont(doc, "normal");
-  doc.setFontSize(8.5);
+  doc.setFontSize(7.1);
   SEEL_CONTRACT_HIGHLIGHTS.forEach((line) => {
-    y = writeParagraph(doc, `- ${line}`, 20, y, pw - 40);
-    y += 1.8;
+    y = writeParagraph(doc, `- ${line}`, 20, y, pw - 40, 3.5);
+    y += 0.7;
   });
 
   if (data.notes) {
-    y += 2;
-    y = writeParagraph(doc, `Hinweis: ${data.notes}`, 20, y, pw - 40);
-    y += 2;
+    y += 0.6;
+    y = writeParagraph(doc, `Hinweis: ${data.notes}`, 20, y, pw - 40, 3.5);
+    y += 0.8;
   }
 
-  y += 3;
+  y += 0.5;
   doc.setFillColor(240, 249, 255);
-  doc.roundedRect(15, y - 2, pw - 30, 18, 4, 4, "F");
+  doc.roundedRect(15, y - 2, pw - 30, 11, 4, 4, "F");
   doc.setDrawColor(191, 219, 254);
-  doc.roundedRect(15, y - 2, pw - 30, 18, 4, 4, "S");
+  doc.roundedRect(15, y - 2, pw - 30, 11, 4, 4, "S");
   doc.setTextColor(...INK);
   setBrandFont(doc, "bold");
-  doc.setFontSize(8.7);
+  doc.setFontSize(8.2);
   doc.text(
     data.signedByName
       ? `Digitale Signatur des Auftraggebers: ${data.signedByName}`
@@ -768,23 +794,23 @@ export async function generateSignedContractPDF(data: ContractPDFData): Promise<
   );
   setBrandFont(doc, "normal");
   doc.setTextColor(...MUTED);
-  doc.setFontSize(8);
-  doc.text(`Zeitpunkt: ${data.signedAt || "Wird nach digitaler Unterschrift ergänzt"}`, 20, y + 9);
+  doc.setFontSize(6.9);
+  doc.text(`Zeitpunkt: ${data.signedAt || "Wird nach digitaler Unterschrift ergänzt"}`, 20, y + 7.3);
   if (data.ipAddress) {
-    doc.text(`IP-Adresse: ${data.ipAddress}`, 20, y + 13.5);
+    doc.text(`IP-Adresse: ${data.ipAddress}`, pw - 20, y + 7.3, { align: "right" });
   }
 
-  y += 24;
-  y = maybeAddPage(doc, y, 74);
+  y += 13;
+  y = maybeAddPage(doc, y, 44);
   sectionHeading(doc, "Unterschriften", 20, y);
-  y += 10;
+  y += 6;
 
   const boxY = y;
   const boxWidth = 84;
   const rightX = pw - 20 - boxWidth;
   doc.setDrawColor(...BORDER);
-  doc.roundedRect(15, boxY, boxWidth, 42, 4, 4, "S");
-  doc.roundedRect(rightX, boxY, boxWidth, 42, 4, 4, "S");
+  doc.roundedRect(15, boxY, boxWidth, 28, 4, 4, "S");
+  doc.roundedRect(rightX, boxY, boxWidth, 28, 4, 4, "S");
 
   setBrandFont(doc, "bold");
   doc.setFontSize(8.8);
@@ -796,31 +822,31 @@ export async function generateSignedContractPDF(data: ContractPDFData): Promise<
   doc.setTextColor(...MUTED);
   doc.setFontSize(7.4);
   doc.text(data.signedByName || "Digitale Kundensignatur ausstehend", 20, boxY + 11);
-  doc.text(data.signedAt || "Wird nach Unterzeichnung eingetragen", 20, boxY + 15.5);
+  doc.text(data.signedAt || "Wird nach Unterzeichnung eingetragen", 20, boxY + 14);
   doc.text(`Berlin, ${data.companyExecutedAt || new Date().toLocaleDateString("de-DE")}`, rightX + 5, boxY + 11);
-  doc.text("Firmenunterschrift und Stempel", rightX + 5, boxY + 15.5);
+  doc.text("Firmenunterschrift und Stempel", rightX + 5, boxY + 14);
 
   if (data.signatureDataUrl) {
-    addImageIfPossible(doc, data.signatureDataUrl, "PNG", 22, boxY + 18, 70, 15);
+    addImageIfPossible(doc, data.signatureDataUrl, "PNG", 22, boxY + 16, 64, 7);
   } else {
     setBrandFont(doc, "bold");
-    doc.setFontSize(9.5);
+    doc.setFontSize(8);
     doc.setTextColor(...MUTED);
-    doc.text("Digitale Signatur folgt nach Freigabe", 24, boxY + 27);
+    doc.text("Digitale Signatur folgt nach Freigabe", 24, boxY + 21);
   }
 
-  addImageIfPossible(doc, companySignature, "PNG", rightX + 5, boxY + 17, 56, 16);
-  addImageIfPossible(doc, companySeal, "PNG", rightX + 54, boxY + 15, 22, 22);
+  addImageIfPossible(doc, companySignature, "PNG", rightX + 5, boxY + 16, 48, 8);
+  addImageIfPossible(doc, companySeal, "PNG", rightX + 55, boxY + 14.5, 13, 13);
 
   doc.setFillColor(...SUCCESS);
-  doc.roundedRect(rightX + 4, boxY + 33, boxWidth - 8, 6, 2, 2, "F");
+  doc.roundedRect(rightX + 4, boxY + 22, boxWidth - 8, 4, 2, 2, "F");
   doc.setTextColor(...WHITE);
   setBrandFont(doc, "bold");
-  doc.setFontSize(7.5);
+  doc.setFontSize(6.2);
   doc.text(
     `Ausgefuehrt am ${data.companyExecutedAt || new Date().toLocaleDateString("de-DE")}`,
     rightX + boxWidth / 2,
-    boxY + 37.1,
+    boxY + 24.7,
     { align: "center" }
   );
 
