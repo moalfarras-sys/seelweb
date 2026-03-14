@@ -13,9 +13,9 @@ const features = [
 ];
 
 const faqs = [
-  { q: "Wie oft kann ich die Reinigung buchen", a: "Einmalig, wöchentlich, zweiwöchentlich oder monatlich – ganz nach Ihrem Bedarf." },
-  { q: "Bringe ich Reinigungsmittel", a: "Wir bringen professionelle, umweltfreundliche Reinigungsmittel und Equipment mit." },
-  { q: "Wie wird der Preis berechnet", a: "Nach Stunden und gewählten Extras. Mindestdauer 2 Stunden. Als Richtwert: ~2 Std. für 30 m², ~3 Std. für 60 m²." },
+  { q: "Wie oft kann ich die Reinigung buchen?", a: "Einmalig, wöchentlich, zweiwöchentlich oder monatlich – ganz nach Ihrem Bedarf." },
+  { q: "Bringen Sie Reinigungsmittel mit?", a: "Wir bringen professionelle, umweltfreundliche Reinigungsmittel und Equipment mit." },
+  { q: "Wie wird der Preis berechnet?", a: "Nach Stunden und gewählten Extras. Mindestdauer 2 Stunden. Als Richtwert: ~2 Std. für 30 m², ~3 Std. für 60 m²." },
 ];
 
 export default function WohnungsreinigungPage() {

@@ -13,9 +13,9 @@ const features = [
 ];
 
 const faqs = [
-  { q: "Was kann alles entsorgt werden", a: "Möbel, Elektrogeräte, Bauschutt, Sperrmüll, Gartenabfall und vieles mehr. Ausnahmen: Gefahrstoffe wie Asbest oder Chemikalien bedürfen einer Sonderabfuhr." },
-  { q: "Brauche ich einen Container", a: "Nein. Wir kümmern uns um den gesamten Transport und die fachgerechte Entsorgung – Sie müssen keinen Container bestellen." },
-  { q: "Wie wird der Preis berechnet", a: "Nach dem geschätzten Volumen in Kubikmetern (m³) plus eventuelle Etagenzuschläge." },
+  { q: "Was kann alles entsorgt werden?", a: "Möbel, Elektrogeräte, Bauschutt, Sperrmüll, Gartenabfall und vieles mehr. Ausnahmen: Gefahrstoffe wie Asbest oder Chemikalien bedürfen einer Sonderabfuhr." },
+  { q: "Brauche ich einen Container?", a: "Nein. Wir kümmern uns um den gesamten Transport und die fachgerechte Entsorgung – Sie müssen keinen Container bestellen." },
+  { q: "Wie wird der Preis berechnet?", a: "Nach dem geschätzten Volumen in Kubikmetern (m³) plus eventuelle Etagenzuschläge." },
 ];
 
 export default function EntsorgungPage() {

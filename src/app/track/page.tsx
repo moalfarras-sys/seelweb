@@ -33,7 +33,7 @@ const fmt = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" 
 const STATUS_META: Record<string, { label: string; className: string }> = {
   ANFRAGE: { label: "Anfrage eingegangen", className: "bg-amber-100 text-amber-800" },
   ANGEBOT: { label: "Angebot erstellt", className: "bg-orange-100 text-orange-800" },
-  BESTAETIGT: { label: "Bestaetigt", className: "bg-blue-100 text-blue-800" },
+  BESTAETIGT: { label: "Bestätigt", className: "bg-blue-100 text-blue-800" },
   IN_BEARBEITUNG: { label: "In Bearbeitung", className: "bg-violet-100 text-violet-800" },
   ABGESCHLOSSEN: { label: "Abgeschlossen", className: "bg-emerald-100 text-emerald-800" },
   STORNIERT: { label: "Storniert", className: "bg-rose-100 text-rose-800" },
@@ -120,7 +120,7 @@ export default function TrackPage() {
           <div className="bg-white/90 border border-gray-100 rounded-xl p-4">
             <Clock3 size={18} className="text-teal-600 mb-2" />
             <p className="text-sm font-semibold text-navy-800">Status live sehen</p>
-            <p className="text-xs text-slate-500">Schritt fuer Schritt vom Angebot bis Abschluss.</p>
+            <p className="text-xs text-slate-500">Schritt für Schritt vom Angebot bis zum Abschluss.</p>
           </div>
           <div className="bg-white/90 border border-gray-100 rounded-xl p-4">
             <ShieldCheck size={18} className="text-teal-600 mb-2" />
@@ -143,8 +143,8 @@ export default function TrackPage() {
           <div className="bg-white/90 border border-gray-100 rounded-xl p-5">
             <h3 className="text-sm font-semibold text-navy-800 mb-2">Hinweis</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Nach dem Absenden Ihrer Buchung erhalten Sie eine Trackingnummer und koennen den kompletten
-              Ablauf hier jederzeit einsehen. Dokumente werden automatisch verlinkt, sobald sie verfuegbar sind.
+              Nach dem Absenden Ihrer Buchung erhalten Sie eine Trackingnummer und können den kompletten
+              Ablauf hier jederzeit einsehen. Dokumente werden automatisch verlinkt, sobald sie verfügbar sind.
             </p>
           </div>
         </section>

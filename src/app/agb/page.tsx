@@ -17,9 +17,9 @@ export default function AGBPage() {
           <div className="grid gap-8 lg:grid-cols-[1.3fr_0.7fr] items-end">
             <div>
               <p className="text-xs uppercase tracking-[0.32em] text-teal-200 mb-4">SEEL Transport & Reinigung</p>
-              <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight">Allgemeine Geschaeftsbedingungen</h1>
+              <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight">Allgemeine Geschäftsbedingungen</h1>
               <p className="text-slate-200 mt-5 max-w-3xl text-base md:text-lg leading-8">
-                Rechtlich klare Rahmenbedingungen fuer Umzug, Transport, Reinigung, Entsorgung, Montage und alle damit verbundenen Zusatzleistungen.
+                Rechtlich klare Rahmenbedingungen für Umzug, Transport, Reinigung, Entsorgung, Montage und alle damit verbundenen Zusatzleistungen.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
@@ -28,7 +28,7 @@ export default function AGBPage() {
                 </div>
                 <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
                   <p className="text-[11px] uppercase tracking-[0.24em] text-teal-100">Stand</p>
-                  <p className="mt-1 text-white font-semibold">Maerz 2026</p>
+                  <p className="mt-1 text-white font-semibold">März 2026</p>
                 </div>
                 <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
                   <p className="text-[11px] uppercase tracking-[0.24em] text-teal-100">Geltung</p>
@@ -42,11 +42,11 @@ export default function AGBPage() {
               <div className="space-y-3">
                 <div className="rounded-2xl bg-white/10 px-4 py-4">
                   <p className="text-white font-semibold">Vertrag</p>
-                  <p className="text-sm text-slate-200 mt-1">Verbindlich nach Freigabe durch SEEL und Bestaetigung oder digitaler Unterschrift durch den Kunden.</p>
+                  <p className="text-sm text-slate-200 mt-1">Verbindlich nach Freigabe durch SEEL und Bestätigung oder digitaler Unterschrift durch den Kunden.</p>
                 </div>
                 <div className="rounded-2xl bg-white/10 px-4 py-4">
                   <p className="text-white font-semibold">Leistung</p>
-                  <p className="text-sm text-slate-200 mt-1">Massgeblich sind immer Angebot, Vertrag, Zusatzpositionen und dokumentierte Nachtraege.</p>
+                  <p className="text-sm text-slate-200 mt-1">Maßgeblich sind immer Angebot, Vertrag, Zusatzpositionen und dokumentierte Nachträge.</p>
                 </div>
                 <div className="rounded-2xl bg-white/10 px-4 py-4">
                   <p className="text-white font-semibold">Haftung</p>
@@ -97,7 +97,7 @@ export default function AGBPage() {
               <div className="rounded-[28px] border border-teal-100 bg-gradient-to-br from-teal-50 via-white to-cyan-50 p-6 shadow-sm">
                 <p className="text-xs uppercase tracking-[0.28em] text-teal-600 mb-3">Hinweis</p>
                 <p className="text-sm leading-7 text-slate-700">
-                  Massgeblich fuer den konkreten Auftrag bleiben stets das freigegebene Angebot, der digitale Vertrag sowie dokumentierte Zusatzleistungen oder Nachtraege.
+                  Maßgeblich für den konkreten Auftrag bleiben stets das freigegebene Angebot, der digitale Vertrag sowie dokumentierte Zusatzleistungen oder Nachträge.
                 </p>
               </div>
             </aside>

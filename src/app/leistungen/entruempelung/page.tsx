@@ -24,10 +24,10 @@ const features = [
 ];
 
 const faqs = [
-  { q: "Was kostet eine Entrümpelung", a: "Der Preis richtet sich nach dem Volumen (m³), der Etage und dem Zugang. Sie erhalten ein transparentes Angebot mit allen Positionen vorab." },
-  { q: "Brauche ich eine zweite Adresse angeben", a: "Nein. Bei Entrümpelung und Entsorgung benötigen wir nur die Objektadresse – es gibt keine Zieladresse." },
-  { q: "Entsorgen Sie auch Elektrogeräte", a: "Ja, wir entsorgen Elektrogeräte, Möbel, Bauschutt und Sondermüll fachgerecht gemäß den geltenden Vorschriften." },
-  { q: "Wie schnell können Sie kommen", a: "In der Regel innerhalb von 2–5 Werktagen. Expresstermine sind gegen Aufpreis möglich." },
+  { q: "Was kostet eine Entrümpelung?", a: "Der Preis richtet sich nach dem Volumen (m³), der Etage und dem Zugang. Sie erhalten ein transparentes Angebot mit allen Positionen vorab." },
+  { q: "Muss ich eine zweite Adresse angeben?", a: "Nein. Bei Entrümpelung und Entsorgung benötigen wir nur die Objektadresse – es gibt keine Zieladresse." },
+  { q: "Entsorgen Sie auch Elektrogeräte?", a: "Ja, wir entsorgen Elektrogeräte, Möbel, Bauschutt und Sondermüll fachgerecht gemäß den geltenden Vorschriften." },
+  { q: "Wie schnell können Sie kommen?", a: "In der Regel innerhalb von 2–5 Werktagen. Expresstermine sind gegen Aufpreis möglich." },
 ];
 
 export default function EntruempelungPage() {

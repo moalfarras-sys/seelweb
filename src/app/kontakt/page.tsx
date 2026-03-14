@@ -85,7 +85,7 @@ export default function KontaktPage() {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-300">uns an</span>
             </h1>
             <p className="text-silver-300 max-w-2xl mx-auto text-lg leading-relaxed">
-              Wir sind {CONTACT.AVAILABILITY.toLowerCase()}. Nutzen Sie das Kontaktformular oder rufen Sie uns direkt an.
+              Wir sind {CONTACT.AVAILABILITY}. Nutzen Sie das Kontaktformular oder rufen Sie uns direkt an.
             </p>
           </motion.div>
         </div>
