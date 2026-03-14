@@ -19,7 +19,7 @@ const features = [
 const faqs = [
   {
     q: "Was kostet ein Expressumzug?",
-    a: "Expressumzüge starten ab 65 €/Std. und enthalten einen transparenten Prioritätszuschlag von 40 % auf den regulären Umzugspreis.",
+    a: "Expressumzüge starten ab 75 € / Std. und enthalten einen transparenten Prioritätszuschlag von 40 % auf den regulären Umzugspreis.",
   },
   {
     q: "Wie kurzfristig können Sie starten?",
@@ -110,7 +110,7 @@ export default function ExpressumzugPage() {
                 <div>
                   <p className="font-semibold text-amber-900 dark:text-amber-300 mb-2">Prioritätszuschlag</p>
                   <ul className="text-sm text-amber-800 dark:text-amber-300 space-y-1">
-                    <li>Basispreis Express: ab 65 €/Std.</li>
+                    <li>Basispreis Express: ab 75 € / Std.</li>
                     <li>Prioritätszuschlag: +40 %</li>
                     <li>Wochenende/Abend: gemäß Preisliste</li>
                   </ul>

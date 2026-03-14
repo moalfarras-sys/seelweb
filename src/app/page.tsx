@@ -29,56 +29,62 @@ const services = [
   {
     icon: Truck,
     title: "Umzüge & Möbeltransporte",
-    desc: "Professioneller Umzugsservice mit modernen 3,5-Tonnen-Fahrzeugen und erfahrenem Team. Sicher, pünktlich und stressfrei.",
+    desc: "Professioneller Umzugsservice mit modernen 3,5-Tonnen-Fahrzeugen und erfahrenem Team. Sicher geplant, pünktlich umgesetzt und stressfrei begleitet.",
     href: "/leistungen/umzug",
     gradient: "from-blue-500 to-blue-700",
     image: "/images/moving-workers-furniture.png",
-    price: "ab 45 €/Std.",
+    price: "ab 59 € / Std.",
+    priceNote: "inkl. Transportfahrzeug & Team",
   },
   {
     icon: Building2,
     title: "Büro- & Gewerbeumzüge",
-    desc: "Effiziente Büroumzüge mit minimaler Ausfallzeit. IT-Equipment, Möbel und sensible Dokumente.",
+    desc: "Effiziente Büroumzüge mit minimaler Ausfallzeit. IT-Equipment, Möbel und sensible Dokumente werden strukturiert und sicher verlagert.",
     href: "/leistungen/gewerbe",
     gradient: "from-teal-500 to-teal-700",
     image: "/images/corporate-hallway-cleaning.png",
-    price: "ab 45 €/Std.",
+    price: "ab 59 € / Std.",
+    priceNote: "inkl. Transportfahrzeug & Team",
   },
   {
     icon: GraduationCap,
     title: "Schulumzüge",
-    desc: "Spezialisierte Umzüge für Schulen und Bildungseinrichtungen mit besonderer Sorgfalt.",
+    desc: "Spezialisierte Umzüge für Schulen und Bildungseinrichtungen mit besonderer Sorgfalt, klarer Planung und verlässlichen Zeitfenstern.",
     href: "/leistungen/umzug",
     gradient: "from-amber-500 to-orange-600",
     image: "/images/corporate-school-cleaning.png",
-    price: "ab 45 €/Std.",
+    price: "ab 59 € / Std.",
+    priceNote: "inkl. Transportfahrzeug & Team",
   },
   {
     icon: SprayCan,
     title: "Reinigungsservice",
-    desc: "Gründliche Reinigung von Wohnungen, Büros und Treppenhäusern. Umweltfreundlich und zuverlässig.",
+    desc: "Gründliche Reinigung von Wohnungen, Büros und Treppenhäusern. Sorgfältig, zuverlässig und professionell ausgeführt.",
     href: "/leistungen/endreinigung",
     gradient: "from-green-500 to-emerald-600",
     image: "/images/cleaning-team-office.png",
-    price: "ab 34 €/Std.",
+    price: "ab 34 € / Std.",
+    priceNote: "inkl. professioneller Reinigung",
   },
   {
     icon: Trash2,
     title: "Entrümpelung & Entsorgung",
-    desc: "Schnelle und umweltgerechte Entrümpelung inklusive fachgerechter Entsorgung.",
+    desc: "Schnelle und umweltgerechte Entrümpelung inklusive fachgerechter Entsorgung. Transparent organisiert und sauber abgewickelt.",
     href: "/leistungen/entsorgung",
     gradient: "from-red-500 to-rose-600",
     image: "/images/waste-disposal-van.png",
-    price: "ab 42 €/Std.",
+    price: "ab 49 € / Std.",
+    priceNote: "inkl. Transport & Entsorgung",
   },
   {
     icon: Zap,
     title: "Expressumzug",
-    desc: "Kurzfristiger Umzug innerhalb von 24-48 Stunden. Priorisierter Service für dringende Fälle.",
+    desc: "Kurzfristiger Umzug innerhalb von 24-48 Stunden. Priorisierter Service für dringende Fälle mit schneller Disposition.",
     href: "/leistungen/expressumzug",
     gradient: "from-amber-400 to-yellow-500",
     image: "/images/moving-truck-hero.png",
-    price: "ab 65 €/Std.",
+    price: "ab 75 € / Std.",
+    priceNote: "Priorisierter Service",
     badge: "Express",
   },
 ] as const;
@@ -107,7 +113,7 @@ const faqs = [
   { q: "Bieten Sie auch Wochenend-Umzüge an?", a: "Ja, wir sind 24/7 für Sie da - auch an Wochenenden und Feiertagen. Für Wochenenden wird ein Zuschlag von 30% erhoben." },
   { q: "Sind meine Möbel während des Transports versichert?", a: "Gemäß HGB §451e haften wir mit bis zu 620 € pro Kubikmeter. Zusätzlich bieten wir erweiterte Versicherungsoptionen an." },
   { q: "Kann ich online bezahlen?", a: "Ja, wir bieten Zahlung per Überweisung, Barzahlung und PayPal an." },
-  { q: "Was kostet ein Expressumzug?", a: "Expressumzüge beginnen ab 65 €/Std. mit einem Prioritätszuschlag von 40% auf den regulären Umzugspreis. Buchung innerhalb von 24-48 Stunden möglich." },
+  { q: "Was kostet ein Expressumzug?", a: "Expressumzüge beginnen ab 75 € / Std. mit einem Prioritätszuschlag von 40 % auf den regulären Umzugspreis. Buchung innerhalb von 24-48 Stunden möglich." },
 ] as const;
 
 function AnimatedCounter({ target, suffix }: { target: number; suffix: string }) {
@@ -142,7 +148,7 @@ function ServiceCard({
   service,
   index,
 }: {
-  service: { icon: LucideIcon; title: string; desc: string; href: string; gradient: string; image: string; price: string; badge?: string };
+  service: { icon: LucideIcon; title: string; desc: string; href: string; gradient: string; image: string; price: string; priceNote?: string; badge?: string };
   index: number;
 }) {
   const Icon = service.icon;
@@ -172,8 +178,11 @@ function ServiceCard({
             {service.title}
           </h3>
           <p className="text-silver-500 dark:text-silver-300 text-sm leading-relaxed mb-3">{service.desc}</p>
-          <div className="flex items-center justify-between">
-            <span className="text-teal-600 dark:text-teal-400 font-semibold text-sm">{service.price}</span>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <span className="text-teal-600 dark:text-teal-400 font-semibold text-sm">{service.price}</span>
+              {service.priceNote && <p className="text-silver-500 dark:text-silver-400 text-xs mt-1">{service.priceNote}</p>}
+            </div>
             <div className="flex items-center gap-1 text-teal-600 dark:text-teal-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-all duration-300">
               Mehr <ArrowRight size={14} />
             </div>
@@ -282,7 +291,7 @@ export default function HomePage() {
                     </div>
                     <div>
                       <p className="text-white text-xs font-bold">Express</p>
-                      <p className="text-teal-400 text-xs font-semibold">ab 65 €/Std.</p>
+                      <p className="text-teal-400 text-xs font-semibold">ab 75 € / Std.</p>
                     </div>
                   </div>
                 </div>
