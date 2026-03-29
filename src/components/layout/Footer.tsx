@@ -16,7 +16,7 @@ export default function Footer() {
   const addressLines = [company.addressLine1, company.addressLine2, `${company.city}, ${company.country}`].filter(Boolean);
 
   return (
-    <footer className="relative z-10 overflow-hidden border-t border-slate-200 bg-stone-50 dark:border-white/5 dark:bg-[rgba(8,13,24,0.88)]">
+    <footer className="relative z-10 overflow-hidden border-t border-slate-200/70 bg-stone-50/90 backdrop-blur-sm dark:border-white/5 dark:bg-[rgba(7,11,20,0.92)]">
       <div className="pointer-events-none absolute inset-0 opacity-10 dark:opacity-20">
         <div className="absolute left-12 top-12 h-56 w-56 rounded-full bg-emerald-400 blur-[120px]" />
         <div className="absolute bottom-0 right-8 h-48 w-48 rounded-full bg-sky-400 blur-[100px]" />
@@ -26,10 +26,10 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           <div>
             <div className="flex items-center gap-3">
-              <Image src="/images/logo.jpeg" alt="SEEL Transport & Reinigung Logo" width={48} height={48} className="rounded-2xl" />
+              <Image src="/images/logo.jpeg" alt="SEEL Transport & Reinigung Logo" width={46} height={46} className="rounded-[14px] ring-1 ring-black/8 dark:ring-white/10" />
               <div>
-                <p className="text-lg font-bold text-slate-900 dark:text-white">SEEL</p>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-white/50">Transport & Reinigung</p>
+                <p className="font-display text-[1.1rem] font-bold text-slate-900 dark:text-white">SEEL</p>
+                <p className="text-[0.65rem] uppercase tracking-[0.28em] text-slate-400 dark:text-white/45">Transport & Reinigung</p>
               </div>
             </div>
             <p className="mt-5 text-sm leading-7 text-slate-500 dark:text-white/60">
@@ -41,7 +41,7 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Leistungen</h3>
+            <h3 className="font-display text-sm font-bold uppercase tracking-[0.2em] text-slate-800 dark:text-white">Leistungen</h3>
             <div className="mt-5 space-y-3 text-sm text-slate-500 dark:text-white/60">
               <Link href="/leistungen/umzug-berlin" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Umzugsfirma Berlin</Link>
               <Link href="/leistungen/privatumzug" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Privatumzug</Link>
@@ -53,7 +53,7 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Schnellzugriff</h3>
+            <h3 className="font-display text-sm font-bold uppercase tracking-[0.2em] text-slate-800 dark:text-white">Schnellzugriff</h3>
             <div className="mt-5 space-y-3 text-sm text-slate-500 dark:text-white/60">
               <Link href="/buchen" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Preise & Buchen</Link>
               <Link href="/unternehmen" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Unternehmen</Link>
@@ -66,7 +66,7 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Kontakt</h3>
+            <h3 className="font-display text-sm font-bold uppercase tracking-[0.2em] text-slate-800 dark:text-white">Kontakt</h3>
             <div className="mt-5 space-y-4 text-sm text-slate-500 dark:text-white/60">
               <div className="flex items-start gap-3">
                 <MapPin size={16} className="mt-0.5 text-emerald-600 dark:text-teal-300" />

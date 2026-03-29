@@ -1,7 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { headers } from "next/headers";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+
+const displayFont = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-display",
+  weight: ["500", "600", "700", "800"],
+  display: "swap",
+});
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import WhatsAppButton from "@/components/layout/WhatsAppButton";
@@ -94,7 +102,7 @@ export default async function RootLayout({
           {JSON.stringify(localBusinessSchema)}
         </Script>
       </head>
-      <body className="antialiased">
+      <body className={`antialiased ${displayFont.variable}`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <SiteContentProvider value={siteContent}>
             {!isAdmin && <div className="bg-blob-1" />}

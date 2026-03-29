@@ -60,6 +60,15 @@
       linear-gradient(180deg, #0b1320 0%, #0d1724 48%, #09111b 100%);
   }
 
+  /* FAQ details reset */
+  details > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+  details > summary::-webkit-details-marker {
+    display: none;
+  }
+
   ::selection {
     background: rgba(16, 185, 129, 0.22);
     color: inherit;
@@ -67,6 +76,7 @@
 }
 
 @layer components {
+  /* ── Glass surfaces ── */
   .glass {
     @apply border border-white/[0.7] bg-white/[0.8] shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5;
   }
@@ -79,6 +89,7 @@
     @apply border border-white/[0.8] bg-white/[0.88] shadow-[0_25px_70px_rgba(15,23,42,0.12)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.07] dark:shadow-[0_25px_70px_rgba(0,0,0,0.32)];
   }
 
+  /* ── Navigation ── */
   .nav-glass {
     @apply border-b border-black/5 bg-white/[0.78] backdrop-blur-2xl dark:border-white/5 dark:bg-slate-950/[0.68];
   }
@@ -87,35 +98,106 @@
     @apply rounded-2xl border border-slate-200/[0.8] bg-white/[0.95] shadow-[0_24px_60px_rgba(15,23,42,0.14)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/[0.92] dark:shadow-[0_24px_60px_rgba(0,0,0,0.45)];
   }
 
+  /* ── Buttons ── */
   .btn-primary-glass {
-    @apply rounded-2xl bg-emerald-600 text-white shadow-[0_16px_36px_rgba(5,150,105,0.24)] transition hover:-translate-y-0.5 hover:bg-emerald-700;
+    @apply inline-flex items-center justify-center rounded-2xl text-white
+           transition-all duration-200
+           hover:-translate-y-0.5;
+    background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
+    box-shadow: 0 8px 24px rgba(5, 150, 105, 0.30), inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  .btn-primary-glass:hover {
+    background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+    box-shadow: 0 12px 32px rgba(5, 150, 105, 0.46), inset 0 1px 0 rgba(255,255,255,0.2);
   }
 
   .btn-secondary-glass {
-    @apply rounded-2xl border border-slate-200 bg-white text-slate-900 transition hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10;
+    @apply rounded-2xl border border-slate-200 bg-white text-slate-900 transition-all duration-200
+           hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md
+           dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10;
   }
 
+  /* ── Cards with interactive hover ── */
+  .card-interactive {
+    @apply transition-all duration-300
+           hover:-translate-y-1
+           hover:shadow-[0_28px_64px_rgba(15,23,42,0.16)]
+           dark:hover:shadow-[0_28px_64px_rgba(0,0,0,0.40)];
+  }
+
+  /* ── Trust elements ── */
+  .trust-pill {
+    @apply inline-flex items-center gap-2.5 rounded-2xl border border-slate-200/80 bg-white/90
+           px-4 py-3 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-sm
+           transition-all duration-200 hover:border-emerald-200 hover:bg-white
+           dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/10;
+  }
+
+  /* ── Price badge ── */
+  .price-badge {
+    @apply rounded-full px-3 py-1 text-xs font-bold tracking-wide;
+    background: rgba(255,255,255,0.95);
+    color: #0f172a;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.14);
+  }
+  .dark .price-badge {
+    background: rgba(15, 23, 42, 0.9);
+    color: #f0f9ff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+
+  /* ── Decorative accent line ── */
+  .accent-line {
+    @apply mb-3 h-px w-10;
+    background: linear-gradient(90deg, #059669, #0d9488, transparent);
+  }
+
+  /* ── Section eyebrow text ── */
+  .section-eyebrow {
+    @apply text-xs font-bold uppercase tracking-[0.32em] text-emerald-700 dark:text-teal-300;
+  }
+
+  /* ── Feature card (dark section items) ── */
+  .feature-card {
+    @apply rounded-[26px] border border-white/10 p-5 transition-all duration-300;
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(12px);
+  }
+  .feature-card:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(20,184,166,0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+  }
+
+  /* ── Stat cards ── */
+  .premium-stat {
+    @apply rounded-[24px] border border-white/[0.8] bg-white/[0.9] px-5 py-4 shadow-sm backdrop-blur
+           transition-all duration-200 hover:shadow-md
+           dark:border-white/10 dark:bg-white/5;
+  }
+
+  /* ── Layout ── */
   .section-padding {
     @apply py-16 sm:py-24;
   }
 
+  /* ── Hero gradient (dark overlay) ── */
   .gradient-navy {
     background: linear-gradient(135deg, #0d1724 0%, #112132 52%, #173832 100%);
   }
 
-  .premium-stat {
-    @apply rounded-[24px] border border-white/[0.8] bg-white/[0.9] px-5 py-4 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5;
-  }
-
+  /* ── Lightbox ── */
   .lightbox-backdrop {
-    background: rgba(6, 10, 18, 0.88);
-    backdrop-filter: blur(12px);
+    background: rgba(6, 10, 18, 0.92);
+    backdrop-filter: blur(16px);
   }
 
   .lightbox-card {
     @apply rounded-[28px] border border-white/10 bg-slate-950/[0.92] shadow-[0_20px_60px_rgba(0,0,0,0.45)];
   }
 
+  /* ── Animated background blobs ── */
   .bg-blob-1,
   .bg-blob-2,
   .bg-blob-3 {
@@ -134,11 +216,12 @@
     @apply bottom-0 right-1/4 h-72 w-72 bg-stone-200/60 dark:bg-white/5;
   }
 
+  /* ── Scroll reveal ── */
   .scroll-reveal,
   .scroll-reveal-stagger {
     opacity: 0;
     transform: translateY(18px);
-    transition: opacity 0.55s ease, transform 0.55s ease;
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .scroll-reveal.visible,
@@ -147,18 +230,41 @@
     transform: translateY(0);
   }
 
+  /* ── Forms ── */
   .input-glass {
-    @apply rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 dark:border-white/10 dark:bg-white/5 dark:text-white;
+    @apply rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition
+           focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20
+           dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:border-teal-400;
   }
 
+  /* ── Admin ── */
   .admin-card {
     @apply glass-card rounded-[28px] p-6;
   }
+
+  /* ── FAQ expand indicator ── */
+  .faq-item {
+    @apply glass-card rounded-[24px] p-5 transition-all duration-200;
+  }
+  .faq-item[open] {
+    @apply shadow-[0_20px_48px_rgba(15,23,42,0.1)] dark:shadow-[0_20px_48px_rgba(0,0,0,0.28)];
+  }
+  .faq-summary {
+    @apply flex items-center justify-between gap-4 text-base font-semibold text-slate-900 dark:text-white;
+  }
+  .faq-summary::after {
+    content: '+';
+    @apply shrink-0 text-xl font-light text-emerald-600 transition-transform duration-200 dark:text-teal-300;
+  }
+  details[open] .faq-summary::after {
+    content: '−';
+  }
 }
 
+/* ── Scrollbar ── */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -166,10 +272,15 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.34);
+  background: rgba(100, 116, 139, 0.28);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(71, 85, 105, 0.52);
+  background: rgba(71, 85, 105, 0.46);
+}
+
+/* ── Font display helper ── */
+.font-display {
+  font-family: var(--font-display, system-ui, sans-serif);
 }

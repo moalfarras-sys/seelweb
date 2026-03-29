@@ -59,6 +59,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["NotoSans", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "system-ui", "sans-serif"],
       },
       spacing: {
         "128": "32rem",

@@ -45,7 +45,7 @@ export default function Navbar() {
 
   return (
     <>
-      <div className="hidden border-b border-black/5 bg-white/80 py-2 text-slate-600 backdrop-blur lg:block dark:border-white/5 dark:bg-slate-950/60 dark:text-white/75">
+      <div className="hidden border-b border-black/[0.06] bg-white/85 py-2 text-slate-600 backdrop-blur-lg lg:block dark:border-white/5 dark:bg-slate-950/70 dark:text-white/70">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-8 text-xs">
           <div className="flex items-center gap-5">
             <a href={`tel:${contact.primaryPhone}`} className="inline-flex items-center gap-2 transition hover:text-emerald-700 dark:hover:text-teal-300">
@@ -140,7 +140,7 @@ export default function Navbar() {
 
           <div className="hidden items-center gap-3 lg:flex">
             <ThemeToggle />
-            <Link href="/buchen" className="btn-primary-glass px-5 py-3 text-sm font-semibold">
+            <Link href="/buchen" className="btn-primary-glass px-5 py-[0.7rem] text-sm font-semibold">
               Jetzt buchen
             </Link>
           </div>
