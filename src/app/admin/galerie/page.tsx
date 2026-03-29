@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import {
+  AlertCircle,
   ArrowDown,
   ArrowUp,
   Eye,
@@ -32,6 +33,12 @@ export default function GaleriePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState("");
+  const [uploadSuccess, setUploadSuccess] = useState("");
+  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [renderErrors, setRenderErrors] = useState<Record<string, boolean>>({});
   const [uploadForm, setUploadForm] = useState({
     title: "",
     alt: "",
@@ -40,7 +47,6 @@ export default function GaleriePage() {
     showOnHomepage: true,
     isFeatured: false,
   });
-  const [file, setFile] = useState<File | null>(null);
 
   async function load() {
     setLoading(true);
@@ -55,6 +61,12 @@ export default function GaleriePage() {
   useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (filePreviewUrl) URL.revokeObjectURL(filePreviewUrl);
+    };
+  }, [filePreviewUrl]);
 
   const orderedItems = useMemo(
     () => [...items].sort((a, b) => a.sortOrder - b.sortOrder),
@@ -76,6 +88,51 @@ export default function GaleriePage() {
       const next = [...ordered];
       [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
       return next.map((item, orderIndex) => ({ ...item, sortOrder: orderIndex }));
+    });
+  }
+
+  function setSelectedFile(nextFile: File | null) {
+    setUploadError("");
+    setUploadSuccess("");
+    setFile(nextFile);
+    setUploadProgress(0);
+    if (filePreviewUrl) {
+      URL.revokeObjectURL(filePreviewUrl);
+      setFilePreviewUrl(null);
+    }
+    if (nextFile) {
+      setFilePreviewUrl(URL.createObjectURL(nextFile));
+    }
+  }
+
+  function uploadGalleryFormData(formData: FormData) {
+    return new Promise<{ item?: GalleryItem }>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/api/admin/gallery");
+      xhr.responseType = "json";
+
+      xhr.upload.onprogress = (event) => {
+        if (!event.lengthComputable) return;
+        const nextProgress = Math.max(15, Math.min(85, Math.round((event.loaded / event.total) * 85)));
+        setUploadProgress(nextProgress);
+      };
+
+      xhr.onerror = () => reject(new Error("Netzwerkfehler beim Upload"));
+      xhr.onload = () => {
+        const payload =
+          xhr.response && typeof xhr.response === "object"
+            ? (xhr.response as { error?: string; item?: GalleryItem })
+            : null;
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve(payload || {});
+          return;
+        }
+
+        reject(new Error(payload?.error || "Upload fehlgeschlagen"));
+      };
+
+      xhr.send(formData);
     });
   }
 
@@ -117,6 +174,10 @@ export default function GaleriePage() {
   async function uploadItem() {
     if (!file) return;
     setUploading(true);
+    setUploadError("");
+    setUploadSuccess("");
+    setUploadProgress(15);
+
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -126,8 +187,22 @@ export default function GaleriePage() {
       formData.append("isVisible", String(uploadForm.isVisible));
       formData.append("showOnHomepage", String(uploadForm.showOnHomepage));
       formData.append("isFeatured", String(uploadForm.isFeatured));
-      await fetch("/api/admin/gallery", { method: "POST", body: formData });
-      setFile(null);
+
+      const payload = await uploadGalleryFormData(formData);
+      setUploadProgress(90);
+      const uploadedItem = payload.item;
+      if (!uploadedItem?.imageUrl) {
+        throw new Error("Bilddatensatz wurde ohne gültige Bild-URL gespeichert");
+      }
+
+      const imageCheck = await fetch(uploadedItem.imageUrl, { method: "HEAD", cache: "no-store" });
+      if (!imageCheck.ok) {
+        throw new Error(`Bild ist nach dem Upload nicht erreichbar (${imageCheck.status})`);
+      }
+
+      setUploadProgress(100);
+      setUploadSuccess("Bild erfolgreich hochgeladen und geprüft.");
+      setSelectedFile(null);
       setUploadForm({
         title: "",
         alt: "",
@@ -137,8 +212,11 @@ export default function GaleriePage() {
         isFeatured: false,
       });
       await load();
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "Upload fehlgeschlagen");
     } finally {
       setUploading(false);
+      window.setTimeout(() => setUploadProgress(0), 1200);
     }
   }
 
@@ -177,7 +255,9 @@ export default function GaleriePage() {
           </div>
           <div>
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Neues Bild hochladen</h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Neue Uploads werden im Ordner `public/uploads/gallery` gespeichert.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Uploads werden gespeichert und nach dem Upload direkt auf Erreichbarkeit geprüft.
+            </p>
           </div>
         </div>
 
@@ -192,7 +272,7 @@ export default function GaleriePage() {
           <label className={`${inputClass} flex cursor-pointer items-center justify-center gap-2`}>
             <Plus size={16} />
             <span>{file ? file.name : "Datei auswählen"}</span>
-            <input type="file" accept="image/*" className="hidden" onChange={(event) => setFile(event.target.files?.[0] || null)} />
+            <input type="file" accept="image/*" className="hidden" onChange={(event) => setSelectedFile(event.target.files?.[0] || null)} />
           </label>
         </div>
 
@@ -211,6 +291,43 @@ export default function GaleriePage() {
           </label>
         </div>
 
+        {filePreviewUrl && (
+          <div className="mt-5 flex flex-wrap items-start gap-4 rounded-[24px] border border-slate-200 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
+            <div className="relative h-28 w-36 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 dark:border-white/10 dark:bg-white/5">
+              <Image src={filePreviewUrl} alt="Lokale Vorschau" fill unoptimized className="object-cover" />
+            </div>
+            <div className="space-y-2 text-sm text-slate-600 dark:text-white/60">
+              <p className="font-semibold text-slate-900 dark:text-white">Lokale Vorschau vor dem Upload</p>
+              <p>{file?.name}</p>
+              <p>{file ? `${Math.round(file.size / 1024)} KB` : ""}</p>
+            </div>
+          </div>
+        )}
+
+        {(uploading || uploadError || uploadSuccess) && (
+          <div className="mt-5 space-y-3">
+            {uploading && (
+              <div className="space-y-2">
+                <div className="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-navy-800">
+                  <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${uploadProgress}%` }} />
+                </div>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Upload wird verarbeitet und geprüft...</p>
+              </div>
+            )}
+            {uploadError && (
+              <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+                <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                <span>{uploadError}</span>
+              </div>
+            )}
+            {uploadSuccess && (
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+                {uploadSuccess}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="mt-5">
           <button onClick={uploadItem} disabled={uploading || !file} className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 disabled:opacity-60 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
             {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
@@ -224,7 +341,22 @@ export default function GaleriePage() {
           <article key={item.id} className="glass-card rounded-[28px] p-5">
             <div className="grid gap-5 md:grid-cols-[180px_1fr]">
               <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 dark:border-white/10 dark:bg-white/5">
-                <Image src={item.imageUrl} alt={item.alt} fill className="object-cover" sizes="180px" />
+                {!renderErrors[item.id] ? (
+                  <Image
+                    src={item.imageUrl}
+                    alt={item.alt}
+                    fill
+                    unoptimized
+                    className="object-cover"
+                    sizes="180px"
+                    onError={() => setRenderErrors((current) => ({ ...current, [item.id]: true }))}
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center gap-2 px-4 text-center text-xs text-red-600 dark:text-red-300">
+                    <AlertCircle size={14} />
+                    <span>Bild kann nicht geladen werden: {item.imageUrl}</span>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-3">
@@ -255,6 +387,11 @@ export default function GaleriePage() {
                     ))}
                   </select>
                   <input className={inputClass} type="number" value={index + 1} onChange={(event) => updateItem(item.id, { sortOrder: Number(event.target.value) - 1 })} />
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-white/45">
+                  <p>Bild-URL: {item.imageUrl}</p>
+                  <p className="mt-1 break-all">Storage-Pfad: {item.storagePath || "nicht gesetzt"}</p>
                 </div>
 
                 <div className="flex flex-wrap gap-4 text-sm text-slate-600 dark:text-slate-300">

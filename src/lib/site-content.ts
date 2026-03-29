@@ -6,6 +6,10 @@ import {
   COMPANY_LEGAL,
   CONTACT,
 } from "@/config/contact";
+import {
+  extractGalleryFileName,
+  getGalleryMediaUrl,
+} from "@/lib/gallery-storage";
 import type {
   GalleryCategory,
   GalleryItem,
@@ -272,6 +276,14 @@ function normalizeGalleryItems(items: GalleryItem[]) {
     .sort((a, b) => a.sortOrder - b.sortOrder)
     .map((item, index) => ({
       ...item,
+      imageUrl:
+        extractGalleryFileName(item.imageUrl, item.storagePath) &&
+        (item.imageUrl?.startsWith("/uploads/gallery/") ||
+          item.imageUrl?.startsWith("/api/gallery/media/"))
+          ? getGalleryMediaUrl(
+              extractGalleryFileName(item.imageUrl, item.storagePath) as string,
+            )
+          : item.imageUrl,
       sortOrder: index,
       updatedAt: item.updatedAt || nowIso(),
     }));

@@ -1,6 +1,6 @@
-import fs from "fs/promises";
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
+import { removeGalleryUploadCopies } from "@/lib/gallery-storage";
 import {
   getGalleryItems,
   removeGalleryItem,
@@ -61,15 +61,12 @@ export async function DELETE(
 
   try {
     const removed = await removeGalleryItem(params.id);
-    if (removed?.imageUrl.startsWith("/uploads/gallery/")) {
-      const absolute = removed.storagePath;
-      if (absolute) {
-        await fs.rm(absolute, { force: true });
-      }
+    if (removed) {
+      await removeGalleryUploadCopies(removed.imageUrl, removed.storagePath);
     }
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("DELETE /api/admin/gallery/[id] error:", error);
-    return NextResponse.json({ error: "Löschen fehlgeschlagen" }, { status: 500 });
+    return NextResponse.json({ error: "L\u00f6schen fehlgeschlagen" }, { status: 500 });
   }
 }

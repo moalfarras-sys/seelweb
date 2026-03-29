@@ -1,16 +1,16 @@
-import fs from "fs/promises";
-import path from "path";
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
+import {
+  getGalleryMediaUrl,
+  persistGalleryUpload,
+} from "@/lib/gallery-storage";
 import {
   createUploadFileName,
   getGalleryItems,
   saveGalleryItems,
 } from "@/lib/site-content";
 import type { GalleryCategory, GalleryItem } from "@/types/site-content";
-
-const GALLERY_UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "gallery");
 
 function toBoolean(value: FormDataEntryValue | null, fallback = false) {
   if (value === null) return fallback;
@@ -59,22 +59,23 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const file = formData.get("file");
     if (!(file instanceof File) || file.size === 0) {
-      return NextResponse.json({ error: "Bitte ein Bild auswählen" }, { status: 400 });
+      return NextResponse.json({ error: "Bitte ein Bild ausw\u00e4hlen" }, { status: 400 });
+    }
+    if (!file.type.startsWith("image/")) {
+      return NextResponse.json({ error: "Es k\u00f6nnen nur Bilddateien hochgeladen werden" }, { status: 400 });
     }
 
-    await fs.mkdir(GALLERY_UPLOAD_DIR, { recursive: true });
     const fileName = createUploadFileName(file.name);
-    const absoluteFile = path.join(GALLERY_UPLOAD_DIR, fileName);
     const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(absoluteFile, buffer);
+    const uploadResult = await persistGalleryUpload(fileName, buffer);
 
     const items = await getGalleryItems();
     const nextItem: GalleryItem = {
       id: randomUUID(),
       title: String(formData.get("title") || "Neues Bild").trim(),
       alt: String(formData.get("alt") || "Bild von SEEL Transport & Reinigung").trim(),
-      imageUrl: `/uploads/gallery/${fileName}`,
-      storagePath: absoluteFile,
+      imageUrl: getGalleryMediaUrl(uploadResult.fileName),
+      storagePath: uploadResult.storagePath,
       category: sanitizeCategory(String(formData.get("category") || "umzug")),
       sortOrder: items.length,
       isVisible: toBoolean(formData.get("isVisible"), true),
@@ -85,9 +86,12 @@ export async function POST(request: Request) {
     };
 
     await saveGalleryItems([...items, nextItem]);
-    return NextResponse.json({ success: true, item: nextItem });
+    return NextResponse.json({ success: true, item: nextItem, writtenFiles: uploadResult.writtenFiles });
   } catch (error) {
     console.error("POST /api/admin/gallery error:", error);
-    return NextResponse.json({ error: "Upload fehlgeschlagen" }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Upload fehlgeschlagen" },
+      { status: 500 },
+    );
   }
 }
