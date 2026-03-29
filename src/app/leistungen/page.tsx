@@ -22,6 +22,7 @@ export default async function LeistungenPage() {
       description: "Privatumzüge, Berlin-Umzüge und Brandenburg-Routen mit klarer Taktung und transparenter Preisstruktur.",
       href: "/leistungen/umzug-berlin",
       image: "/images/umzug-1.jpeg",
+      alt: "SEEL Transport Privatumzug Berlin – Möbeltransport und Umzugsteam",
       price: formatPricePerHour(prices.umzugStandard),
       bullets: ["Privatumzug Berlin", "Umzug Berlin-Brandenburg", "Montage und Tragehilfe", "Halteverbotszonen auf Wunsch"],
     },
@@ -31,6 +32,7 @@ export default async function LeistungenPage() {
       description: "Projektorientierte Umzüge für Kanzleien, Praxen, Agenturen und gewerbliche Flächen mit minimaler Unterbrechung.",
       href: "/leistungen/gewerbe",
       image: "/images/corporate-glass-cleaning.png",
+      alt: "Professionelle Glasreinigung im Büro – SEEL Gewerbeservice Berlin",
       price: formatPricePerHour(prices.gewerbeUmzug),
       bullets: ["Projektplanung", "IT-Equipment", "Möbellogistik", "Optionale Nachreinigung"],
     },
@@ -40,6 +42,7 @@ export default async function LeistungenPage() {
       description: "Ferien- und Wochenendumzüge für Schulen, Kitas, Bibliotheken und Bildungseinrichtungen.",
       href: "/leistungen/schulumzug",
       image: "/images/corporate-school-cleaning.png",
+      alt: "Schulumzug Berlin – SEEL Transport für Schulen und Bildungseinrichtungen",
       price: formatPricePerHour(prices.umzugStandard),
       bullets: ["Ferienfenster", "Präzise Etappen", "IT- und Möbellogistik", "Kein Unterrichtsausfall"],
     },
@@ -49,6 +52,7 @@ export default async function LeistungenPage() {
       description: "Wohnungsreinigung, Endreinigung und gewerbliche Reinigung mit abgestimmten Checklisten und fester Kommunikation.",
       href: "/leistungen/reinigung",
       image: "/images/cleaning-team-office.png",
+      alt: "SEEL Reinigungsteam bei der professionellen Büroreinigung Berlin",
       price: formatPricePerHour(prices.reinigungWohnung),
       bullets: ["Wohnungsreinigung", "Endreinigung", "Büroreinigung", "Feste Leistungslisten"],
     },
@@ -58,6 +62,7 @@ export default async function LeistungenPage() {
       description: "Räumung, Demontage und fachgerechte Entsorgung für Wohnung, Keller, Gewerbe und Nachlass.",
       href: "/leistungen/entruempelung",
       image: "/images/waste-disposal-recycling.png",
+      alt: "Umweltgerechte Entrümpelung und Entsorgung Berlin – SEEL Transport",
       price: formatPricePerHour(prices.entruempelung),
       bullets: ["Besenreine Übergabe", "Umweltgerechte Entsorgung", "Kurzfristige Termine", "Dokumentierte Abwicklung"],
     },
@@ -65,38 +70,38 @@ export default async function LeistungenPage() {
 
   return (
     <>
-      <section className="gradient-navy py-20 md:py-28">
+      <section className="bg-[linear-gradient(135deg,#0d1724_0%,#112132_52%,#173832_100%)] py-20 md:py-28">
         <div className="mx-auto max-w-7xl px-4 text-center md:px-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-teal-300">Leistungen</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-200">Leistungen</p>
           <h1 className="mt-4 text-4xl font-bold text-white md:text-6xl">Servicefelder für Berlin, Brandenburg und darüber hinaus</h1>
-          <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-silver-300">
+          <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-slate-300">
             Alle Leistungen sind auf schnelle Orientierung, klare Preise und verlässliche Kommunikation ausgelegt. So finden Kundinnen und Kunden sofort den passenden Einsatzbereich.
           </p>
         </div>
       </section>
 
-      <section className="bg-white py-20 dark:bg-navy-950">
+      <section className="py-20">
         <div className="mx-auto max-w-7xl space-y-12 px-4 md:px-8">
           {sections.map((section, index) => (
-            <article key={section.id} id={section.id} className="grid items-center gap-8 overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm dark:border-navy-700/50 dark:bg-navy-900 lg:grid-cols-2">
+            <article key={section.id} id={section.id} className="glass-card grid items-center gap-8 overflow-hidden rounded-[2rem] lg:grid-cols-2">
               <div className={index % 2 === 1 ? "order-2 lg:order-1" : ""}>
                 <div className="relative h-72">
-                  <Image src={section.image} alt={section.title} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
+                  <Image src={section.image} alt={section.alt} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
                 </div>
               </div>
               <div className={`p-8 ${index % 2 === 1 ? "order-1 lg:order-2" : ""}`}>
-                <h2 className="text-3xl font-bold text-navy-800 dark:text-white">{section.title}</h2>
-                <p className="mt-4 text-sm leading-7 text-silver-600 dark:text-silver-300">{section.description}</p>
-                <p className="mt-5 text-sm font-semibold text-teal-600 dark:text-teal-300">{section.price} · Mindestabnahme 2 Stunden</p>
+                <h2 className="text-3xl font-bold text-slate-900 dark:text-white">{section.title}</h2>
+                <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-white/60">{section.description}</p>
+                <p className="mt-5 text-sm font-semibold text-emerald-700 dark:text-teal-300">{section.price} · Mindestabnahme 2 Stunden</p>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   {section.bullets.map((bullet) => (
-                    <div key={bullet} className="flex items-start gap-2 rounded-2xl bg-gray-50 px-4 py-3 text-sm text-navy-700 dark:bg-navy-800/60 dark:text-silver-200">
-                      <CheckCircle2 size={16} className="mt-0.5 text-teal-500" />
+                    <div key={bullet} className="glass-card flex items-start gap-2 rounded-2xl px-4 py-3 text-sm text-slate-700 dark:text-white/70">
+                      <CheckCircle2 size={16} className="mt-0.5 text-emerald-600 dark:text-teal-300" />
                       {bullet}
                     </div>
                   ))}
                 </div>
-                <Link href={section.href} className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-teal-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-600">
+                <Link href={section.href} className="btn-primary-glass mt-6 inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold">
                   Details ansehen
                   <ArrowRight size={16} />
                 </Link>
@@ -106,18 +111,18 @@ export default async function LeistungenPage() {
         </div>
       </section>
 
-      <section className="bg-gray-50 py-20 dark:bg-navy-900">
+      <section className="py-20">
         <div className="mx-auto max-w-4xl px-4 text-center md:px-8">
-          <h2 className="text-3xl font-bold text-navy-800 dark:text-white md:text-4xl">Direkt online anfragen</h2>
-          <p className="mt-4 text-lg leading-8 text-silver-600 dark:text-silver-300">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white md:text-4xl">Direkt online anfragen</h2>
+          <p className="mt-4 text-lg leading-8 text-slate-600 dark:text-white/60">
             Nutzen Sie den Buchungsprozess für eine schnelle Preisorientierung oder senden Sie uns Ihre Festpreisanfrage über das Kontaktformular.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-            <Link href="/buchen" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-600">
+            <Link href="/buchen" className="btn-primary-glass inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold">
               Jetzt buchen
               <ArrowRight size={16} />
             </Link>
-            <Link href="/kontakt" className="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-6 py-3.5 text-sm font-semibold text-navy-800 transition hover:border-teal-500 hover:text-teal-600 dark:border-navy-700 dark:bg-navy-900 dark:text-white">
+            <Link href="/kontakt" className="btn-secondary-glass inline-flex items-center justify-center px-6 py-3.5 text-sm font-semibold">
               Festpreis anfragen
             </Link>
           </div>

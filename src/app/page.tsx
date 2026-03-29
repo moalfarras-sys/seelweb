@@ -75,13 +75,15 @@ export default async function HomePage() {
   const services = [
     {
       title: "Privat- und Firmenumzug",
+      alt: "SEEL Transport Umzugsteam beim Möbeltransport in Berlin",
       description: "Strukturierte Umzüge mit erfahrenem Team, festen Zeitfenstern und optionaler Montage.",
       href: "/leistungen/umzug-berlin",
       price: formatPricePerHour(prices.umzugStandard),
-      image: "/images/moving-truck-hero.png",
+      image: "/images/umzug-1.jpeg",
     },
     {
       title: "Büro- und Gewerbeumzug",
+      alt: "Professioneller Büroumzug Berlin – Gewerbeumzug mit SEEL Transport",
       description: "Projektplanung für Unternehmen, Kanzleien, Praxen und Agenturen mit minimaler Ausfallzeit.",
       href: "/leistungen/gewerbe",
       price: formatPricePerHour(prices.gewerbeUmzug),
@@ -89,6 +91,7 @@ export default async function HomePage() {
     },
     {
       title: "Reinigung & Endreinigung",
+      alt: "SEEL Reinigungsteam bei der professionellen Büroreinigung in Berlin",
       description: "Wohnung, Büro und Übergabe aus einer Hand mit klaren Leistungslisten und sauberer Dokumentation.",
       href: "/leistungen/reinigung",
       price: formatPricePerHour(prices.reinigungWohnung),
@@ -96,6 +99,7 @@ export default async function HomePage() {
     },
     {
       title: "Entrümpelung",
+      alt: "SEEL Transport Entrümpelung und Entsorgung in Berlin – Räumungsfahrzeug",
       description: "Schnelle Räumung, saubere Trennung und fachgerechte Entsorgung mit klarer Abstimmung.",
       href: "/leistungen/entruempelung",
       price: formatPricePerHour(prices.entruempelung),
@@ -164,7 +168,7 @@ export default async function HomePage() {
           <div className="relative z-10">
             <div className="grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
               <div className="relative min-h-[420px] overflow-hidden rounded-[32px] border border-white/70 bg-slate-200 shadow-[0_30px_80px_rgba(15,23,42,0.18)] dark:border-white/10 dark:bg-white/5">
-                <Image src="/images/umzug-1.jpeg" alt="Umzugsteam von SEEL Transport in Berlin" fill priority className="object-cover" sizes="(max-width: 1024px) 100vw, 40vw" />
+                <Image src="/images/moving-truck-hero.png" alt="SEEL Transport Umzugswagen bereit für Einsatz in Berlin" fill priority className="object-cover" sizes="(max-width: 1024px) 100vw, 40vw" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
                   <p className="text-sm font-semibold">Saubere Planung und ruhige Durchführung</p>
@@ -173,7 +177,7 @@ export default async function HomePage() {
               </div>
               <div className="grid gap-4">
                 <div className="relative min-h-[200px] overflow-hidden rounded-[28px] border border-white/70 bg-slate-200 shadow-[0_20px_50px_rgba(15,23,42,0.16)] dark:border-white/10 dark:bg-white/5">
-                  <Image src="/images/cleaning-team-office.png" alt="Reinigungsteam von SEEL Transport & Reinigung" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 20vw" />
+                  <Image src="/images/cleaning-team-office.png" alt="Professionelles Reinigungsteam von SEEL Transport & Reinigung bei der Arbeit" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 20vw" />
                 </div>
                 <div className="glass-card rounded-[28px] p-6">
                   <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Warum Kunden bleiben</p>
@@ -217,7 +221,7 @@ export default async function HomePage() {
             {services.map((service) => (
               <Link key={service.href} href={service.href} className="glass-card group overflow-hidden rounded-[28px]">
                 <div className="relative h-56">
-                  <Image src={service.image} alt={service.title} fill className="object-cover transition duration-500 group-hover:scale-105" sizes="(max-width: 1280px) 100vw, 25vw" />
+                  <Image src={service.image} alt={service.alt} fill className="object-cover transition duration-500 group-hover:scale-105" sizes="(max-width: 1280px) 100vw, 25vw" />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
                   <span className="absolute bottom-4 left-4 rounded-full bg-white/92 px-3 py-1 text-xs font-semibold text-slate-900">
                     {service.price}

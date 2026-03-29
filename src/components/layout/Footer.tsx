@@ -26,7 +26,7 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           <div>
             <div className="flex items-center gap-3">
-              <Image src="/images/logo.jpeg" alt="SEEL Transport & Reinigung" width={48} height={48} className="rounded-2xl" />
+              <Image src="/images/logo.jpeg" alt="SEEL Transport & Reinigung Logo" width={48} height={48} className="rounded-2xl" />
               <div>
                 <p className="text-lg font-bold text-slate-900 dark:text-white">SEEL</p>
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-white/50">Transport & Reinigung</p>

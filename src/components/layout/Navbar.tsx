@@ -66,7 +66,7 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-3">
             <Image
               src="/images/logo.jpeg"
-              alt="SEEL Transport & Reinigung"
+              alt="SEEL Transport & Reinigung Logo"
               width={48}
               height={48}
               className="rounded-2xl shadow-md ring-1 ring-black/5"

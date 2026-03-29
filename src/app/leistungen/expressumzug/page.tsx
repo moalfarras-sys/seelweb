@@ -48,7 +48,7 @@ export default function ExpressumzugPage() {
       <section className="gradient-navy py-20 md:py-28 relative overflow-hidden">
         <Image
           src="/images/Express.jpeg"
-          alt="Expressumzug Berlin"
+          alt="SEEL Transport Expressumzug Berlin – kurzfristiger Umzug innerhalb 24 Stunden"
           fill
           className="object-cover opacity-20"
           priority

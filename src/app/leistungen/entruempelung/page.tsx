@@ -41,7 +41,7 @@ export default function EntruempelungPage() {
 
       <section className="gradient-navy py-20 md:py-28 relative overflow-hidden">
         <div className="absolute inset-0">
-          <Image src="/images/waste-disposal-recycling.png" alt="Entrümpelung" fill className="object-cover opacity-25" sizes="100vw" />
+          <Image src="/images/waste-disposal-recycling.png" alt="Umweltgerechte Entrümpelung und Entsorgung Berlin – SEEL Transport" fill className="object-cover opacity-25" sizes="100vw" />
         </div>
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <div className="absolute top-10 left-20 w-72 h-72 bg-orange-500 rounded-full blur-[128px]" />

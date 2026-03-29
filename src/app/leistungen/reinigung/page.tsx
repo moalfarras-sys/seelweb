@@ -37,15 +37,15 @@ export default async function ReinigungPage() {
         {JSON.stringify(buildFaqSchema(faqItems))}
       </Script>
 
-      <section className="gradient-navy py-20 md:py-28">
+      <section className="bg-[linear-gradient(135deg,#0d1724_0%,#112132_52%,#173832_100%)] py-20 md:py-28">
         <div className="mx-auto max-w-5xl px-4 text-center md:px-8">
           <h1 className="text-4xl font-bold text-white md:text-5xl">Reinigung Berlin - Wohnung, Büro und Übergabe</h1>
-          <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-silver-300">
+          <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-slate-300">
             Ob Wohnungsreinigung, Endreinigung oder regelmäßige Büroreinigung — wir arbeiten mit klaren Leistungslisten,
             festen Teams und transparenter Preisstruktur.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-            <Link href="/buchen?service=HOME_CLEANING" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-600">
+            <Link href="/buchen?service=HOME_CLEANING" className="btn-primary-glass inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold">
               Reinigung buchen
               <ArrowRight size={16} />
             </Link>
@@ -56,7 +56,7 @@ export default async function ReinigungPage() {
         </div>
       </section>
 
-      <section className="bg-white py-20 dark:bg-navy-950">
+      <section className="py-20">
         <div className="mx-auto max-w-6xl px-4 md:px-8">
           <div className="grid gap-6 md:grid-cols-3">
             {[
@@ -64,16 +64,16 @@ export default async function ReinigungPage() {
               "Feste Teams und planbare Intervalle",
               "Fair kalkulierte Preise ohne versteckte Pauschalen",
             ].map((item) => (
-              <div key={item} className="rounded-[2rem] border border-gray-100 bg-gray-50/80 p-6 dark:border-navy-700/50 dark:bg-navy-800/60">
-                <CheckCircle2 size={18} className="text-teal-500" />
-                <p className="mt-4 text-sm leading-7 text-navy-800 dark:text-silver-200">{item}</p>
+              <div key={item} className="glass-card rounded-[28px] p-6">
+                <CheckCircle2 size={18} className="text-emerald-600 dark:text-teal-300" />
+                <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-white/60">{item}</p>
               </div>
             ))}
           </div>
 
           <div className="mt-10 grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
             <div>
-              <h2 className="text-3xl font-bold text-navy-800 dark:text-white">Was ist enthalten</h2>
+              <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Was ist enthalten</h2>
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 {[
                   "Endreinigung für Auszug und Übergabe",
@@ -83,25 +83,25 @@ export default async function ReinigungPage() {
                   "Fensterreinigung (innen)",
                   "Boden-, Tür- und Heizkörperreinigung",
                 ].map((item) => (
-                  <div key={item} className="rounded-2xl border border-gray-100 bg-white px-4 py-3 text-sm text-silver-600 shadow-sm dark:border-navy-700/50 dark:bg-navy-900 dark:text-silver-300">
+                  <div key={item} className="glass-card rounded-2xl px-4 py-3 text-sm text-slate-600 dark:text-white/60">
                     {item}
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-gray-100 bg-gray-50/80 p-8 dark:border-navy-700/50 dark:bg-navy-800/60">
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-teal-600">Startpreis</p>
-              <p className="mt-4 text-3xl font-bold text-navy-800 dark:text-white">{formatPricePerHour(prices.reinigungWohnung)}</p>
-              <p className="mt-3 text-sm leading-7 text-silver-600 dark:text-silver-300">
+            <div className="glass-card rounded-[28px] p-8">
+              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-700 dark:text-teal-300">Startpreis</p>
+              <p className="mt-4 text-3xl font-bold text-slate-900 dark:text-white">{formatPricePerHour(prices.reinigungWohnung)}</p>
+              <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-white/60">
                 Mindestabnahme 2 Stunden. Zusätzlicher Aufwand wie Fensterreinigung, Backofen oder Grundreinigung wird transparent kalkuliert.
               </p>
               <div className="mt-6 flex flex-col gap-3">
-                <Link href="/buchen?service=HOME_CLEANING" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-600">
+                <Link href="/buchen?service=HOME_CLEANING" className="btn-primary-glass inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold">
                   Jetzt buchen
                   <ArrowRight size={16} />
                 </Link>
-                <Link href="/leistungen/endreinigung" className="text-sm font-semibold text-teal-600 transition hover:text-teal-500">
+                <Link href="/leistungen/endreinigung" className="text-sm font-semibold text-emerald-700 transition hover:text-emerald-600 dark:text-teal-300">
                   Zur Endreinigung
                 </Link>
               </div>
@@ -110,12 +110,12 @@ export default async function ReinigungPage() {
         </div>
       </section>
 
-      <section className="bg-gray-50 py-20 dark:bg-navy-900">
+      <section className="py-20">
         <div className="mx-auto max-w-4xl space-y-4 px-4 md:px-8">
           {faqItems.map((faq) => (
-            <details key={faq.question} className="rounded-3xl border border-gray-100 bg-white p-5 dark:border-navy-700/50 dark:bg-navy-800/60">
-              <summary className="cursor-pointer list-none text-sm font-semibold text-navy-800 dark:text-white">{faq.question}</summary>
-              <p className="mt-4 text-sm leading-7 text-silver-600 dark:text-silver-300">{faq.answer}</p>
+            <details key={faq.question} className="glass-card rounded-[24px] p-5">
+              <summary className="cursor-pointer list-none text-sm font-semibold text-slate-900 dark:text-white">{faq.question}</summary>
+              <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-white/60">{faq.answer}</p>
             </details>
           ))}
         </div>
@@ -130,17 +130,17 @@ export default async function ReinigungPage() {
         }))}
       />
 
-      <section className="bg-white py-20 dark:bg-navy-950">
+      <section className="py-20">
         <div className="mx-auto max-w-4xl px-4 text-center md:px-8">
-          <h2 className="text-3xl font-bold text-navy-800 dark:text-white md:text-4xl">Verwandte Leistungen</h2>
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white md:text-4xl">Verwandte Leistungen</h2>
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-            <Link href="/leistungen/endreinigung" className="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-6 py-3.5 text-sm font-semibold text-navy-800 transition hover:border-teal-500 hover:text-teal-600 dark:border-navy-700 dark:bg-navy-900 dark:text-white">
+            <Link href="/leistungen/endreinigung" className="btn-secondary-glass px-6 py-3.5 text-sm font-semibold">
               Endreinigung
             </Link>
-            <Link href="/leistungen/entruempelung" className="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-6 py-3.5 text-sm font-semibold text-navy-800 transition hover:border-teal-500 hover:text-teal-600 dark:border-navy-700 dark:bg-navy-900 dark:text-white">
+            <Link href="/leistungen/entruempelung" className="btn-secondary-glass px-6 py-3.5 text-sm font-semibold">
               Entrümpelung
             </Link>
-            <Link href="/leistungen/privatumzug" className="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-6 py-3.5 text-sm font-semibold text-navy-800 transition hover:border-teal-500 hover:text-teal-600 dark:border-navy-700 dark:bg-navy-900 dark:text-white">
+            <Link href="/leistungen/privatumzug" className="btn-secondary-glass px-6 py-3.5 text-sm font-semibold">
               Privatumzug
             </Link>
           </div>

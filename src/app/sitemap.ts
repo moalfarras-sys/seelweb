@@ -40,6 +40,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: new URL(path, BASE_URL).toString(),
     lastModified,
     changeFrequency: path === "/" ? "weekly" : "monthly",
-    priority: path === "/" ? 1 : path === "/buchen" ? 0.9 : 0.8,
+    priority: path === "/" ? 1 : path === "/buchen" || path === "/leistungen/umzug-berlin" ? 0.9 : 0.8,
   }));
 }

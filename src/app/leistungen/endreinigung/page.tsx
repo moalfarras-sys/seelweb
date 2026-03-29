@@ -5,6 +5,7 @@ import Script from "next/script";
 import { motion } from "framer-motion";
 import { ArrowRight, Check, SprayCan, Sparkles, Shield, Star, Home, Clock } from "lucide-react";
 import ScrollReveal from "@/components/ui/ScrollReveal";
+import Gallery from "@/components/Gallery";
 import { buildFaqSchema } from "@/lib/seo";
 
 const benefits = [
@@ -116,6 +117,15 @@ export default function EndreinigungPage() {
           </div>
         </div>
       </section>
+
+      <Gallery
+        title="Unsere Reinigungsarbeiten"
+        subtitle="Einblicke"
+        images={Array.from({ length: 16 }, (_, i) => ({
+          src: `/images/clean/clean (${i + 1}).jpeg`,
+          alt: `SEEL Endreinigung Berlin – Arbeitsbild ${i + 1}`,
+        }))}
+      />
 
       <section className="gradient-navy section-padding">
         <div className="max-w-4xl mx-auto text-center">

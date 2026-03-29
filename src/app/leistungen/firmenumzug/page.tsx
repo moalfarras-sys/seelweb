@@ -80,22 +80,22 @@ export default async function FirmenumzugPage() {
         {JSON.stringify(buildFaqSchema(faqItems))}
       </Script>
 
-      <section className="gradient-navy py-20 md:py-28">
+      <section className="bg-[linear-gradient(135deg,#0d1724_0%,#112132_52%,#173832_100%)] py-20 md:py-28">
         <div className="mx-auto max-w-5xl px-4 text-center md:px-8">
-          <p className="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-teal-300 backdrop-blur-xl">
+          <p className="inline-flex rounded-full border border-emerald-200/20 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-200 backdrop-blur-xl">
             Für Unternehmen & Gewerbe
           </p>
           <h1 className="mt-6 text-4xl font-bold text-white md:text-5xl">
             Firmenumzug Berlin – Projektplanung mit minimaler Ausfallzeit
           </h1>
-          <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-silver-300">
+          <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-slate-300">
             Für Unternehmen, Kanzleien, Praxen und Agenturen koordinieren wir Arbeitsplätze, Technik und
             Archivsysteme mit einem belastbaren Ablaufplan und klaren Meilensteinen.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
             <Link
               href="/buchen?service=MOVING"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-600"
+              className="btn-primary-glass inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold"
             >
               Firmenumzug anfragen
               <ArrowRight size={16} />
@@ -110,39 +110,40 @@ export default async function FirmenumzugPage() {
         </div>
       </section>
 
-      <section className="bg-white py-20 dark:bg-navy-950">
+      <section className="py-20">
         <div className="mx-auto max-w-7xl px-4 md:px-8">
           <div className="mb-10 text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-teal-600">Vorteile</p>
-            <h2 className="mt-4 text-3xl font-bold text-navy-800 dark:text-white md:text-4xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-700 dark:text-teal-300">
+              Vorteile
+            </p>
+            <h2 className="mt-4 text-3xl font-bold text-slate-900 dark:text-white md:text-4xl">
               Warum Unternehmen uns vertrauen
             </h2>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {benefits.map((item) => (
-              <div
-                key={item}
-                className="rounded-3xl border border-gray-100 bg-gray-50/80 p-6 dark:border-navy-700/50 dark:bg-navy-800/60"
-              >
-                <CheckCircle2 size={20} className="text-teal-500" />
-                <p className="mt-4 text-sm font-semibold text-navy-800 dark:text-white">{item}</p>
+              <div key={item} className="glass-card rounded-[28px] p-6">
+                <CheckCircle2 size={20} className="text-emerald-600 dark:text-teal-300" />
+                <p className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">{item}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="bg-gray-50 py-20 dark:bg-navy-900">
+      <section className="py-20">
         <div className="mx-auto max-w-6xl px-4 md:px-8">
           <div className="mb-10 text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-teal-600">Leistungsumfang</p>
-            <h2 className="mt-4 text-3xl font-bold text-navy-800 dark:text-white md:text-4xl">Was ist enthalten</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-700 dark:text-teal-300">
+              Leistungsumfang
+            </p>
+            <h2 className="mt-4 text-3xl font-bold text-slate-900 dark:text-white md:text-4xl">Was ist enthalten</h2>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {includedServices.map((item) => (
               <div
                 key={item}
-                className="rounded-2xl border border-gray-100 bg-white px-4 py-3 text-sm text-silver-600 shadow-sm dark:border-navy-700/50 dark:bg-navy-800 dark:text-silver-300"
+                className="glass-card rounded-2xl px-4 py-3 text-sm text-slate-600 dark:text-white/60"
               >
                 {item}
               </div>
@@ -151,23 +152,25 @@ export default async function FirmenumzugPage() {
         </div>
       </section>
 
-      <section className="bg-white py-20 dark:bg-navy-950">
+      <section className="py-20">
         <div className="mx-auto max-w-3xl px-4 text-center md:px-8">
-          <h2 className="text-3xl font-bold text-navy-800 dark:text-white">Preise</h2>
-          <p className="mt-4 text-4xl font-bold text-teal-600">{formatPricePerHour(prices.umzugStandard)}</p>
-          <p className="mt-2 text-sm text-silver-500">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Preise</h2>
+          <p className="mt-4 text-4xl font-bold text-emerald-700 dark:text-teal-300">
+            {formatPricePerHour(prices.umzugStandard)}
+          </p>
+          <p className="mt-2 text-sm text-slate-500">
             Mindestabnahme 2 Stunden · Je nach Projektumfang kalkulieren wir Anfahrtswege, Trageaufwand und Sonderleistungen
           </p>
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
               href="/buchen?service=MOVING"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-600"
+              className="btn-primary-glass inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold"
             >
               Firmenumzug buchen <ArrowRight size={16} />
             </Link>
             <Link
               href="/kontakt?subject=Festpreisanfrage%20-%20Firmenumzug"
-              className="inline-flex items-center justify-center rounded-2xl border border-gray-200 px-6 py-3.5 text-sm font-semibold text-navy-800 transition hover:border-teal-500 hover:text-teal-600 dark:border-navy-700 dark:text-white"
+              className="btn-secondary-glass px-6 py-3.5 text-sm font-semibold"
             >
               Festpreis anfragen
             </Link>
@@ -175,36 +178,33 @@ export default async function FirmenumzugPage() {
         </div>
       </section>
 
-      <section className="bg-gray-50 py-20 dark:bg-navy-900">
+      <section className="py-20">
         <div className="mx-auto max-w-4xl px-4 md:px-8">
-          <h2 className="mb-8 text-center text-3xl font-bold text-navy-800 dark:text-white">Häufige Fragen</h2>
+          <h2 className="mb-8 text-center text-3xl font-bold text-slate-900 dark:text-white">Häufige Fragen</h2>
           <div className="space-y-4">
             {faqItems.map((faq) => (
-              <details
-                key={faq.question}
-                className="rounded-3xl border border-gray-100 bg-white p-5 dark:border-navy-700/50 dark:bg-navy-800/60"
-              >
-                <summary className="cursor-pointer list-none text-sm font-semibold text-navy-800 dark:text-white">
+              <details key={faq.question} className="glass-card rounded-[24px] p-5">
+                <summary className="cursor-pointer list-none text-sm font-semibold text-slate-900 dark:text-white">
                   {faq.question}
                 </summary>
-                <p className="mt-4 text-sm leading-7 text-silver-600 dark:text-silver-300">{faq.answer}</p>
+                <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-white/60">{faq.answer}</p>
               </details>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="gradient-navy py-20">
+      <section className="bg-[linear-gradient(135deg,#0d1724_0%,#112132_52%,#173832_100%)] py-20">
         <div className="mx-auto max-w-4xl px-4 text-center md:px-8">
           <h2 className="text-3xl font-bold text-white md:text-4xl">Ihr Firmenumzug – jetzt planen</h2>
-          <p className="mt-5 text-lg text-silver-300">
+          <p className="mt-5 text-lg text-white/75">
             Kontaktieren Sie uns für eine individuelle Projektplanung. Wir erstellen Ihnen ein unverbindliches
             Angebot mit klarem Ablaufplan.
           </p>
           <div className="mt-8 flex justify-center gap-4">
             <Link
               href="/kontakt?subject=Firmenumzug%20Anfrage"
-              className="inline-flex items-center justify-center rounded-2xl bg-teal-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-600"
+              className="btn-primary-glass inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold"
             >
               Jetzt Angebot anfordern
             </Link>
@@ -212,15 +212,15 @@ export default async function FirmenumzugPage() {
         </div>
       </section>
 
-      <section className="bg-white py-12 dark:bg-navy-950">
+      <section className="py-12">
         <div className="mx-auto max-w-7xl px-4 md:px-8">
-          <p className="mb-4 text-sm font-semibold text-navy-800 dark:text-white">Weitere Leistungen</p>
+          <p className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">Weitere Leistungen</p>
           <div className="flex flex-wrap gap-3">
             {internalLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="rounded-full border border-gray-200 px-4 py-2 text-sm text-navy-800 transition hover:border-teal-500 hover:text-teal-600 dark:border-navy-700 dark:text-silver-300"
+                className="rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:border-emerald-400 hover:text-emerald-700 dark:border-white/10 dark:text-white/70 dark:hover:text-teal-300"
               >
                 {link.label}
               </Link>
