@@ -8,6 +8,7 @@ import { getPrices, formatPricePerHour } from "@/lib/getPrices";
 import { buildFaqSchema, buildMetadata } from "@/lib/seo";
 import { fetchGoogleReviews } from "@/lib/google-reviews";
 import GoogleReviews from "@/components/GoogleReviews";
+import Gallery from "@/components/Gallery";
 
 export const metadata: Metadata = buildMetadata({
   title: "Umzüge, Reinigung und Entrümpelung",
@@ -35,6 +36,21 @@ const faqItems = [
   },
 ];
 
+const galleryImages = [
+  { src: "/images/umzug-1.jpeg", alt: "Umzug Berlin" },
+  { src: "/images/Express.jpeg", alt: "Expressumzug" },
+  { src: "/images/cleaning-team-office.png", alt: "Büroreinigung" },
+  { src: "/images/corporate-hallway-cleaning.png", alt: "Gewerbereinigung" },
+  { src: "/images/corporate-glass-cleaning.png", alt: "Glasreinigung" },
+  { src: "/images/corporate-school-cleaning.png", alt: "Schulreinigung" },
+  { src: "/images/waste-disposal-van.png", alt: "Entrümpelung" },
+  { src: "/images/waste-disposal-apartment.png", alt: "Wohnungsräumung" },
+  { src: "/images/clean/clean (1).jpeg", alt: "Reinigung Projekt 1" },
+  { src: "/images/clean/clean (2).jpeg", alt: "Reinigung Projekt 2" },
+  { src: "/images/clean/clean (3).jpeg", alt: "Reinigung Projekt 3" },
+  { src: "/images/clean/clean (4).jpeg", alt: "Reinigung Projekt 4" },
+];
+
 export default async function HomePage() {
   const prices = await getPrices();
   const reviewsData = await fetchGoogleReviews();
@@ -46,15 +62,8 @@ export default async function HomePage() {
     url: "https://seeltransport.de",
     telephone: "+49 172 8003410",
     email: "info@seeltransport.de",
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: "Berlin",
-      addressCountry: "DE",
-    },
-    areaServed: [
-      { "@type": "City", name: "Berlin" },
-      { "@type": "State", name: "Brandenburg" },
-    ],
+    address: { "@type": "PostalAddress", addressLocality: "Berlin", addressCountry: "DE" },
+    areaServed: [{ "@type": "City", name: "Berlin" }, { "@type": "State", name: "Brandenburg" }],
     openingHoursSpecification: {
       "@type": "OpeningHoursSpecification",
       dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
@@ -75,48 +84,12 @@ export default async function HomePage() {
   }
 
   const services = [
-    {
-      title: "Privat- und Firmenumzug",
-      description: "Strukturierte Umzüge mit erfahrenem Team, festen Zeitfenstern und optionaler Montage.",
-      href: "/leistungen/umzug-berlin",
-      price: formatPricePerHour(prices.umzugStandard),
-      image: "/images/umzug-1.jpeg",
-    },
-    {
-      title: "Büro- & Gewerbeumzug",
-      description: "Projektplanung für Unternehmen, Kanzleien, Praxen und Agenturen mit minimaler Ausfallzeit.",
-      href: "/leistungen/gewerbe",
-      price: formatPricePerHour(prices.gewerbeUmzug),
-      image: "/images/corporate-hallway-cleaning.png",
-    },
-    {
-      title: "Schulumzug Berlin",
-      description: "Ferien-, Wochenend- und Etappenumzüge für Schulen, Kitas und Bildungseinrichtungen.",
-      href: "/leistungen/schulumzug",
-      price: formatPricePerHour(prices.umzugStandard),
-      image: "/images/corporate-school-cleaning.png",
-    },
-    {
-      title: "Reinigung & Endreinigung",
-      description: "Wohnung, Büro und Übergabe aus einer Hand mit klaren Leistungslisten und festen Ansprechpartnern.",
-      href: "/leistungen/reinigung",
-      price: formatPricePerHour(prices.reinigungWohnung),
-      image: "/images/cleaning-team-office.png",
-    },
-    {
-      title: "Entrümpelung",
-      description: "Schnelle Räumung, saubere Trennung und fachgerechte Entsorgung in Berlin und Brandenburg.",
-      href: "/leistungen/entruempelung",
-      price: formatPricePerHour(prices.entruempelung),
-      image: "/images/waste-disposal-van.png",
-    },
-    {
-      title: "Expressumzug",
-      description: "Kurzfristige Umzüge mit priorisierter Disposition für besonders dringende Fälle.",
-      href: "/leistungen/expressumzug",
-      price: formatPricePerHour(prices.umzugExpress),
-      image: "/images/Express.jpeg",
-    },
+    { title: "Privat- und Firmenumzug", description: "Strukturierte Umzüge mit erfahrenem Team, festen Zeitfenstern und optionaler Montage.", href: "/leistungen/umzug-berlin", price: formatPricePerHour(prices.umzugStandard), image: "/images/umzug-1.jpeg" },
+    { title: "Büro- & Gewerbeumzug", description: "Projektplanung für Unternehmen, Kanzleien, Praxen und Agenturen mit minimaler Ausfallzeit.", href: "/leistungen/gewerbe", price: formatPricePerHour(prices.gewerbeUmzug), image: "/images/corporate-hallway-cleaning.png" },
+    { title: "Schulumzug Berlin", description: "Ferien-, Wochenend- und Etappenumzüge für Schulen, Kitas und Bildungseinrichtungen.", href: "/leistungen/schulumzug", price: formatPricePerHour(prices.umzugStandard), image: "/images/corporate-school-cleaning.png" },
+    { title: "Reinigung & Endreinigung", description: "Wohnung, Büro und Übergabe aus einer Hand mit klaren Leistungslisten.", href: "/leistungen/reinigung", price: formatPricePerHour(prices.reinigungWohnung), image: "/images/cleaning-team-office.png" },
+    { title: "Entrümpelung", description: "Schnelle Räumung, saubere Trennung und fachgerechte Entsorgung.", href: "/leistungen/entruempelung", price: formatPricePerHour(prices.entruempelung), image: "/images/waste-disposal-van.png" },
+    { title: "Expressumzug", description: "Kurzfristige Umzüge mit priorisierter Disposition.", href: "/leistungen/expressumzug", price: formatPricePerHour(prices.umzugExpress), image: "/images/Express.jpeg" },
   ];
 
   return (
@@ -128,95 +101,79 @@ export default async function HomePage() {
         {JSON.stringify(buildFaqSchema(faqItems))}
       </Script>
 
-      <section className="gradient-navy relative overflow-hidden py-20 md:py-28">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute left-10 top-10 h-72 w-72 rounded-full bg-teal-400 blur-[140px]" />
-          <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-blue-500 blur-[160px]" />
+      {/* ── HERO with full-screen image ── */}
+      <section className="relative min-h-[90vh] overflow-hidden">
+        <div className="absolute inset-0">
+          <Image src="/images/umzug-1.jpeg" alt="SEEL Transport Berlin" fill className="object-cover" priority sizes="100vw" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0f1e]/80 via-[#0a0f1e]/60 to-[#0a0f1e]/90" />
         </div>
 
-        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 md:px-8 lg:grid-cols-2">
-          <div>
-            <p className="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-teal-300 backdrop-blur-xl">
-              Umzugsfirma Berlin für Privat, Gewerbe und Bildungseinrichtungen
+        <div className="relative z-10 mx-auto flex min-h-[90vh] max-w-7xl items-center px-4 py-20 md:px-8">
+          <div className="max-w-3xl">
+            <p className="stat-card inline-flex px-4 py-2 text-sm font-semibold text-cyan-400">
+              Umzugsfirma Berlin · Seit 2016
             </p>
             <h1 className="mt-6 text-4xl font-bold leading-tight text-white md:text-6xl">
-              Moderne Umzüge, Reinigung und Entrümpelung für Berlin & Brandenburg
+              Umzüge, Reinigung &amp; Entrümpelung für Berlin
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-silver-200">
-              SEEL Transport & Reinigung verbindet klare Planung, transparente Preise und eine hochwertige Glass-UI-Erfahrung
-              mit echter operativer Zuverlässigkeit vor Ort.
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/70">
+              SEEL Transport verbindet klare Planung, transparente Preise und zuverlässige Teams.
+              Privat, Gewerbe oder Express — wir kümmern uns um alles.
             </p>
 
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-              <Link href="/buchen" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-600">
-                Jetzt Angebot anfragen
-                <ArrowRight size={16} />
+              <Link href="/buchen" className="btn-primary-glass inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold">
+                Jetzt Angebot anfragen <ArrowRight size={16} />
               </Link>
-              <a href={`tel:${CONTACT.PRIMARY_PHONE}`} className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-xl transition hover:bg-white/15">
+              <a href={`tel:${CONTACT.PRIMARY_PHONE}`} className="btn-secondary-glass inline-flex items-center justify-center px-6 py-3.5 text-sm font-semibold">
                 {CONTACT.PRIMARY_PHONE_DISPLAY}
               </a>
             </div>
 
-            <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-xl">
-                <p className="text-sm font-semibold text-white">Zuverlässiger Service in Berlin &amp; Brandenburg</p>
-                <p className="mt-2 text-sm text-silver-300">Flexible Termine auch kurzfristig</p>
+            <div className="mt-10 grid gap-4 sm:grid-cols-3">
+              <div className="stat-card">
+                <p className="text-lg font-bold text-white">{formatPricePerHour(prices.umzugStandard)}</p>
+                <p className="mt-1 text-xs text-white/50">Umzug Standard</p>
               </div>
-              <div className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-xl">
-                <p className="text-sm font-semibold text-white">{formatPricePerHour(prices.umzugStandard)}</p>
-                <p className="mt-2 text-sm text-silver-300">Mindestabnahme 2 Stunden · Berlin & Brandenburg</p>
+              <div className="stat-card">
+                <p className="text-lg font-bold text-white">{formatPricePerHour(prices.reinigungWohnung)}</p>
+                <p className="mt-1 text-xs text-white/50">Reinigung</p>
               </div>
-            </div>
-          </div>
-
-          <div className="relative">
-            <div className="relative overflow-hidden rounded-[2rem] border border-white/20 shadow-2xl shadow-black/20">
-              <Image
-                src="/images/umzug-1.jpeg"
-                alt="SEEL Transport Team beim Umzug in Berlin"
-                width={960}
-                height={1080}
-                priority
-                className="h-auto w-full object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-navy-950/60 via-transparent to-transparent" />
-            </div>
-
-            <div className="absolute -bottom-6 left-6 rounded-3xl border border-white/20 bg-white/15 p-5 backdrop-blur-xl">
-              <p className="text-sm font-semibold text-white">Expressumzug</p>
-              <p className="mt-1 text-sm text-teal-300">{formatPricePerHour(prices.umzugExpress)}</p>
+              <div className="stat-card">
+                <p className="text-lg font-bold text-cyan-400">24/7</p>
+                <p className="mt-1 text-xs text-white/50">Erreichbar</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="bg-white py-20 dark:bg-navy-950">
+      {/* ── SERVICES ── */}
+      <section className="section-glass relative z-10 py-20">
         <div className="mx-auto max-w-7xl px-4 md:px-8">
           <div className="mb-10 text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-teal-600">Unsere Leistungen</p>
-            <h2 className="mt-4 text-3xl font-bold text-navy-800 dark:text-white md:text-4xl">Alles zentral geplant, überall klar kommuniziert</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-cyan-400">Unsere Leistungen</p>
+            <h2 className="mt-4 text-3xl font-bold text-white md:text-4xl">Alles zentral geplant</h2>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {services.map((service) => (
-              <Link key={service.href} href={service.href} className="group overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl dark:border-navy-700/50 dark:bg-navy-900">
+              <Link key={service.href} href={service.href} className="glass-card group overflow-hidden rounded-2xl">
                 <div className="relative h-56">
                   <Image src={service.image} alt={service.title} fill className="object-cover transition duration-500 group-hover:scale-105" sizes="(max-width: 1280px) 100vw, 33vw" />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-navy-800 dark:text-white">{service.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-silver-600 dark:text-silver-300">{service.description}</p>
-                  <div className="mt-5 flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-teal-600 dark:text-teal-300">{service.price}</p>
-                      <p className="text-xs text-silver-500 dark:text-silver-400">Mindestabnahme 2 Stunden</p>
-                    </div>
-                    <span className="inline-flex items-center gap-1 text-sm font-semibold text-navy-800 dark:text-white">
-                      Mehr erfahren
-                      <ArrowRight size={16} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-3 left-3">
+                    <span className="stat-card inline-flex px-3 py-1.5 text-xs font-semibold text-cyan-400">
+                      {service.price}
                     </span>
                   </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-white">{service.title}</h3>
+                  <p className="mt-2 text-sm leading-7 text-white/60">{service.description}</p>
+                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-cyan-400">
+                    Mehr erfahren <ArrowRight size={14} />
+                  </span>
                 </div>
               </Link>
             ))}
@@ -224,52 +181,61 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-gray-50 py-20 dark:bg-navy-900">
+      {/* ── TRUST BADGES ── */}
+      <section className="section-glass-alt relative z-10 py-20">
         <div className="mx-auto max-w-7xl px-4 md:px-8">
-          <div className="grid gap-6 lg:grid-cols-4">
-            {[
-              "24/7 erreichbar",
-              "Transparent kalkuliert",
-              "Versichert nach HGB §451e",
-              "Berlin & Brandenburg",
-            ].map((item) => (
-              <div key={item} className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm dark:border-navy-700/50 dark:bg-navy-800/60">
-                <CheckCircle2 size={20} className="text-teal-500" />
-                <p className="mt-4 text-sm font-semibold text-navy-800 dark:text-white">{item}</p>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {["24/7 erreichbar", "Transparent kalkuliert", "Versichert nach HGB §451e", "Berlin & Brandenburg"].map((item) => (
+              <div key={item} className="glass-card flex items-start gap-3 rounded-2xl p-6">
+                <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-cyan-400" />
+                <p className="text-sm font-semibold text-white">{item}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
+      {/* ── REVIEWS ── */}
       <GoogleReviews data={reviewsData} />
 
-      <section className="bg-gray-50 py-20 dark:bg-navy-900">
+      {/* ── FAQ ── */}
+      <section className="section-glass relative z-10 py-20">
         <div className="mx-auto max-w-4xl px-4 md:px-8">
+          <h2 className="mb-8 text-center text-3xl font-bold text-white">Häufige Fragen</h2>
           <div className="space-y-4">
             {faqItems.map((faq) => (
-              <details key={faq.question} className="rounded-3xl border border-gray-100 bg-white p-5 dark:border-navy-700/50 dark:bg-navy-800/60">
-                <summary className="cursor-pointer list-none text-sm font-semibold text-navy-800 dark:text-white">{faq.question}</summary>
-                <p className="mt-4 text-sm leading-7 text-silver-600 dark:text-silver-300">{faq.answer}</p>
+              <details key={faq.question} className="glass-card rounded-2xl p-5">
+                <summary className="cursor-pointer list-none text-sm font-semibold text-white">{faq.question}</summary>
+                <p className="mt-4 text-sm leading-7 text-white/60">{faq.answer}</p>
               </details>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="gradient-navy py-20">
+      {/* ── GALLERY ── */}
+      <Gallery
+        images={galleryImages}
+        title="Unsere Arbeit in Bildern"
+        subtitle="Galerie"
+      />
+
+      {/* ── FINAL CTA ── */}
+      <section className="relative z-10 py-20">
         <div className="mx-auto max-w-4xl px-4 text-center md:px-8">
-          <h2 className="text-3xl font-bold text-white md:text-4xl">Bereit für Ihren nächsten Einsatz?</h2>
-          <p className="mt-5 text-lg text-silver-300">
-            Starten Sie Ihre Buchung online oder senden Sie uns Ihre Festpreisanfrage für Berlin und Brandenburg.
-          </p>
-          <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-            <Link href="/buchen" className="inline-flex items-center justify-center rounded-2xl bg-teal-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-600">
-              Jetzt buchen
-            </Link>
-            <Link href="/leistungen/umzug-berlin" className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/15">
-              Umzugsfirma Berlin ansehen
-            </Link>
+          <div className="glass-strong rounded-3xl p-10 md:p-16">
+            <h2 className="text-3xl font-bold text-white md:text-4xl">Bereit für Ihren nächsten Einsatz?</h2>
+            <p className="mt-5 text-lg text-white/60">
+              Starten Sie Ihre Buchung online oder senden Sie uns Ihre Festpreisanfrage.
+            </p>
+            <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
+              <Link href="/buchen" className="btn-primary-glass inline-flex items-center justify-center px-6 py-3.5 text-sm font-semibold">
+                Jetzt buchen
+              </Link>
+              <Link href="/leistungen/umzug-berlin" className="btn-secondary-glass inline-flex items-center justify-center px-6 py-3.5 text-sm font-semibold">
+                Umzugsfirma Berlin ansehen
+              </Link>
+            </div>
           </div>
         </div>
       </section>
