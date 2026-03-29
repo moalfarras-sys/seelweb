@@ -10,7 +10,8 @@
     "test:e2e": "playwright test",
     "db:push": "npx prisma db push",
     "db:seed": "npx tsx prisma/seed.ts",
-    "db:migrate:regions": "npx tsx scripts/migrate_region_defaults.ts"
+    "db:migrate:regions": "npx tsx scripts/migrate_region_defaults.ts",
+    "postinstall": "prisma generate"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
