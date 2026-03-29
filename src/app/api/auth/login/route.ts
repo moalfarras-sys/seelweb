@@ -54,7 +54,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "E-Mail und Passwort erforderlich" }, { status: 400 });
     }
 
-    const admin = await prisma.adminUser.findUnique({ where: { email } });
+    let admin = null;
+    try {
+      admin = await prisma.adminUser.findUnique({ where: { email } });
+    } catch (dbErr) {
+      console.warn("DB lookup failed, falling back to env auth:", (dbErr as Error).message);
+    }
 
     if (!admin) {
       const envEmail = process.env.ADMIN_EMAIL;
