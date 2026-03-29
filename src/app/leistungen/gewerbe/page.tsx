@@ -6,25 +6,67 @@ import { getPrices, formatPricePerHour } from "@/lib/getPrices";
 import { buildFaqSchema, buildMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Büro- & Gewerbeumzug Berlin",
+  title: "Büro- & Gewerbeumzug Berlin – Firmenumzug mit System",
   description:
-    "Büro- und Gewerbeumzug in Berlin für Unternehmen, Kanzleien, Agenturen und Praxen mit Projektplanung, IT-Handling und minimaler Ausfallzeit.",
+    "Professioneller Büro- und Gewerbeumzug in Berlin für Unternehmen, Kanzleien, Agenturen und Praxen. Projektplanung, IT-Handling und minimale Ausfallzeit von SEEL Transport.",
   path: "/leistungen/gewerbe",
 });
+
+const benefits = [
+  "Minimale Ausfallzeit durch abgestimmte Projektplanung",
+  "Transport von IT-Equipment, Servern und sensiblen Geräten",
+  "Etappenweise Verlagerung im laufenden Betrieb möglich",
+  "Demontage und Montage von Büromöbeln und Arbeitsstationen",
+  "Feste Ansprechpartner und dokumentierter Ablaufplan",
+  "Optional mit Übergabereinigung oder Entsorgung alter Möbel",
+];
+
+const includedServices = [
+  "Vorabbegehung und Projektplanung",
+  "Pack- und Transportkonzept",
+  "Arbeitsplatz- und Möbelverlagerung",
+  "IT- und Technikhandling (Monitore, Rechner, Drucker)",
+  "Etagen- und Zugangsplanung",
+  "Halteverbotszone vor beiden Standorten",
+  "Archiv- und Aktentransport",
+  "Optionale Nachreinigung beider Objekte",
+];
 
 const faqItems = [
   {
     question: "Wie reduzieren Sie Ausfallzeiten im laufenden Betrieb?",
-    answer: "Wir planen Etappen, Zeitfenster und Möbellogistik vorab, damit kritische Arbeitsbereiche schnell wieder einsatzbereit sind.",
+    answer:
+      "Wir planen Etappen, Zeitfenster und Möbellogistik vorab, damit kritische Arbeitsbereiche schnell wieder einsatzbereit sind. Auf Wunsch verlagern wir abteilungsweise oder am Wochenende.",
   },
   {
-    question: "Transportieren Sie auch IT-Equipment?",
-    answer: "Ja. Monitore, Rechner, Drucker und sensible Ausstattung werden geordnet erfasst und geschützt verlagert.",
+    question: "Transportieren Sie auch IT-Equipment und Server?",
+    answer:
+      "Ja. Monitore, Rechner, Drucker, Server und sensible Ausstattung werden geordnet erfasst, geschützt verpackt und sicher verlagert. Wir arbeiten eng mit Ihrem IT-Team zusammen.",
   },
   {
     question: "Kann nach dem Umzug eine Reinigung erfolgen?",
-    answer: "Ja. Auf Wunsch kombinieren wir den Gewerbeumzug mit einer Reinigungsleistung für Übergabe, Teilflächen oder das alte Objekt.",
+    answer:
+      "Ja. Auf Wunsch kombinieren wir den Gewerbeumzug mit einer Reinigungsleistung für Übergabe, Teilflächen oder das alte Objekt. So erhalten Sie alles aus einer Hand.",
   },
+  {
+    question: "Wie kurzfristig können Sie einen Gewerbeumzug durchführen?",
+    answer:
+      "Reguläre Gewerbeumzüge planen wir mit einem Vorlauf von 2–4 Wochen. Bei dringenden Projekten finden wir kurzfristige Lösungen — kontaktieren Sie uns direkt für eine Einschätzung.",
+  },
+  {
+    question: "Welche Unternehmen betreuen Sie?",
+    answer:
+      "Wir betreuen Unternehmen jeder Größe — von Einzelpraxen und Kanzleien über Agenturen und Start-ups bis hin zu mittelständischen Betrieben. Jeder Umzug wird individuell geplant.",
+  },
+];
+
+const internalLinks = [
+  { href: "/leistungen/firmenumzug", label: "Firmenumzug" },
+  { href: "/leistungen/privatumzug", label: "Privatumzug" },
+  { href: "/leistungen/umzug-berlin", label: "Umzugsfirma Berlin" },
+  { href: "/leistungen/expressumzug", label: "Expressumzug" },
+  { href: "/leistungen/entruempelung", label: "Entrümpelung" },
+  { href: "/leistungen/reinigung", label: "Reinigung" },
 ];
 
 export default async function GewerbePage() {
@@ -38,17 +80,28 @@ export default async function GewerbePage() {
 
       <section className="gradient-navy py-20 md:py-28">
         <div className="mx-auto max-w-5xl px-4 text-center md:px-8">
-          <h1 className="text-4xl font-bold text-white md:text-5xl">Büro- & Gewerbeumzug Berlin</h1>
+          <p className="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-teal-300 backdrop-blur-xl">
+            Für Unternehmen & Gewerbe
+          </p>
+          <h1 className="mt-6 text-4xl font-bold text-white md:text-5xl">
+            Büro- & Gewerbeumzug Berlin
+          </h1>
           <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-silver-300">
-            Für Unternehmen, Kanzleien, Agenturen und Praxen organisieren wir Gewerbeumzüge mit fester Projektplanung,
-            klaren Zeitfenstern und möglichst geringer Unterbrechung Ihres Betriebs.
+            Für Unternehmen, Kanzleien, Agenturen und Praxen organisieren wir Gewerbeumzüge mit
+            fester Projektplanung, klaren Zeitfenstern und möglichst geringer Unterbrechung Ihres Betriebs.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-            <Link href="/buchen?service=MOVING" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-600">
+            <Link
+              href="/buchen?service=MOVING"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-600"
+            >
               Gewerbeumzug anfragen
               <ArrowRight size={16} />
             </Link>
-            <Link href="/kontakt?subject=Festpreisanfrage%20-%20B%C3%BCro-%20%26%20Gewerbeumzug" className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/15">
+            <Link
+              href="/kontakt?subject=Festpreisanfrage%20-%20B%C3%BCro-%20%26%20Gewerbeumzug"
+              className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/15"
+            >
               Festpreis anfragen
             </Link>
           </div>
@@ -56,61 +109,138 @@ export default async function GewerbePage() {
       </section>
 
       <section className="bg-white py-20 dark:bg-navy-950">
-        <div className="mx-auto max-w-6xl px-4 md:px-8">
-          <div className="grid gap-6 md:grid-cols-3">
-            {[
-              "Minimale Ausfallzeit durch abgestimmte Projektplanung",
-              "Transport von IT-Equipment, Möblierung und Archivmaterial",
-              "Optional mit Übergabereinigung oder Teilflächenreinigung",
-            ].map((item) => (
-              <div key={item} className="rounded-[2rem] border border-gray-100 bg-gray-50/80 p-6 dark:border-navy-700/50 dark:bg-navy-800/60">
-                <CheckCircle2 size={18} className="text-teal-500" />
-                <p className="mt-4 text-sm leading-7 text-navy-800 dark:text-silver-200">{item}</p>
+        <div className="mx-auto max-w-7xl px-4 md:px-8">
+          <div className="mb-10 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-teal-600">
+              Vorteile
+            </p>
+            <h2 className="mt-4 text-3xl font-bold text-navy-800 dark:text-white md:text-4xl">
+              Warum Unternehmen uns vertrauen
+            </h2>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {benefits.map((item) => (
+              <div
+                key={item}
+                className="rounded-3xl border border-gray-100 bg-gray-50/80 p-6 dark:border-navy-700/50 dark:bg-navy-800/60"
+              >
+                <CheckCircle2 size={20} className="text-teal-500" />
+                <p className="mt-4 text-sm font-semibold text-navy-800 dark:text-white">{item}</p>
               </div>
             ))}
-          </div>
-
-          <div className="mt-10 grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
-            <div>
-              <h2 className="text-3xl font-bold text-navy-800 dark:text-white">Was ist enthalten</h2>
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {[
-                  "Vorabstimmung mit Ansprechpartnern",
-                  "Pack- und Transportkonzept",
-                  "Möbel- und Arbeitsplatzverlagerung",
-                  "IT- und Technikhandling",
-                  "Etagen- und Zugangsplanung",
-                  "Optionale Nachreinigung",
-                ].map((item) => (
-                  <div key={item} className="rounded-2xl border border-gray-100 bg-white px-4 py-3 text-sm text-silver-600 shadow-sm dark:border-navy-700/50 dark:bg-navy-900 dark:text-silver-300">
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-[2rem] border border-gray-100 bg-gray-50/80 p-8 dark:border-navy-700/50 dark:bg-navy-800/60">
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-teal-600">Preisorientierung</p>
-              <p className="mt-4 text-3xl font-bold text-navy-800 dark:text-white">{formatPricePerHour(prices.gewerbeUmzug)}</p>
-              <p className="mt-3 text-sm leading-7 text-silver-600 dark:text-silver-300">
-                Mindestabnahme 2 Stunden. Je nach Projektumfang kalkulieren wir zusätzlich Anfahrtswege, Trageaufwand und Sonderleistungen.
-              </p>
-              <Link href="/leistungen/reinigung" className="mt-6 inline-flex text-sm font-semibold text-teal-600 transition hover:text-teal-500">
-                Optionale Reinigung dazubuchen
-              </Link>
-            </div>
           </div>
         </div>
       </section>
 
       <section className="bg-gray-50 py-20 dark:bg-navy-900">
-        <div className="mx-auto max-w-4xl space-y-4 px-4 md:px-8">
-          {faqItems.map((faq) => (
-            <details key={faq.question} className="rounded-3xl border border-gray-100 bg-white p-5 dark:border-navy-700/50 dark:bg-navy-800/60">
-              <summary className="cursor-pointer list-none text-sm font-semibold text-navy-800 dark:text-white">{faq.question}</summary>
-              <p className="mt-4 text-sm leading-7 text-silver-600 dark:text-silver-300">{faq.answer}</p>
-            </details>
-          ))}
+        <div className="mx-auto max-w-6xl px-4 md:px-8">
+          <div className="mb-10 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-teal-600">
+              Leistungsumfang
+            </p>
+            <h2 className="mt-4 text-3xl font-bold text-navy-800 dark:text-white md:text-4xl">
+              Was ist enthalten
+            </h2>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {includedServices.map((item) => (
+              <div
+                key={item}
+                className="rounded-2xl border border-gray-100 bg-white px-4 py-3 text-sm text-silver-600 shadow-sm dark:border-navy-700/50 dark:bg-navy-800 dark:text-silver-300"
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-20 dark:bg-navy-950">
+        <div className="mx-auto max-w-3xl px-4 text-center md:px-8">
+          <h2 className="text-3xl font-bold text-navy-800 dark:text-white">Preise</h2>
+          <p className="mt-4 text-4xl font-bold text-teal-600">
+            {formatPricePerHour(prices.gewerbeUmzug)}
+          </p>
+          <p className="mt-2 text-sm text-silver-500">
+            Mindestabnahme 2 Stunden. Je nach Projektumfang kalkulieren wir Anfahrt, Trageaufwand und Sonderleistungen.
+          </p>
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link
+              href="/buchen?service=MOVING"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-600"
+            >
+              Jetzt buchen
+              <ArrowRight size={16} />
+            </Link>
+            <Link
+              href="/kontakt?subject=Festpreisanfrage%20-%20Gewerbeumzug"
+              className="inline-flex items-center justify-center rounded-2xl border border-gray-200 px-6 py-3.5 text-sm font-semibold text-navy-800 transition hover:border-teal-500 hover:text-teal-600 dark:border-navy-700 dark:text-white"
+            >
+              Festpreis anfragen
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-gray-50 py-20 dark:bg-navy-900">
+        <div className="mx-auto max-w-4xl px-4 md:px-8">
+          <h2 className="mb-8 text-center text-3xl font-bold text-navy-800 dark:text-white">
+            Häufige Fragen
+          </h2>
+          <div className="space-y-4">
+            {faqItems.map((faq) => (
+              <details
+                key={faq.question}
+                className="rounded-3xl border border-gray-100 bg-white p-5 dark:border-navy-700/50 dark:bg-navy-800/60"
+              >
+                <summary className="cursor-pointer list-none text-sm font-semibold text-navy-800 dark:text-white">
+                  {faq.question}
+                </summary>
+                <p className="mt-4 text-sm leading-7 text-silver-600 dark:text-silver-300">
+                  {faq.answer}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="gradient-navy py-20">
+        <div className="mx-auto max-w-4xl px-4 text-center md:px-8">
+          <h2 className="text-3xl font-bold text-white md:text-4xl">
+            Ihr Gewerbeumzug — professionell geplant
+          </h2>
+          <p className="mt-5 text-lg text-silver-300">
+            Lassen Sie uns gemeinsam Ihren Umzug planen. Kontaktieren Sie uns für ein
+            unverbindliches Angebot und eine individuelle Beratung.
+          </p>
+          <div className="mt-8 flex justify-center gap-4">
+            <Link
+              href="/kontakt?subject=Gewerbeumzug%20Anfrage"
+              className="inline-flex items-center justify-center rounded-2xl bg-teal-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-600"
+            >
+              Jetzt Angebot anfordern
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-12 dark:bg-navy-950">
+        <div className="mx-auto max-w-7xl px-4 md:px-8">
+          <p className="mb-4 text-sm font-semibold text-navy-800 dark:text-white">
+            Weitere Leistungen
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {internalLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="rounded-full border border-gray-200 px-4 py-2 text-sm text-navy-800 transition hover:border-teal-500 hover:text-teal-600 dark:border-navy-700 dark:text-silver-300"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
     </>
