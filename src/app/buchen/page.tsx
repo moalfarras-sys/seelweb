@@ -177,6 +177,19 @@ const steps = [
   { id: 3, title: "Termin & Kontakt" }
 ];
 
+function formatLocalDateInput(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function parseLocalDateInput(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+}
+
 export default function BuchenPage() {
   const { company, contact } = useSiteContent();
   const search = useSearchParams();
@@ -310,7 +323,8 @@ export default function BuchenPage() {
       setQuoteError("");
       setIsCalculating(true);
       try {
-        const isWeekend = selectedDate ? new Date(selectedDate).getDay() === 0 || new Date(selectedDate).getDay() === 6 : false;
+        const selectedLocalDate = selectedDate ? parseLocalDateInput(selectedDate) : null;
+        const isWeekend = selectedLocalDate ? selectedLocalDate.getDay() === 0 || selectedLocalDate.getDay() === 6 : false;
         const res = await fetch("/api/preisrechner", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -883,10 +897,10 @@ export default function BuchenPage() {
                           mode="single"
                           locale={de}
                           weekStartsOn={1}
-                          selected={selectedDate ? new Date(`${selectedDate}T00:00:00`) : undefined}
+                          selected={selectedDate ? parseLocalDateInput(selectedDate) || undefined : undefined}
                           onSelect={(d) => {
                             if (!d) return;
-                            const asIso = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString().slice(0, 10);
+                            const asIso = formatLocalDateInput(d);
                             setSelectedDate(asIso);
                           }}
                           disabled={[

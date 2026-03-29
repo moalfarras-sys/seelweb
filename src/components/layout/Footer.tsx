@@ -93,7 +93,12 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-slate-200 pt-6 text-sm text-slate-400 dark:border-white/5 dark:text-white/40 md:flex-row md:items-center md:justify-between">
-          <p>&copy; {new Date().getFullYear()} {company.name}. Alle Rechte vorbehalten.</p>
+          <div className="space-y-1">
+            <p>&copy; {new Date().getFullYear()} {company.name}. Alle Rechte vorbehalten.</p>
+            {company.vatId ? (
+              <p className="text-xs text-slate-400 dark:text-white/35">USt-IdNr.: {company.vatId}</p>
+            ) : null}
+          </div>
           <div className="flex flex-wrap items-center gap-4">
             <Link href="/leistungen/umzug-berlin" className="transition hover:text-emerald-700 dark:hover:text-teal-300">Umzugsfirma Berlin</Link>
             <Link href="/leistungen/privatumzug" className="transition hover:text-emerald-700 dark:hover:text-teal-300">Privatumzug</Link>
