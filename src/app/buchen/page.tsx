@@ -433,6 +433,8 @@ export default function BuchenPage() {
       (availableSlots.length === 0 || availableSlots.some((s) => s.label === timeSlot))
   );
 
+  const hasSelectedDate = Boolean(selectedDate);
+
   async function submit() {
     const currentQuote = quote;
     const errors: Record<string, string> = {};
@@ -933,7 +935,11 @@ export default function BuchenPage() {
                       </div>
                       {slotNotice && <p className="text-xs text-amber-600">{slotNotice}</p>}
                       {slotError && <p className="text-xs text-red-500">{slotError}</p>}
-                      {slotLoading ? (
+                      {!hasSelectedDate ? (
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600 dark:border-navy-700 dark:bg-navy-900/40 dark:text-slate-300">
+                          Bitte wählen Sie zuerst ein Datum aus, um verfügbare Zeitfenster zu sehen.
+                        </div>
+                      ) : slotLoading ? (
                         <div className="flex items-center gap-2 text-sm text-slate-500">
                           <div className="w-4 h-4 border-2 border-slate-300 border-t-teal-500 rounded-full animate-spin" />
                           Zeitfenster werden geladen...
