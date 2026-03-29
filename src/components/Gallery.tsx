@@ -53,10 +53,10 @@ export default function Gallery({ images, title, subtitle }: GalleryProps) {
         <div className="mx-auto max-w-7xl px-4 md:px-8">
           {title && (
             <div className="mb-10 text-center">
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-cyan-400">
+              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-teal-600 dark:text-cyan-400">
                 {subtitle || "Galerie"}
               </p>
-              <h2 className="mt-4 text-3xl font-bold text-white md:text-4xl">
+              <h2 className="mt-4 text-3xl font-bold text-slate-900 dark:text-white md:text-4xl">
                 {title}
               </h2>
             </div>
@@ -67,7 +67,7 @@ export default function Gallery({ images, title, subtitle }: GalleryProps) {
               <button
                 key={image.src}
                 onClick={() => openLightbox(index)}
-                className="group relative aspect-square overflow-hidden rounded-2xl border border-white/10 bg-white/5"
+                className="group relative aspect-square overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5"
               >
                 <Image
                   src={image.src}

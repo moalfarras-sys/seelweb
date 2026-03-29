@@ -82,7 +82,7 @@ export default async function RootLayout({
   const isAdmin = pathname.startsWith("/admin");
 
   return (
-    <html lang="de" className="dark" suppressHydrationWarning>
+    <html lang="de" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <link rel="apple-touch-icon" href="/images/logo.jpeg" />
@@ -92,7 +92,7 @@ export default async function RootLayout({
         </Script>
       </head>
       <body className="antialiased">
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {!isAdmin && <div className="bg-blob-1" />}
           {!isAdmin && <div className="bg-blob-2" />}
           {!isAdmin && <div className="bg-blob-3" />}

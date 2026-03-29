@@ -101,16 +101,16 @@ export default async function HomePage() {
         {JSON.stringify(buildFaqSchema(faqItems))}
       </Script>
 
-      {/* ── HERO with full-screen image ── */}
+      {/* ── HERO ── */}
       <section className="relative min-h-[90vh] overflow-hidden">
         <div className="absolute inset-0">
           <Image src="/images/umzug-1.jpeg" alt="SEEL Transport Berlin" fill className="object-cover" priority sizes="100vw" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0f1e]/80 via-[#0a0f1e]/60 to-[#0a0f1e]/90" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
         </div>
 
         <div className="relative z-10 mx-auto flex min-h-[90vh] max-w-7xl items-center px-4 py-20 md:px-8">
           <div className="max-w-3xl">
-            <p className="stat-card inline-flex px-4 py-2 text-sm font-semibold text-cyan-400">
+            <p className="stat-card inline-flex px-4 py-2 text-sm font-semibold !text-cyan-400">
               Umzugsfirma Berlin · Seit 2016
             </p>
             <h1 className="mt-6 text-4xl font-bold leading-tight text-white md:text-6xl">
@@ -125,7 +125,7 @@ export default async function HomePage() {
               <Link href="/buchen" className="btn-primary-glass inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold">
                 Jetzt Angebot anfragen <ArrowRight size={16} />
               </Link>
-              <a href={`tel:${CONTACT.PRIMARY_PHONE}`} className="btn-secondary-glass inline-flex items-center justify-center px-6 py-3.5 text-sm font-semibold">
+              <a href={`tel:${CONTACT.PRIMARY_PHONE}`} className="btn-secondary-glass inline-flex items-center justify-center px-6 py-3.5 text-sm font-semibold !text-white !border-white/20 !bg-white/10 hover:!bg-white/20">
                 {CONTACT.PRIMARY_PHONE_DISPLAY}
               </a>
             </div>
@@ -152,8 +152,8 @@ export default async function HomePage() {
       <section className="section-glass relative z-10 py-20">
         <div className="mx-auto max-w-7xl px-4 md:px-8">
           <div className="mb-10 text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-cyan-400">Unsere Leistungen</p>
-            <h2 className="mt-4 text-3xl font-bold text-white md:text-4xl">Alles zentral geplant</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-teal-600 dark:text-cyan-400">Unsere Leistungen</p>
+            <h2 className="mt-4 text-3xl font-bold text-slate-900 dark:text-white md:text-4xl">Alles zentral geplant</h2>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -163,15 +163,15 @@ export default async function HomePage() {
                   <Image src={service.image} alt={service.title} fill className="object-cover transition duration-500 group-hover:scale-105" sizes="(max-width: 1280px) 100vw, 33vw" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <div className="absolute bottom-3 left-3">
-                    <span className="stat-card inline-flex px-3 py-1.5 text-xs font-semibold text-cyan-400">
+                    <span className="stat-card inline-flex px-3 py-1.5 text-xs font-semibold !text-cyan-400">
                       {service.price}
                     </span>
                   </div>
                 </div>
                 <div className="p-6">
-                  <h3 className="text-lg font-semibold text-white">{service.title}</h3>
-                  <p className="mt-2 text-sm leading-7 text-white/60">{service.description}</p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-cyan-400">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{service.title}</h3>
+                  <p className="mt-2 text-sm leading-7 text-slate-500 dark:text-white/60">{service.description}</p>
+                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-teal-600 dark:text-cyan-400">
                     Mehr erfahren <ArrowRight size={14} />
                   </span>
                 </div>
@@ -187,8 +187,8 @@ export default async function HomePage() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {["24/7 erreichbar", "Transparent kalkuliert", "Versichert nach HGB §451e", "Berlin & Brandenburg"].map((item) => (
               <div key={item} className="glass-card flex items-start gap-3 rounded-2xl p-6">
-                <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-cyan-400" />
-                <p className="text-sm font-semibold text-white">{item}</p>
+                <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-teal-500 dark:text-cyan-400" />
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">{item}</p>
               </div>
             ))}
           </div>
@@ -201,12 +201,12 @@ export default async function HomePage() {
       {/* ── FAQ ── */}
       <section className="section-glass relative z-10 py-20">
         <div className="mx-auto max-w-4xl px-4 md:px-8">
-          <h2 className="mb-8 text-center text-3xl font-bold text-white">Häufige Fragen</h2>
+          <h2 className="mb-8 text-center text-3xl font-bold text-slate-900 dark:text-white">Häufige Fragen</h2>
           <div className="space-y-4">
             {faqItems.map((faq) => (
               <details key={faq.question} className="glass-card rounded-2xl p-5">
-                <summary className="cursor-pointer list-none text-sm font-semibold text-white">{faq.question}</summary>
-                <p className="mt-4 text-sm leading-7 text-white/60">{faq.answer}</p>
+                <summary className="cursor-pointer list-none text-sm font-semibold text-slate-900 dark:text-white">{faq.question}</summary>
+                <p className="mt-4 text-sm leading-7 text-slate-500 dark:text-white/60">{faq.answer}</p>
               </details>
             ))}
           </div>
@@ -224,8 +224,8 @@ export default async function HomePage() {
       <section className="relative z-10 py-20">
         <div className="mx-auto max-w-4xl px-4 text-center md:px-8">
           <div className="glass-strong rounded-3xl p-10 md:p-16">
-            <h2 className="text-3xl font-bold text-white md:text-4xl">Bereit für Ihren nächsten Einsatz?</h2>
-            <p className="mt-5 text-lg text-white/60">
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white md:text-4xl">Bereit für Ihren nächsten Einsatz?</h2>
+            <p className="mt-5 text-lg text-slate-500 dark:text-white/60">
               Starten Sie Ihre Buchung online oder senden Sie uns Ihre Festpreisanfrage.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">

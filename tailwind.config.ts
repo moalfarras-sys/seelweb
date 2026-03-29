@@ -96,22 +96,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [
-    function ({ addUtilities }: { addUtilities: any }) {
-      const newUtilities = {
-        ".glass": {
-          "background": "rgba(255, 255, 255, 0.1)",
-          "backdrop-filter": "blur(10px)",
-          "border": "1px solid rgba(255, 255, 255, 0.15)",
-        },
-        ".dark .glass": {
-          "background": "rgba(0, 0, 0, 0.2)",
-          "backdrop-filter": "blur(10px)",
-          "border": "1px solid rgba(255, 255, 255, 0.05)",
-        }
-      };
-      addUtilities(newUtilities, ["responsive", "hover"]);
-    },
-  ],
+  plugins: [],
 };
 export default config;
