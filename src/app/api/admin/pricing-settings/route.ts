@@ -1,4 +1,5 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { DEFAULT_PRICING_SETTINGS } from "@/lib/pricing/settings";
@@ -41,6 +42,14 @@ export async function PUT(req: NextRequest) {
       baseHomeCleaningEur: Number(body.baseHomeCleaningEur ?? 0),
       baseMoveOutCleaningEur: Number(body.baseMoveOutCleaningEur ?? 0),
       baseOfficeCleaningEur: Number(body.baseOfficeCleaningEur ?? 0),
+      publicMovingStandardEur: Number(body.publicMovingStandardEur ?? DEFAULT_PRICING_SETTINGS.publicMovingStandardEur),
+      publicMovingExpressEur: Number(body.publicMovingExpressEur ?? DEFAULT_PRICING_SETTINGS.publicMovingExpressEur),
+      publicMovingExpressSurchargePct: Number(body.publicMovingExpressSurchargePct ?? DEFAULT_PRICING_SETTINGS.publicMovingExpressSurchargePct),
+      publicHomeCleaningEur: Number(body.publicHomeCleaningEur ?? DEFAULT_PRICING_SETTINGS.publicHomeCleaningEur),
+      publicOfficeMovingEur: Number(body.publicOfficeMovingEur ?? DEFAULT_PRICING_SETTINGS.publicOfficeMovingEur),
+      publicOfficeCleaningEur: Number(body.publicOfficeCleaningEur ?? DEFAULT_PRICING_SETTINGS.publicOfficeCleaningEur),
+      publicDisposalEur: Number(body.publicDisposalEur ?? DEFAULT_PRICING_SETTINGS.publicDisposalEur),
+      publicMoveOutCleaningEur: Number(body.publicMoveOutCleaningEur ?? DEFAULT_PRICING_SETTINGS.publicMoveOutCleaningEur),
     },
     create: {
       id: "default",
@@ -54,8 +63,18 @@ export async function PUT(req: NextRequest) {
       baseHomeCleaningEur: Number(body.baseHomeCleaningEur ?? 0),
       baseMoveOutCleaningEur: Number(body.baseMoveOutCleaningEur ?? 0),
       baseOfficeCleaningEur: Number(body.baseOfficeCleaningEur ?? 0),
+      publicMovingStandardEur: Number(body.publicMovingStandardEur ?? DEFAULT_PRICING_SETTINGS.publicMovingStandardEur),
+      publicMovingExpressEur: Number(body.publicMovingExpressEur ?? DEFAULT_PRICING_SETTINGS.publicMovingExpressEur),
+      publicMovingExpressSurchargePct: Number(body.publicMovingExpressSurchargePct ?? DEFAULT_PRICING_SETTINGS.publicMovingExpressSurchargePct),
+      publicHomeCleaningEur: Number(body.publicHomeCleaningEur ?? DEFAULT_PRICING_SETTINGS.publicHomeCleaningEur),
+      publicOfficeMovingEur: Number(body.publicOfficeMovingEur ?? DEFAULT_PRICING_SETTINGS.publicOfficeMovingEur),
+      publicOfficeCleaningEur: Number(body.publicOfficeCleaningEur ?? DEFAULT_PRICING_SETTINGS.publicOfficeCleaningEur),
+      publicDisposalEur: Number(body.publicDisposalEur ?? DEFAULT_PRICING_SETTINGS.publicDisposalEur),
+      publicMoveOutCleaningEur: Number(body.publicMoveOutCleaningEur ?? DEFAULT_PRICING_SETTINGS.publicMoveOutCleaningEur),
     },
   });
+
+  revalidatePath("/", "layout");
 
   return NextResponse.json(updated);
 }

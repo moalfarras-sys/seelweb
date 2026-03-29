@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -86,6 +86,18 @@ type BookingResult = {
 type AvailabilitySlot = { start: string; end: string; label: string };
 
 type PaymentMethod = "UEBERWEISUNG" | "BAR" | "PAYPAL";
+
+type PublicPrices = {
+  umzugStandard: number;
+  umzugExpress: number;
+  umzugExpressSurchargePct: number;
+  reinigungWohnung: number;
+  reinigungBuero: number;
+  gewerbeUmzug: number;
+  entruempelung: number;
+  endreinigung: number;
+  minimumHoursLabel: string;
+};
 
 const MIN_HOURS: Record<ServiceType, number> = {
   HOME_CLEANING: 2,
@@ -188,6 +200,7 @@ export default function BuchenPage() {
   const [slotLoading, setSlotLoading] = useState(false);
   const [slotError, setSlotError] = useState("");
   const [slotNotice, setSlotNotice] = useState("");
+  const [publicPrices, setPublicPrices] = useState<PublicPrices | null>(null);
 
   const doneTracking = done?.trackingNumber || done?.orderNumber || "";
 
@@ -202,6 +215,13 @@ export default function BuchenPage() {
       setCurrentStep(2); // Auto-advance if service pre-selected
     }
   }, [search]);
+
+  useEffect(() => {
+    fetch("/api/prices", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => setPublicPrices(data))
+      .catch(() => undefined);
+  }, []);
 
   const ensureCfg = useCallback((s: ServiceType) => cfgs[s] || { ...EMPTY_CFG, hours: MIN_HOURS[s] }, [cfgs]);
 
@@ -240,6 +260,15 @@ export default function BuchenPage() {
       };
     });
   }, [services, ensureCfg]);
+
+  const marketingPriceLabel = useCallback((serviceType: ServiceType) => {
+    if (!publicPrices) return "";
+    if (serviceType === "MOVING") return `ab ${publicPrices.umzugStandard} EUR/Std. - ${publicPrices.minimumHoursLabel}`;
+    if (serviceType === "HOME_CLEANING") return `ab ${publicPrices.reinigungWohnung} EUR/Std. - ${publicPrices.minimumHoursLabel}`;
+    if (serviceType === "MOVE_OUT_CLEANING") return `ab ${publicPrices.endreinigung} EUR/Std. - ${publicPrices.minimumHoursLabel}`;
+    if (serviceType === "OFFICE_CLEANING") return `ab ${publicPrices.reinigungBuero} EUR/Std. - ${publicPrices.minimumHoursLabel}`;
+    return `ab ${publicPrices.entruempelung} EUR/Std. - ${publicPrices.minimumHoursLabel}`;
+  }, [publicPrices]);
 
   const computedDurationMin = useMemo(() => {
     const total = services.reduce((sum, s) => {
@@ -618,6 +647,11 @@ export default function BuchenPage() {
                               <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
                                 {SERVICE_META[s].desc}
                               </p>
+                              {marketingPriceLabel(s) && (
+                                <p className="mt-2 text-xs font-semibold text-teal-600 dark:text-teal-300">
+                                  {marketingPriceLabel(s)}
+                                </p>
+                              )}
                             </div>
                             <div className="mt-1">
                               <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${isSelected ? 'bg-teal-500 border-teal-500' : 'border-slate-300 dark:border-slate-600'}`}>
@@ -1022,6 +1056,15 @@ export default function BuchenPage() {
                   <p><span className="text-slate-500">Dauer:</span> {Math.round(computedDurationMin / 60 * 10) / 10} Std.</p>
                 </div>
 
+                {services.length > 0 && (
+                  <a
+                    href={`/kontakt?subject=${encodeURIComponent(`Festpreisanfrage - ${LABELS[services[0]]}`)}`}
+                    className="inline-flex w-full items-center justify-center rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm font-semibold text-teal-700 transition hover:bg-teal-100 dark:border-teal-500/20 dark:bg-teal-500/10 dark:text-teal-300 dark:hover:bg-teal-500/20"
+                  >
+                    Festpreis anfragen
+                  </a>
+                )}
+
                 <div className="pt-4 border-t border-slate-200 dark:border-navy-700">
                   {quoteError ? (
                     <div className="p-3 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-xl text-red-600 dark:text-red-400 text-sm text-center">
@@ -1078,10 +1121,19 @@ export default function BuchenPage() {
 
                 <div className="pt-4 border-t border-slate-200 dark:border-navy-700 space-y-2">
                   <p className="flex items-center gap-2 text-xs text-slate-500">
-                    <ShieldCheck size={14} className="text-teal-500" /> Preisfixierung & Garantie
+                    <CheckCircle2 size={14} className="text-teal-500" /> 24/7 erreichbar
                   </p>
                   <p className="flex items-center gap-2 text-xs text-slate-500">
-                    <Clock3 size={14} className="text-teal-500" /> Live-Preisberechnung
+                    <CheckCircle2 size={14} className="text-teal-500" /> Transparent kalkuliert
+                  </p>
+                  <p className="flex items-center gap-2 text-xs text-slate-500">
+                    <ShieldCheck size={14} className="text-teal-500" /> Versichert nach HGB §451e
+                  </p>
+                  <p className="flex items-center gap-2 text-xs text-slate-500">
+                    <Clock3 size={14} className="text-teal-500" /> Berlin & Brandenburg
+                  </p>
+                  <p className="flex items-center gap-2 text-xs text-slate-500">
+                    <CheckCircle2 size={14} className="text-teal-500" /> Flexible Termine auch kurzfristig
                   </p>
                 </div>
               </div>

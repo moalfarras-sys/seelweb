@@ -1,560 +1,276 @@
-"use client";
-
-import { CONTACT } from "@/config/contact";
-import HeroVideo from "@/components/three/HeroVideo";
+import type { Metadata } from "next";
+import Script from "next/script";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
-import type { LucideIcon } from "lucide-react";
-import {
-  ArrowRight,
-  Building2,
-  CalendarCheck,
-  CheckCircle2,
-  ChevronDown,
-  ClipboardCheck,
-  GraduationCap,
-  Phone,
-  Shield,
-  SprayCan,
-  Star,
-  ThumbsUp,
-  Trash2,
-  Truck,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { CONTACT } from "@/config/contact";
+import { getPrices, formatPricePerHour } from "@/lib/getPrices";
+import { buildFaqSchema, buildMetadata } from "@/lib/seo";
+import { fetchGoogleReviews } from "@/lib/google-reviews";
+import GoogleReviews from "@/components/GoogleReviews";
 
-const services = [
+export const metadata: Metadata = buildMetadata({
+  title: "Umzüge, Reinigung und Entrümpelung",
+  description:
+    "SEEL Transport & Reinigung ist Ihre Umzugsfirma in Berlin für Privatumzug, Firmenumzug, Schulumzug, Reinigung und Entrümpelung in Berlin und Brandenburg.",
+  path: "/",
+});
+
+const faqItems = [
   {
-    icon: Truck,
-    title: "Umzüge & Möbeltransporte",
-    desc: "Professioneller Umzugsservice mit modernen 3,5-Tonnen-Fahrzeugen und erfahrenem Team. Sicher geplant, pünktlich umgesetzt und stressfrei begleitet.",
-    href: "/leistungen/umzug",
-    gradient: "from-blue-500 to-blue-700",
-    image: "/images/moving-workers-furniture.png",
-    price: "ab 59 € / Std.",
-    priceNote: "inkl. Transportfahrzeug & Team",
+    question: "Wie schnell können Sie einen Umzug in Berlin übernehmen?",
+    answer: "Reguläre Umzüge planen wir mit festen Zeitfenstern. Für besonders dringende Fälle bieten wir einen Expressumzug mit kurzfristiger Disposition an.",
   },
   {
-    icon: Building2,
-    title: "Büro- & Gewerbeumzüge",
-    desc: "Effiziente Büroumzüge mit minimaler Ausfallzeit. IT-Equipment, Möbel und sensible Dokumente werden strukturiert und sicher verlagert.",
-    href: "/leistungen/gewerbe",
-    gradient: "from-teal-500 to-teal-700",
-    image: "/images/corporate-hallway-cleaning.png",
-    price: "ab 59 € / Std.",
-    priceNote: "inkl. Transportfahrzeug & Team",
+    question: "Arbeiten Sie auch außerhalb von Berlin?",
+    answer: "Ja. Neben Berlin betreuen wir regelmäßig Brandenburg und deutschlandweite Umzüge mit klarer Einsatzplanung und transparenter Preisstruktur.",
   },
   {
-    icon: GraduationCap,
-    title: "Schulumzüge",
-    desc: "Spezialisierte Umzüge für Schulen und Bildungseinrichtungen mit besonderer Sorgfalt, klarer Planung und verlässlichen Zeitfenstern.",
-    href: "/leistungen/umzug",
-    gradient: "from-amber-500 to-orange-600",
-    image: "/images/corporate-school-cleaning.png",
-    price: "ab 59 € / Std.",
-    priceNote: "inkl. Transportfahrzeug & Team",
+    question: "Sind Möbel und Inventar versichert?",
+    answer: "Ja. Transporte werden nach HGB §451e durchgeführt. Auf Wunsch beraten wir zusätzlich zu erweiterten Absicherungen.",
   },
   {
-    icon: SprayCan,
-    title: "Reinigungsservice",
-    desc: "Gründliche Reinigung von Wohnungen, Büros und Treppenhäusern. Sorgfältig, zuverlässig und professionell ausgeführt.",
-    href: "/leistungen/endreinigung",
-    gradient: "from-green-500 to-emerald-600",
-    image: "/images/cleaning-team-office.png",
-    price: "ab 34 € / Std.",
-    priceNote: "inkl. professioneller Reinigung",
+    question: "Kann ich Reinigung und Umzug kombinieren?",
+    answer: "Ja. Viele Kundinnen und Kunden kombinieren Privatumzug, Endreinigung und Entrümpelung in einem abgestimmten Ablauf.",
   },
-  {
-    icon: Trash2,
-    title: "Entrümpelung & Entsorgung",
-    desc: "Schnelle und umweltgerechte Entrümpelung inklusive fachgerechter Entsorgung. Transparent organisiert und sauber abgewickelt.",
-    href: "/leistungen/entsorgung",
-    gradient: "from-red-500 to-rose-600",
-    image: "/images/waste-disposal-van.png",
-    price: "ab 49 € / Std.",
-    priceNote: "inkl. Transport & Entsorgung",
-  },
-  {
-    icon: Zap,
-    title: "Expressumzug",
-    desc: "Kurzfristiger Umzug innerhalb von 24-48 Stunden. Priorisierter Service für dringende Fälle mit schneller Disposition.",
-    href: "/leistungen/expressumzug",
-    gradient: "from-amber-400 to-yellow-500",
-    image: "/images/moving-truck-hero.png",
-    price: "ab 75 € / Std.",
-    priceNote: "Priorisierter Service",
-    badge: "Express",
-  },
-] as const;
+];
 
-const steps = [
-  { icon: ClipboardCheck, title: "Service wählen", desc: "Wählen Sie Ihren gewünschten Service und geben Sie die Details ein." },
-  { icon: CalendarCheck, title: "Termin buchen", desc: "Wählen Sie Ihren Wunschtermin und erhalten Sie sofort ein transparentes Angebot." },
-  { icon: ThumbsUp, title: "Wir erledigen den Rest", desc: "Unser Team kümmert sich um alles - pünktlich und zuverlässig." },
-] as const;
+export default async function HomePage() {
+  const prices = await getPrices();
+  const reviewsData = await fetchGoogleReviews();
 
-const statsData = [
-  { value: 500, suffix: "+", label: "Erfolgreiche Umzüge" },
-  { value: 98, suffix: "%", label: "Kundenzufriedenheit" },
-  { value: 24, suffix: "/7", label: "Erreichbarkeit" },
-  { value: 10, suffix: "+", label: "Jahre Erfahrung" },
-] as const;
+  const localBusinessSchema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": ["LocalBusiness", "MovingCompany"],
+    name: "SEEL Transport & Reinigung",
+    url: "https://seeltransport.de",
+    telephone: "+49 172 8003410",
+    email: "info@seeltransport.de",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Berlin",
+      addressCountry: "DE",
+    },
+    areaServed: [
+      { "@type": "City", name: "Berlin" },
+      { "@type": "State", name: "Brandenburg" },
+    ],
+    openingHoursSpecification: {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      opens: "00:00",
+      closes: "23:59",
+    },
+    priceRange: "€€",
+  };
 
-const testimonials = [
-  { name: "Maria S.", text: "Sehr professioneller und freundlicher Service. Der Umzug lief reibungslos und schneller als erwartet.", rating: 5, service: "Umzug" },
-  { name: "Thomas K.", text: "Die Büroreinigung war erstklassig. Das Team war gründlich, pünktlich und hat alles perfekt hinterlassen.", rating: 5, service: "Reinigung" },
-  { name: "Sandra M.", text: "Unsere Schulrenovierung erforderte einen kompletten Umzug. Seel Transport hat alles perfekt organisiert.", rating: 5, service: "Schulumzug" },
-] as const;
-
-const faqs = [
-  { q: "Wie berechnet sich der Preis für einen Umzug?", a: "Der Preis setzt sich aus Stundensatz, Volumen, Entfernung, Arbeitskräften und eventuellen Zuschlägen zusammen. Über unseren Online-Rechner erhalten Sie sofort ein transparentes Angebot." },
-  { q: "Bieten Sie auch Wochenend-Umzüge an?", a: "Ja, wir sind 24/7 für Sie da - auch an Wochenenden und Feiertagen. Für Wochenenden wird ein Zuschlag von 30% erhoben." },
-  { q: "Sind meine Möbel während des Transports versichert?", a: "Gemäß HGB §451e haften wir mit bis zu 620 € pro Kubikmeter. Zusätzlich bieten wir erweiterte Versicherungsoptionen an." },
-  { q: "Kann ich online bezahlen?", a: "Ja, wir bieten Zahlung per Überweisung, Barzahlung und PayPal an." },
-  { q: "Was kostet ein Expressumzug?", a: "Expressumzüge beginnen ab 75 € / Std. mit einem Prioritätszuschlag von 40 % auf den regulären Umzugspreis. Buchung innerhalb von 24-48 Stunden möglich." },
-] as const;
-
-function AnimatedCounter({ target, suffix }: { target: number; suffix: string }) {
-  const [count, setCount] = useState(target);
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
-
-  useEffect(() => {
-    if (!inView) return;
-    setCount(0);
-    const duration = 1800;
-    const start = Date.now();
-    const tick = () => {
-      const elapsed = Date.now() - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.round(eased * target));
-      if (progress < 1) requestAnimationFrame(tick);
+  if (reviewsData && reviewsData.totalReviews > 0) {
+    localBusinessSchema.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: reviewsData.rating,
+      reviewCount: reviewsData.totalReviews,
+      bestRating: 5,
+      worstRating: 1,
     };
-    requestAnimationFrame(tick);
-  }, [inView, target]);
+  }
 
-  return (
-    <div ref={ref} className="text-4xl md:text-5xl font-bold text-teal-400">
-      {count}
-      {suffix}
-    </div>
-  );
-}
-
-function ServiceCard({
-  service,
-  index,
-}: {
-  service: { icon: LucideIcon; title: string; desc: string; href: string; gradient: string; image: string; price: string; priceNote?: string; badge?: string };
-  index: number;
-}) {
-  const Icon = service.icon;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.08 }}
-      viewport={{ once: true }}
-    >
-      <Link href={service.href} className="group block relative rounded-[2rem] overflow-hidden h-full glass-card hover:-translate-y-2">
-        {service.badge && (
-          <div className="absolute top-3 right-3 z-10 bg-gradient-to-r from-amber-400 to-yellow-500 text-navy-900 text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-            {service.badge}
-          </div>
-        )}
-        <div className="relative h-44 overflow-hidden">
-          <Image src={service.image} alt={service.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
-          <div className="absolute inset-0 bg-gradient-to-t from-navy-950/35 via-navy-900/10 to-transparent dark:from-navy-800/70 dark:via-navy-900/20" />
-        </div>
-        <div className="p-6">
-          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${service.gradient} flex items-center justify-center mb-4 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300 shadow-md`}>
-            <Icon className="text-white" size={24} />
-          </div>
-          <h3 className="text-lg font-semibold text-navy-800 dark:text-white mb-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
-            {service.title}
-          </h3>
-          <p className="text-silver-500 dark:text-silver-300 text-sm leading-relaxed mb-3">{service.desc}</p>
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <span className="text-teal-600 dark:text-teal-400 font-semibold text-sm">{service.price}</span>
-              {service.priceNote && <p className="text-silver-500 dark:text-silver-400 text-xs mt-1">{service.priceNote}</p>}
-            </div>
-            <div className="flex items-center gap-1 text-teal-600 dark:text-teal-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-all duration-300">
-              Mehr <ArrowRight size={14} />
-            </div>
-          </div>
-        </div>
-      </Link>
-    </motion.div>
-  );
-}
-
-export default function HomePage() {
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const services = [
+    {
+      title: "Privat- und Firmenumzug",
+      description: "Strukturierte Umzüge mit erfahrenem Team, festen Zeitfenstern und optionaler Montage.",
+      href: "/leistungen/umzug-berlin",
+      price: formatPricePerHour(prices.umzugStandard),
+      image: "/images/moving-workers-furniture.png",
+    },
+    {
+      title: "Büro- & Gewerbeumzug",
+      description: "Projektplanung für Unternehmen, Kanzleien, Praxen und Agenturen mit minimaler Ausfallzeit.",
+      href: "/leistungen/gewerbe",
+      price: formatPricePerHour(prices.gewerbeUmzug),
+      image: "/images/corporate-hallway-cleaning.png",
+    },
+    {
+      title: "Schulumzug Berlin",
+      description: "Ferien-, Wochenend- und Etappenumzüge für Schulen, Kitas und Bildungseinrichtungen.",
+      href: "/leistungen/schulumzug",
+      price: formatPricePerHour(prices.umzugStandard),
+      image: "/images/corporate-school-cleaning.png",
+    },
+    {
+      title: "Reinigung & Endreinigung",
+      description: "Wohnung, Büro und Übergabe aus einer Hand mit klaren Leistungslisten und festen Ansprechpartnern.",
+      href: "/leistungen/reinigung",
+      price: formatPricePerHour(prices.reinigungWohnung),
+      image: "/images/cleaning-team-office.png",
+    },
+    {
+      title: "Entrümpelung",
+      description: "Schnelle Räumung, saubere Trennung und fachgerechte Entsorgung in Berlin und Brandenburg.",
+      href: "/leistungen/entruempelung",
+      price: formatPricePerHour(prices.entruempelung),
+      image: "/images/waste-disposal-van.png",
+    },
+    {
+      title: "Expressumzug",
+      description: "Kurzfristige Umzüge mit priorisierter Disposition für besonders dringende Fälle.",
+      href: "/leistungen/expressumzug",
+      price: formatPricePerHour(prices.umzugExpress),
+      image: "/images/moving-truck-hero.png",
+    },
+  ];
 
   return (
     <>
-      <section className="relative overflow-hidden min-h-[100vh] flex items-center bg-navy-900 text-white">
-        <HeroVideo />
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-20 md:py-32 relative z-10 w-full">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}>
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-teal-300 px-5 py-2.5 text-sm mb-8 shadow-lg">
-                <Shield size={16} />
-                Ihr Partner in Deutschland seit über 10 Jahren
-              </div>
+      <Script id="home-local-business-schema" type="application/ld+json">
+        {JSON.stringify(localBusinessSchema)}
+      </Script>
+      <Script id="home-faq-schema" type="application/ld+json">
+        {JSON.stringify(buildFaqSchema(faqItems))}
+      </Script>
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.1] mb-8">
-                Zuverlässige{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-teal-200 to-teal-400">Umzüge</span>
-                <br />
-                und gründliche{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-teal-200 to-teal-400">Reinigung</span>
-              </h1>
-
-              <p className="text-lg md:text-xl text-silver-200 mb-10 leading-relaxed max-w-xl">
-                Professionelle Umzüge, Möbeltransporte und Reinigungsdienste - alles aus einer Hand. Zuverlässig, schnell und mit höchster Sorgfalt.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  href="/buchen"
-                  className="btn-shine group inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-teal-500 to-teal-400 font-bold rounded-2xl hover:from-teal-400 hover:to-teal-300 transition-all duration-300 shadow-xl shadow-teal-500/30 hover:shadow-teal-500/50 hover:-translate-y-1"
-                >
-                  Jetzt Angebot erhalten
-                  <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                </Link>
-                <a
-                  href={`tel:${CONTACT.PRIMARY_PHONE}`}
-                  className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl hover:bg-white/20 transition-all duration-300"
-                >
-                  <Phone size={20} />
-                  {CONTACT.PRIMARY_PHONE_DISPLAY}
-                </a>
-              </div>
-
-              <div className="flex items-center gap-6 mt-12">
-                <div className="flex -space-x-3">
-                  {["A", "B", "C", "D"].map((letter) => (
-                    <div key={letter} className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-navy-600 border-2 border-navy-800 flex items-center justify-center text-white text-xs font-bold shadow-md">
-                      {letter}
-                    </div>
-                  ))}
-                </div>
-                <div>
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <Star key={i} size={16} className="fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                  <p className="text-silver-400 text-sm">500+ zufriedene Kunden</p>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="hidden lg:block"
-            >
-              <div className="relative">
-                <div className="relative rounded-3xl overflow-hidden border border-white/20 shadow-2xl shadow-navy-950/60 backdrop-blur-sm">
-                  <div className="relative h-[420px]">
-                    <Image src="/images/moving-workers-furniture.png" alt="Seel Transport Team" fill className="object-cover" priority />
-                    <div className="absolute inset-0 bg-gradient-to-t from-navy-950/60 via-transparent to-transparent" />
-                  </div>
-                  <div className="absolute bottom-4 left-4 right-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center">
-                        <CheckCircle2 size={20} className="text-teal-400" />
-                      </div>
-                      <div>
-                        <p className="text-white font-semibold text-sm">Heute verfügbar</p>
-                        <p className="text-silver-300 text-xs">Expressumzug ab 24h möglich</p>
-                      </div>
-                      <Link href="/buchen?service=EXPRESS_MOVING" className="ml-auto text-xs bg-teal-500 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-teal-400 transition-colors">
-                        Buchen
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="absolute -top-4 -right-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-xl">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                      <Zap size={16} className="text-amber-400" />
-                    </div>
-                    <div>
-                      <p className="text-white text-xs font-bold">Express</p>
-                      <p className="text-teal-400 text-xs font-semibold">ab 75 € / Std.</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="absolute -bottom-4 -left-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-xl">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                      <Shield size={16} className="text-teal-400" />
-                    </div>
-                    <div>
-                      <p className="text-white text-xs font-bold">Versichert</p>
-                      <p className="text-silver-300 text-xs">HGB §451e</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
-          <motion.div animate={{ y: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="flex flex-col items-center gap-2 text-silver-400">
-            <span className="text-xs tracking-widest uppercase">Scrollen</span>
-            <ChevronDown size={20} />
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="py-20 sm:py-32 bg-gray-50/80 dark:bg-navy-950" id="services">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }} className="text-center mb-16">
-            <span className="text-teal-600 dark:text-teal-400 text-sm font-semibold uppercase tracking-wider">Unsere Leistungen</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-navy-800 dark:text-white mt-3 mb-4">Alles aus einer Hand</h2>
-            <p className="text-silver-500 dark:text-silver-300 max-w-2xl mx-auto">
-              Von professionellen Umzügen über gründliche Reinigung bis hin zur fachgerechten Entrümpelung - der komplette Service aus Berlin.
-            </p>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {services.map((service, i) => (
-              <ServiceCard key={service.title} service={service} index={i} />
-            ))}
-          </div>
-
-          <div className="text-center mt-12">
-            <Link href="/leistungen" className="inline-flex items-center gap-2 px-8 py-4 border-2 border-teal-500 text-teal-600 dark:text-teal-400 font-semibold rounded-xl hover:bg-teal-500 hover:text-white transition-all duration-300">
-              Alle Leistungen ansehen <ArrowRight size={18} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 sm:py-32 bg-white dark:bg-navy-900">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }} className="text-center mb-16">
-            <span className="text-teal-600 dark:text-teal-400 text-sm font-semibold uppercase tracking-wider">So funktioniert&apos;s</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-navy-800 dark:text-white mt-3 mb-4">In 3 Schritten zum Ziel</h2>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {steps.map((step, i) => {
-              const Icon = step.icon;
-              return (
-                <motion.div
-                  key={step.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: i * 0.15 }}
-                  viewport={{ once: true }}
-                  className="text-center relative"
-                >
-                  {i < steps.length - 1 && <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-teal-300 dark:from-teal-600 to-transparent" />}
-                  <div className="w-24 h-24 mx-auto rounded-2xl bg-teal-50 dark:bg-teal-500/10 flex items-center justify-center mb-6 relative group hover:bg-teal-100 dark:hover:bg-teal-500/20 transition-colors">
-                    <Icon className="text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform" size={36} />
-                    <span className="absolute -top-3 -right-3 w-8 h-8 bg-teal-500 text-white rounded-full flex items-center justify-center font-bold text-sm shadow-md">{i + 1}</span>
-                  </div>
-                  <h3 className="text-xl font-semibold text-navy-800 dark:text-white mb-3">{step.title}</h3>
-                  <p className="text-silver-500 dark:text-silver-300 text-sm">{step.desc}</p>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          <div className="text-center mt-12">
-            <Link href="/buchen" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-teal-500 to-teal-400 text-white font-semibold rounded-xl hover:from-teal-400 hover:to-teal-300 transition-all shadow-lg shadow-teal-500/25">
-              Jetzt buchen
-              <ArrowRight size={20} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-navy-800 text-white py-20 sm:py-32 relative overflow-hidden">
+      <section className="gradient-navy relative overflow-hidden py-20 md:py-28">
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-10 right-20 w-64 h-64 bg-teal-500 rounded-full blur-[100px]" />
-          <div className="absolute bottom-10 left-20 w-48 h-48 bg-blue-500 rounded-full blur-[80px]" />
+          <div className="absolute left-10 top-10 h-72 w-72 rounded-full bg-teal-400 blur-[140px]" />
+          <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-blue-500 blur-[160px]" />
         </div>
-        <div className="max-w-7xl mx-auto relative z-10 px-4 md:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {statsData.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <AnimatedCounter target={stat.value} suffix={stat.suffix} />
-                <p className="text-silver-300 mt-2 text-sm">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      <section className="py-20 sm:py-32 bg-gray-50/80 dark:bg-navy-900">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }} className="text-center mb-16">
-            <span className="text-teal-600 dark:text-teal-400 text-sm font-semibold uppercase tracking-wider">Kundenbewertungen</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-navy-800 dark:text-white mt-3 mb-4">Was unsere Kunden sagen</h2>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((t, i) => (
-              <motion.div
-                key={t.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                viewport={{ once: true }}
-                className="h-full"
-              >
-                <div className="bg-white/80 dark:bg-navy-800/60 backdrop-blur-sm rounded-2xl p-8 shadow-sm border border-white/60 dark:border-navy-700/50 h-full hover:shadow-lg transition-shadow">
-                  <div className="flex items-center gap-1 mb-4">
-                    {Array.from({ length: t.rating }).map((_, idx) => (
-                      <Star key={idx} size={18} className="fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                  <p className="text-navy-700 dark:text-silver-200 mb-6 leading-relaxed">&quot;{t.text}&quot;</p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-navy-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                      {t.name[0]}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-navy-800 dark:text-white text-sm">{t.name}</p>
-                      <p className="text-silver-500 dark:text-silver-400 text-xs">{t.service}</p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 sm:py-32 bg-white dark:bg-navy-950">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="relative rounded-3xl overflow-hidden">
-            <div className="absolute inset-0">
-              <Image src="/images/corporate-glass-cleaning.png" alt="Business Solutions" fill className="object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-r from-navy-900/95 via-navy-900/80 to-navy-900/50" />
-            </div>
-            <div className="relative z-10 text-white p-8 md:p-16 max-w-2xl">
-              <span className="text-teal-400 text-sm font-semibold uppercase tracking-wider">Für Unternehmen</span>
-              <h2 className="text-3xl md:text-4xl font-bold mt-3 mb-6">Maßgeschneiderte Lösungen für Ihr Unternehmen</h2>
-              <p className="text-silver-300 mb-8 leading-relaxed">
-                Jahresverträge für Reinigungsdienste, Büroumzüge und mehr. Profitieren Sie von transparenter Preisgestaltung und zuverlässigem Service.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/unternehmen" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-teal-500 font-semibold rounded-xl hover:bg-teal-400 transition-all shadow-lg shadow-teal-500/25">
-                  Mehr erfahren <ArrowRight size={20} />
-                </Link>
-                <Link href="/kontakt" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white/20 transition-all">
-                  Kontakt aufnehmen
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 sm:py-24 bg-gray-50 dark:bg-navy-900">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="grid md:grid-cols-2 gap-6">
-            <Link href="/leistungen/entsorgung" className="group relative rounded-2xl overflow-hidden h-64 block">
-              <Image src="/images/waste-disposal-apartment.png" alt="Entrümpelung" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-gradient-to-t from-navy-900/90 via-navy-900/40 to-transparent" />
-              <div className="absolute bottom-6 left-6 text-white">
-                <p className="text-sm text-teal-300 font-semibold mb-1">Entrümpelung</p>
-                <h3 className="text-xl font-bold mb-2">Wohnungsräumung</h3>
-                <div className="flex items-center gap-2 text-sm text-silver-300 group-hover:text-white transition-colors">
-                  Mehr erfahren <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                </div>
-              </div>
-            </Link>
-            <Link href="/leistungen/entsorgung" className="group relative rounded-2xl overflow-hidden h-64 block">
-              <Image src="/images/waste-disposal-recycling.png" alt="Entsorgung" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-gradient-to-t from-navy-900/90 via-navy-900/40 to-transparent" />
-              <div className="absolute bottom-6 left-6 text-white">
-                <p className="text-sm text-teal-300 font-semibold mb-1">Entsorgung</p>
-                <h3 className="text-xl font-bold mb-2">Umweltgerechtes Recycling</h3>
-                <div className="flex items-center gap-2 text-sm text-silver-300 group-hover:text-white transition-colors">
-                  Mehr erfahren <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                </div>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 sm:py-32 bg-white dark:bg-navy-950" id="faq">
-        <div className="max-w-3xl mx-auto px-4 md:px-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }} className="text-center mb-16">
-            <span className="text-teal-600 dark:text-teal-400 text-sm font-semibold uppercase tracking-wider">FAQ</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-navy-800 dark:text-white mt-3 mb-4">Häufig gestellte Fragen</h2>
-          </motion.div>
-
-          <div className="space-y-3">
-            {faqs.map((faq, i) => (
-              <motion.div
-                key={faq.q}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.06 }}
-                viewport={{ once: true }}
-                className="bg-white/80 dark:bg-navy-800/60 backdrop-blur-sm rounded-xl border border-white/60 dark:border-navy-700/50 overflow-hidden"
-              >
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-gray-50/80 dark:hover:bg-navy-700/30 transition-colors"
-                >
-                  <span className="font-medium text-navy-800 dark:text-white pr-4">{faq.q}</span>
-                  <ChevronDown size={20} className={`text-silver-400 shrink-0 transition-transform duration-300 ${openFaq === i ? "rotate-180" : ""}`} />
-                </button>
-                {openFaq === i && (
-                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="px-6 pb-5 text-silver-500 dark:text-silver-300 text-sm leading-relaxed">
-                    {faq.a}
-                  </motion.p>
-                )}
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 sm:py-32 bg-gray-50 dark:bg-navy-900">
-        <div className="max-w-4xl mx-auto text-center px-4 md:px-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>
-            <h2 className="text-3xl md:text-4xl font-bold text-navy-800 dark:text-white mb-6">Bereit für Ihren Umzug?</h2>
-            <p className="text-silver-500 dark:text-silver-300 mb-8 max-w-2xl mx-auto">
-              Erhalten Sie jetzt ein unverbindliches Angebot. Unser Team steht Ihnen 24/7 zur Verfügung.
+        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 md:px-8 lg:grid-cols-2">
+          <div>
+            <p className="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-teal-300 backdrop-blur-xl">
+              Umzugsfirma Berlin für Privat, Gewerbe und Bildungseinrichtungen
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/buchen"
-                className="group inline-flex items-center justify-center gap-2 px-10 py-4 bg-gradient-to-r from-teal-500 to-teal-400 text-white font-semibold rounded-xl hover:from-teal-400 hover:to-teal-300 transition-all shadow-lg shadow-teal-500/25"
-              >
-                Jetzt Angebot anfordern
-                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+            <h1 className="mt-6 text-4xl font-bold leading-tight text-white md:text-6xl">
+              Moderne Umzüge, Reinigung und Entrümpelung für Berlin & Brandenburg
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-silver-200">
+              SEEL Transport & Reinigung verbindet klare Planung, transparente Preise und eine hochwertige Glass-UI-Erfahrung
+              mit echter operativer Zuverlässigkeit vor Ort.
+            </p>
+
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+              <Link href="/buchen" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-600">
+                Jetzt Angebot anfragen
+                <ArrowRight size={16} />
               </Link>
-              <a
-                href={`tel:${CONTACT.PRIMARY_PHONE}`}
-                className="inline-flex items-center justify-center gap-2 px-10 py-4 border-2 border-navy-800 dark:border-silver-300 text-navy-800 dark:text-white font-semibold rounded-xl hover:bg-navy-800 dark:hover:bg-white/10 hover:text-white transition-all"
-              >
-                <Phone size={20} />
+              <a href={`tel:${CONTACT.PRIMARY_PHONE}`} className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-xl transition hover:bg-white/15">
                 {CONTACT.PRIMARY_PHONE_DISPLAY}
               </a>
             </div>
-          </motion.div>
+
+            <div className="mt-10 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-xl">
+                <p className="text-sm font-semibold text-white">Zuverlässiger Service in Berlin &amp; Brandenburg</p>
+                <p className="mt-2 text-sm text-silver-300">Flexible Termine auch kurzfristig</p>
+              </div>
+              <div className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-xl">
+                <p className="text-sm font-semibold text-white">{formatPricePerHour(prices.umzugStandard)}</p>
+                <p className="mt-2 text-sm text-silver-300">Mindestabnahme 2 Stunden · Berlin & Brandenburg</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="relative overflow-hidden rounded-[2rem] border border-white/20 shadow-2xl shadow-black/20">
+              <Image
+                src="/images/moving-workers-furniture.png"
+                alt="SEEL Transport Team beim Umzug in Berlin"
+                width={960}
+                height={1080}
+                priority
+                className="h-auto w-full object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-navy-950/60 via-transparent to-transparent" />
+            </div>
+
+            <div className="absolute -bottom-6 left-6 rounded-3xl border border-white/20 bg-white/15 p-5 backdrop-blur-xl">
+              <p className="text-sm font-semibold text-white">Expressumzug</p>
+              <p className="mt-1 text-sm text-teal-300">{formatPricePerHour(prices.umzugExpress)}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-20 dark:bg-navy-950">
+        <div className="mx-auto max-w-7xl px-4 md:px-8">
+          <div className="mb-10 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-teal-600">Unsere Leistungen</p>
+            <h2 className="mt-4 text-3xl font-bold text-navy-800 dark:text-white md:text-4xl">Alles zentral geplant, überall klar kommuniziert</h2>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {services.map((service) => (
+              <Link key={service.href} href={service.href} className="group overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl dark:border-navy-700/50 dark:bg-navy-900">
+                <div className="relative h-56">
+                  <Image src={service.image} alt={service.title} fill className="object-cover transition duration-500 group-hover:scale-105" sizes="(max-width: 1280px) 100vw, 33vw" />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold text-navy-800 dark:text-white">{service.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-silver-600 dark:text-silver-300">{service.description}</p>
+                  <div className="mt-5 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-teal-600 dark:text-teal-300">{service.price}</p>
+                      <p className="text-xs text-silver-500 dark:text-silver-400">Mindestabnahme 2 Stunden</p>
+                    </div>
+                    <span className="inline-flex items-center gap-1 text-sm font-semibold text-navy-800 dark:text-white">
+                      Mehr erfahren
+                      <ArrowRight size={16} />
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-gray-50 py-20 dark:bg-navy-900">
+        <div className="mx-auto max-w-7xl px-4 md:px-8">
+          <div className="grid gap-6 lg:grid-cols-4">
+            {[
+              "24/7 erreichbar",
+              "Transparent kalkuliert",
+              "Versichert nach HGB §451e",
+              "Berlin & Brandenburg",
+            ].map((item) => (
+              <div key={item} className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm dark:border-navy-700/50 dark:bg-navy-800/60">
+                <CheckCircle2 size={20} className="text-teal-500" />
+                <p className="mt-4 text-sm font-semibold text-navy-800 dark:text-white">{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <GoogleReviews data={reviewsData} />
+
+      <section className="bg-gray-50 py-20 dark:bg-navy-900">
+        <div className="mx-auto max-w-4xl px-4 md:px-8">
+          <div className="space-y-4">
+            {faqItems.map((faq) => (
+              <details key={faq.question} className="rounded-3xl border border-gray-100 bg-white p-5 dark:border-navy-700/50 dark:bg-navy-800/60">
+                <summary className="cursor-pointer list-none text-sm font-semibold text-navy-800 dark:text-white">{faq.question}</summary>
+                <p className="mt-4 text-sm leading-7 text-silver-600 dark:text-silver-300">{faq.answer}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="gradient-navy py-20">
+        <div className="mx-auto max-w-4xl px-4 text-center md:px-8">
+          <h2 className="text-3xl font-bold text-white md:text-4xl">Bereit für Ihren nächsten Einsatz?</h2>
+          <p className="mt-5 text-lg text-silver-300">
+            Starten Sie Ihre Buchung online oder senden Sie uns Ihre Festpreisanfrage für Berlin und Brandenburg.
+          </p>
+          <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
+            <Link href="/buchen" className="inline-flex items-center justify-center rounded-2xl bg-teal-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-600">
+              Jetzt buchen
+            </Link>
+            <Link href="/leistungen/umzug-berlin" className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/15">
+              Umzugsfirma Berlin ansehen
+            </Link>
+          </div>
         </div>
       </section>
     </>

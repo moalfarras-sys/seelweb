@@ -1,67 +1,118 @@
-"use client";
-
+import type { Metadata } from "next";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowRight, Check, Building2, Shield, Clock, Briefcase } from "lucide-react";
-import ScrollReveal from "@/components/ui/ScrollReveal";
+import Script from "next/script";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { getPrices, formatPricePerHour } from "@/lib/getPrices";
+import { buildFaqSchema, buildMetadata } from "@/lib/seo";
 
-const features = [
-  "Büroreinigung (Schreibtische, Böden, Sanitär)", "Praxisreinigung (Arztpraxen, Kanzleien)",
-  "Treppenhausreinigung", "Glasflächen und Fenster",
-  "Teppichreinigung", "Regelmäßige Verträge möglich",
-  "Grundreinigung und Sonderreinigung", "Wochenend- und Abendservice",
+export const metadata: Metadata = buildMetadata({
+  title: "Büro- & Gewerbeumzug Berlin",
+  description:
+    "Büro- und Gewerbeumzug in Berlin für Unternehmen, Kanzleien, Agenturen und Praxen mit Projektplanung, IT-Handling und minimaler Ausfallzeit.",
+  path: "/leistungen/gewerbe",
+});
+
+const faqItems = [
+  {
+    question: "Wie reduzieren Sie Ausfallzeiten im laufenden Betrieb?",
+    answer: "Wir planen Etappen, Zeitfenster und Möbellogistik vorab, damit kritische Arbeitsbereiche schnell wieder einsatzbereit sind.",
+  },
+  {
+    question: "Transportieren Sie auch IT-Equipment?",
+    answer: "Ja. Monitore, Rechner, Drucker und sensible Ausstattung werden geordnet erfasst und geschützt verlagert.",
+  },
+  {
+    question: "Kann nach dem Umzug eine Reinigung erfolgen?",
+    answer: "Ja. Auf Wunsch kombinieren wir den Gewerbeumzug mit einer Reinigungsleistung für Übergabe, Teilflächen oder das alte Objekt.",
+  },
 ];
 
-const faqs = [
-  { q: "Bieten Sie monatliche Verträge an", a: "Ja, wir bieten individuelle Reinigungsverträge mit flexiblen Laufzeiten an. Kontaktieren Sie uns für ein maßgeschneidertes Angebot." },
-  { q: "Wann wird gereinigt", a: "Wir richten uns nach Ihren Geschäftszeiten. Reinigung am Abend, früh morgens oder am Wochenende ist möglich." },
-  { q: "Welche Branchen bedienen Sie", a: "Büros, Arztpraxen, Kanzleien, Einzelhandel, Gastronomie, Schulen und öffentliche Einrichtungen." },
-];
+export default async function GewerbePage() {
+  const prices = await getPrices();
 
-export default function GewerbePage() {
   return (
     <>
-      <section className="gradient-navy py-20 md:py-28 relative overflow-hidden">
-        <div className="max-w-5xl mx-auto px-4 md:px-8 text-center relative z-10">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-            <div className="w-20 h-20 bg-blue-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6"><Building2 className="text-blue-400" size={40} /></div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Büro- & Gewerbereinigung</h1>
-            <p className="text-silver-300 max-w-2xl mx-auto text-lg">Professionelle Reinigung für Büros, Praxen und Gewerberäume. Regelmäßig oder einmalig.</p>
-            <Link href="/buchen?service=OFFICE_CLEANING" className="inline-flex items-center gap-2 mt-8 px-8 py-4 bg-teal-500 text-white font-semibold rounded-xl hover:bg-teal-600 transition-all shadow-lg shadow-teal-500/25">Jetzt buchen <ArrowRight size={18} /></Link>
-          </motion.div>
+      <Script id="gewerbe-faq-schema" type="application/ld+json">
+        {JSON.stringify(buildFaqSchema(faqItems))}
+      </Script>
+
+      <section className="gradient-navy py-20 md:py-28">
+        <div className="mx-auto max-w-5xl px-4 text-center md:px-8">
+          <h1 className="text-4xl font-bold text-white md:text-5xl">Büro- & Gewerbeumzug Berlin</h1>
+          <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-silver-300">
+            Für Unternehmen, Kanzleien, Agenturen und Praxen organisieren wir Gewerbeumzüge mit fester Projektplanung,
+            klaren Zeitfenstern und möglichst geringer Unterbrechung Ihres Betriebs.
+          </p>
+          <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
+            <Link href="/buchen?service=MOVING" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-600">
+              Gewerbeumzug anfragen
+              <ArrowRight size={16} />
+            </Link>
+            <Link href="/kontakt?subject=Festpreisanfrage%20-%20B%C3%BCro-%20%26%20Gewerbeumzug" className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/15">
+              Festpreis anfragen
+            </Link>
+          </div>
         </div>
       </section>
-      <section className="section-padding bg-white dark:bg-navy-950"><div className="max-w-5xl mx-auto"><ScrollReveal>
-        <h2 className="text-2xl md:text-3xl font-bold text-navy-800 dark:text-white mb-10 text-center">Ihre Vorteile</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {[{ icon: Briefcase, title: "Professionell", desc: "Geschultes Personal für Gewerbereinigung" },{ icon: Clock, title: "Flexible Zeiten", desc: "Reinigung außerhalb Ihrer Geschäftszeiten" },{ icon: Shield, title: "Zuverlässig", desc: "Feste Ansprechpartner und Qualitätskontrolle" }].map((b) => { const Icon = b.icon; return (
-            <div key={b.title} className="bg-gray-50 dark:bg-navy-800/60 rounded-2xl p-6 border border-gray-100 dark:border-navy-700/50">
-              <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-4"><Icon className="text-blue-500" size={24} /></div>
-              <h3 className="font-bold text-navy-800 dark:text-white mb-2">{b.title}</h3><p className="text-sm text-silver-600 dark:text-silver-300">{b.desc}</p>
+
+      <section className="bg-white py-20 dark:bg-navy-950">
+        <div className="mx-auto max-w-6xl px-4 md:px-8">
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              "Minimale Ausfallzeit durch abgestimmte Projektplanung",
+              "Transport von IT-Equipment, Möblierung und Archivmaterial",
+              "Optional mit Übergabereinigung oder Teilflächenreinigung",
+            ].map((item) => (
+              <div key={item} className="rounded-[2rem] border border-gray-100 bg-gray-50/80 p-6 dark:border-navy-700/50 dark:bg-navy-800/60">
+                <CheckCircle2 size={18} className="text-teal-500" />
+                <p className="mt-4 text-sm leading-7 text-navy-800 dark:text-silver-200">{item}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+            <div>
+              <h2 className="text-3xl font-bold text-navy-800 dark:text-white">Was ist enthalten</h2>
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                {[
+                  "Vorabstimmung mit Ansprechpartnern",
+                  "Pack- und Transportkonzept",
+                  "Möbel- und Arbeitsplatzverlagerung",
+                  "IT- und Technikhandling",
+                  "Etagen- und Zugangsplanung",
+                  "Optionale Nachreinigung",
+                ].map((item) => (
+                  <div key={item} className="rounded-2xl border border-gray-100 bg-white px-4 py-3 text-sm text-silver-600 shadow-sm dark:border-navy-700/50 dark:bg-navy-900 dark:text-silver-300">
+                    {item}
+                  </div>
+                ))}
+              </div>
             </div>
-          ); })}
+
+            <div className="rounded-[2rem] border border-gray-100 bg-gray-50/80 p-8 dark:border-navy-700/50 dark:bg-navy-800/60">
+              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-teal-600">Preisorientierung</p>
+              <p className="mt-4 text-3xl font-bold text-navy-800 dark:text-white">{formatPricePerHour(prices.gewerbeUmzug)}</p>
+              <p className="mt-3 text-sm leading-7 text-silver-600 dark:text-silver-300">
+                Mindestabnahme 2 Stunden. Je nach Projektumfang kalkulieren wir zusätzlich Anfahrtswege, Trageaufwand und Sonderleistungen.
+              </p>
+              <Link href="/leistungen/reinigung" className="mt-6 inline-flex text-sm font-semibold text-teal-600 transition hover:text-teal-500">
+                Optionale Reinigung dazubuchen
+              </Link>
+            </div>
+          </div>
         </div>
-      </ScrollReveal></div></section>
-      <section className="section-padding bg-gray-50 dark:bg-navy-900"><div className="max-w-5xl mx-auto"><ScrollReveal>
-        <h2 className="text-2xl md:text-3xl font-bold text-navy-800 dark:text-white mb-8 text-center">Unsere Leistungen</h2>
-        <div className="grid md:grid-cols-2 gap-4">{features.map((f) => (
-          <div key={f} className="flex items-start gap-3 bg-white dark:bg-navy-800/60 rounded-xl p-4 border border-gray-100 dark:border-navy-700/50"><Check size={18} className="text-teal-500 mt-0.5 shrink-0" /><span className="text-sm text-navy-700 dark:text-silver-200">{f}</span></div>
-        ))}</div>
-      </ScrollReveal></div></section>
-      <section className="section-padding bg-gray-50 dark:bg-navy-900"><div className="max-w-3xl mx-auto">
-        <h2 className="text-2xl font-bold text-navy-800 dark:text-white mb-8 text-center">Häufige Fragen</h2>
-        <div className="space-y-3">{faqs.map((faq) => (
-          <details key={faq.q} className="group bg-white dark:bg-navy-800/60 rounded-xl border border-gray-100 dark:border-navy-700/50">
-            <summary className="px-5 py-4 cursor-pointer font-medium text-navy-800 dark:text-white text-sm flex items-center justify-between">{faq.q}<span className="text-teal-500 transition-transform group-open:rotate-45 text-lg">+</span></summary>
-            <div className="px-5 pb-4 text-sm text-silver-600 dark:text-silver-300">{faq.a}</div>
-          </details>
-        ))}</div>
-      </div></section>
-      <section className="gradient-navy section-padding"><div className="max-w-4xl mx-auto text-center"><ScrollReveal>
-        <h2 className="text-3xl font-bold text-white mb-4">Saubere Geschäftsräume</h2>
-        <p className="text-silver-300 mb-8">Fordern Sie ein individuelles Angebot für Ihre Gewerbereinigung an.</p>
-        <Link href="/buchen?service=OFFICE_CLEANING" className="inline-flex items-center gap-2 px-10 py-4 bg-teal-500 text-white font-semibold rounded-xl hover:bg-teal-600 transition-all shadow-lg shadow-teal-500/25">Jetzt Angebot anfordern <ArrowRight size={20} /></Link>
-      </ScrollReveal></div></section>
+      </section>
+
+      <section className="bg-gray-50 py-20 dark:bg-navy-900">
+        <div className="mx-auto max-w-4xl space-y-4 px-4 md:px-8">
+          {faqItems.map((faq) => (
+            <details key={faq.question} className="rounded-3xl border border-gray-100 bg-white p-5 dark:border-navy-700/50 dark:bg-navy-800/60">
+              <summary className="cursor-pointer list-none text-sm font-semibold text-navy-800 dark:text-white">{faq.question}</summary>
+              <p className="mt-4 text-sm leading-7 text-silver-600 dark:text-silver-300">{faq.answer}</p>
+            </details>
+          ))}
+        </div>
+      </section>
     </>
   );
 }

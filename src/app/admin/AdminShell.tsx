@@ -21,6 +21,7 @@ import {
   HeartPulse,
   ChevronRight,
   Bell,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdminPwaProvider from "@/components/admin/AdminPwaProvider";
@@ -37,6 +38,7 @@ const sidebarLinks = [
   { href: "/admin/preise", icon: Euro, label: "Preise", group: "finance" },
   { href: "/admin/preisregeln", icon: Euro, label: "Preisregeln", group: "finance" },
   { href: "/admin/berichte", icon: BarChart3, label: "Berichte", group: "finance" },
+  { href: "/admin/email-logs", icon: Mail, label: "E-Mail Protokoll", group: "system" },
   { href: "/admin/einstellungen", icon: Settings, label: "Einstellungen", group: "system" },
   { href: "/admin/gesundheit", icon: HeartPulse, label: "Systemstatus", group: "system" },
 ];

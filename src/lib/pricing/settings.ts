@@ -12,6 +12,14 @@ export type PricingSettingsSnapshot = {
   baseHomeCleaningEur: number;
   baseMoveOutCleaningEur: number;
   baseOfficeCleaningEur: number;
+  publicMovingStandardEur: number;
+  publicMovingExpressEur: number;
+  publicMovingExpressSurchargePct: number;
+  publicHomeCleaningEur: number;
+  publicOfficeMovingEur: number;
+  publicOfficeCleaningEur: number;
+  publicDisposalEur: number;
+  publicMoveOutCleaningEur: number;
 };
 
 export const DEFAULT_PRICING_SETTINGS: PricingSettingsSnapshot = {
@@ -25,6 +33,14 @@ export const DEFAULT_PRICING_SETTINGS: PricingSettingsSnapshot = {
   baseHomeCleaningEur: 0,
   baseMoveOutCleaningEur: 0,
   baseOfficeCleaningEur: 0,
+  publicMovingStandardEur: 59,
+  publicMovingExpressEur: 75,
+  publicMovingExpressSurchargePct: 40,
+  publicHomeCleaningEur: 34,
+  publicOfficeMovingEur: 59,
+  publicOfficeCleaningEur: 34,
+  publicDisposalEur: 49,
+  publicMoveOutCleaningEur: 34,
 };
 
 function toSnapshot(settings: PricingSettings | null): PricingSettingsSnapshot {
@@ -40,6 +56,14 @@ function toSnapshot(settings: PricingSettings | null): PricingSettingsSnapshot {
     baseHomeCleaningEur: settings.baseHomeCleaningEur,
     baseMoveOutCleaningEur: settings.baseMoveOutCleaningEur,
     baseOfficeCleaningEur: settings.baseOfficeCleaningEur,
+    publicMovingStandardEur: settings.publicMovingStandardEur,
+    publicMovingExpressEur: settings.publicMovingExpressEur,
+    publicMovingExpressSurchargePct: settings.publicMovingExpressSurchargePct,
+    publicHomeCleaningEur: settings.publicHomeCleaningEur,
+    publicOfficeMovingEur: settings.publicOfficeMovingEur,
+    publicOfficeCleaningEur: settings.publicOfficeCleaningEur,
+    publicDisposalEur: settings.publicDisposalEur,
+    publicMoveOutCleaningEur: settings.publicMoveOutCleaningEur,
   };
 }
 

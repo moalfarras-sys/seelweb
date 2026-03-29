@@ -262,6 +262,14 @@ async function seedPricingSettings() {
       baseHomeCleaningEur: 0,
       baseMoveOutCleaningEur: 0,
       baseOfficeCleaningEur: 0,
+      publicMovingStandardEur: 59,
+      publicMovingExpressEur: 75,
+      publicMovingExpressSurchargePct: 40,
+      publicHomeCleaningEur: 34,
+      publicOfficeMovingEur: 59,
+      publicOfficeCleaningEur: 34,
+      publicDisposalEur: 49,
+      publicMoveOutCleaningEur: 34,
     },
   });
 }

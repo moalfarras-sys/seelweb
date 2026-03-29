@@ -1,4 +1,13 @@
+import type { Metadata } from "next";
 import { SEEL_AGB_SECTIONS, SEEL_AGB_VERSION, SEEL_CANCELLATION_RULES } from "@/lib/legal";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildMetadata({
+  title: "Allgemeine Geschäftsbedingungen (AGB)",
+  description:
+    "AGB von SEEL Transport & Reinigung für Umzug, Transport, Reinigung und Entsorgung. Rechtliche Rahmenbedingungen klar und transparent.",
+  path: "/agb",
+});
 
 const sectionIds = SEEL_AGB_SECTIONS.map((section) => ({
   title: section.title,

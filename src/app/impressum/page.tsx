@@ -1,4 +1,13 @@
-﻿import { CONTACT, COMPANY_LEGAL, COMPANY_BANK } from "@/config/contact";
+﻿import type { Metadata } from "next";
+import { CONTACT, COMPANY_LEGAL, COMPANY_BANK } from "@/config/contact";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildMetadata({
+  title: "Impressum",
+  description:
+    "Impressum von SEEL Transport & Reinigung. Angaben gemäß § 5 TMG, Kontaktdaten, Bankverbindung und rechtliche Hinweise.",
+  path: "/impressum",
+});
 
 export default function ImpressumPage() {
   return (

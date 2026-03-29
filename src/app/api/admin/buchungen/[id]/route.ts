@@ -41,7 +41,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const allowedFields = [
       "status", "notes", "totalPrice", "discountAmount", "netto", "mwst",
       "subtotal", "scheduledAt", "timeSlot", "bookedHours", "totalHours",
-      "hourlyRate", "workers", "paymentStatus", "paymentMethod",
+      "hourlyRate", "workers", "paymentStatus", "paymentMethod", "deletedAt",
     ];
     const data: Record<string, unknown> = {};
     for (const key of allowedFields) {
@@ -69,7 +69,10 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     }
 
     const { id } = await params;
-    await prisma.order.delete({ where: { id } });
+    await prisma.order.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

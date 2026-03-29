@@ -1,4 +1,14 @@
-﻿export default function DatenschutzPage() {
+﻿import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildMetadata({
+  title: "Datenschutzerklärung",
+  description:
+    "Datenschutzerklärung von SEEL Transport & Reinigung gemäß DSGVO. Informationen zu Datenerfassung, Cookies, Zahlungsdaten und Ihren Rechten.",
+  path: "/datenschutz",
+});
+
+export default function DatenschutzPage() {
   return (
     <>
       <section className="gradient-navy py-16 md:py-20">

@@ -1,4 +1,4 @@
-﻿import type { Metadata, Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { headers } from "next/headers";
 import "./globals.css";
@@ -51,25 +51,25 @@ export const metadata: Metadata = {
 
 const localBusinessSchema = {
   "@context": "https://schema.org",
-  "@type": "LocalBusiness",
+  "@type": ["LocalBusiness", "MovingCompany"],
   name: "SEEL Transport & Reinigung",
   url: "https://seeltransport.de",
   logo: "https://seeltransport.de/images/logo.jpeg",
   telephone: "+49 172 8003410",
+  email: "info@seeltransport.de",
   address: {
     "@type": "PostalAddress",
     addressCountry: "DE",
     addressLocality: "Berlin",
   },
-  areaServed: "Deutschland",
-  openingHoursSpecification: [
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-      opens: "07:00",
-      closes: "20:00",
-    },
-  ],
+  areaServed: [{ "@type": "City", name: "Berlin" }, { "@type": "State", name: "Brandenburg" }],
+  openingHoursSpecification: {
+    "@type": "OpeningHoursSpecification",
+    dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+    opens: "00:00",
+    closes: "23:59",
+  },
+  priceRange: "€€",
 };
 
 export default async function RootLayout({

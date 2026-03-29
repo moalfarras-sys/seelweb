@@ -270,6 +270,7 @@ model Order {
   breakdownJson   Json?         @map("breakdown_json")
   addressSnapshotJson Json?     @map("address_snapshot_json")
   notes           String?
+  deletedAt       DateTime?     @map("deleted_at")
   createdAt       DateTime      @default(now()) @map("created_at")
   updatedAt       DateTime      @updatedAt @map("updated_at")
 
@@ -615,6 +616,14 @@ model PricingSettings {
   baseHomeCleaningEur   Float    @default(0) @map("base_home_cleaning_eur")
   baseMoveOutCleaningEur Float   @default(0) @map("base_move_out_cleaning_eur")
   baseOfficeCleaningEur Float    @default(0) @map("base_office_cleaning_eur")
+  publicMovingStandardEur Float  @default(59) @map("public_moving_standard_eur")
+  publicMovingExpressEur Float   @default(75) @map("public_moving_express_eur")
+  publicMovingExpressSurchargePct Float @default(40) @map("public_moving_express_surcharge_pct")
+  publicHomeCleaningEur Float    @default(34) @map("public_home_cleaning_eur")
+  publicOfficeMovingEur Float    @default(59) @map("public_office_moving_eur")
+  publicOfficeCleaningEur Float  @default(34) @map("public_office_cleaning_eur")
+  publicDisposalEur Float        @default(49) @map("public_disposal_eur")
+  publicMoveOutCleaningEur Float @default(34) @map("public_move_out_cleaning_eur")
   updatedAt             DateTime @updatedAt @map("updated_at")
 
   @@map("pricing_settings")

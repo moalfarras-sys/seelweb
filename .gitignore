@@ -48,3 +48,13 @@ audit-artifacts/
 
 # nested repo in workspace
 seelweb/
+
+# temp/debug artifacts
+cookies.txt
+headers.txt
+build-check.log
+output/
+screenshots/
+data/
+*.jpeg
+!public/**/*.jpeg

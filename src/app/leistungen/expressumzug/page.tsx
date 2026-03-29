@@ -1,9 +1,11 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
+import Script from "next/script";
 import { motion } from "framer-motion";
 import { ArrowRight, Check, Zap, Clock, Shield, Truck, AlertTriangle } from "lucide-react";
 import ScrollReveal from "@/components/ui/ScrollReveal";
+import { buildFaqSchema } from "@/lib/seo";
 
 const features = [
   "Umzug innerhalb von 24–48 Stunden",
@@ -38,6 +40,10 @@ const faqs = [
 export default function ExpressumzugPage() {
   return (
     <>
+      <Script id="expressumzug-faq-schema" type="application/ld+json">
+        {JSON.stringify(buildFaqSchema(faqs.map((f) => ({ question: f.q, answer: f.a }))))}
+      </Script>
+
       <section className="gradient-navy py-20 md:py-28 relative overflow-hidden">
         <div className="max-w-5xl mx-auto px-4 md:px-8 text-center relative z-10">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>

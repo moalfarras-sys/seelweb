@@ -1,16 +1,15 @@
 import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const base = "https://seeltransport.de";
-
   return {
     rules: [
       {
         userAgent: "*",
         allow: "/",
+        disallow: "/admin/",
       },
     ],
-    sitemap: `${base}/sitemap.xml`,
-    host: base,
+    sitemap: "https://seeltransport.de/sitemap.xml",
+    host: "https://seeltransport.de",
   };
 }

@@ -37,10 +37,10 @@ export const COMPANY_LEGAL = {
 } as const;
 
 export const COMPANY_BANK = {
-  BANK_NAME: "Deutsche Bank",
-  IBAN: "DE44 1007 1324 0066 0068 00",
+  BANK_NAME: "Postbank",
+  IBAN: "DE90 1007 1324 0070 0435 00",
   BIC: "DEUTDEDBP31",
-  ACCOUNT_HOLDER: "Lisaveta Al-Shamaileh",
+  ACCOUNT_HOLDER: "LISAVETA AL-SHAMAILEH",
 } as const;
 
 export const WHATSAPP_DEFAULT_MESSAGE = `Hallo 👋

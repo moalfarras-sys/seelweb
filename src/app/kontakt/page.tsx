@@ -1,253 +1,207 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Phone, Mail, MapPin, Clock, Send, Check, ArrowRight, MessageCircle } from "lucide-react";
-import { useState } from "react";
-import { CONTACT, whatsappDefaultUrl } from "@/config/contact";
-import ScrollReveal from "@/components/ui/ScrollReveal";
-import TiltCard from "@/components/ui/TiltCard";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { CONTACT, whatsappDefaultUrl } from "@/config/contact";
 
-type ContactLine = { label: string; href?: string };
-type ContactItem = { icon: typeof Phone; title: string; lines: ContactLine[] };
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const contactItems: ContactItem[] = [
-  {
-    icon: Phone,
-    title: "Telefon",
-    lines: [
-      { label: "+49 172 8003410", href: "tel:+491728003410" },
-      { label: "+49 160 7746966", href: "tel:+491607746966" },
-    ],
-  },
-  {
-    icon: Mail,
-    title: "E-Mail",
-    lines: [{ label: CONTACT.EMAIL, href: `mailto:${CONTACT.EMAIL}` }],
-  },
-  {
-    icon: MapPin,
-    title: "Standort",
-    lines: [{ label: `${CONTACT.CITY}, ${CONTACT.COUNTRY}` }],
-  },
-  {
-    icon: Clock,
-    title: "Erreichbarkeit",
-    lines: [{ label: CONTACT.AVAILABILITY }],
-  },
-];
+type TrackingState = {
+  utm_source: string;
+  utm_medium: string;
+  utm_campaign: string;
+  referrer: string;
+  landing_page: string;
+};
 
 export default function KontaktPage() {
+  const searchParams = useSearchParams();
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
+  const [honeypot, setHoneypot] = useState("");
+  const [tracking, setTracking] = useState<TrackingState>({
+    utm_source: "",
+    utm_medium: "",
+    utm_campaign: "",
+    referrer: "",
+    landing_page: "",
+  });
+  const [gdpr, setGdpr] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [gdpr, setGdpr] = useState(false);
+  const [clientValidationError, setClientValidationError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!gdpr) return;
-    setLoading(true);
+  useEffect(() => {
+    const subject = searchParams.get("subject");
+    if (!subject) return;
+    setForm((current) => ({ ...current, subject }));
+  }, [searchParams]);
+
+  useEffect(() => {
+    setTracking({
+      utm_source: searchParams.get("utm_source") ?? "",
+      utm_medium: searchParams.get("utm_medium") ?? "",
+      utm_campaign: searchParams.get("utm_campaign") ?? "",
+      referrer: typeof document !== "undefined" ? document.referrer : "",
+      landing_page: typeof window !== "undefined" ? window.location.pathname : "",
+    });
+  }, [searchParams]);
+
+  function updateForm(patch: Partial<typeof form>) {
+    setClientValidationError("");
+    setForm((current) => ({ ...current, ...patch }));
+  }
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setClientValidationError("");
     setError(false);
+
+    if (honeypot.trim()) return;
+    if (!gdpr) return;
+
+    const nameOk = form.name.trim().length > 0;
+    const emailOk = form.email.trim().length > 0 && EMAIL_REGEX.test(form.email.trim());
+    const subjectOk = form.subject.trim().length > 0;
+    const messageOk = form.message.trim().length > 0;
+    if (!nameOk || !emailOk || !subjectOk || !messageOk) {
+      setClientValidationError("Bitte füllen Sie alle Pflichtfelder aus und geben Sie eine gültige E-Mail-Adresse ein.");
+      return;
+    }
+
     try {
+      setLoading(true);
       const res = await fetch("/api/kontakt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          website: honeypot,
+          ...tracking,
+        }),
       });
-      if (!res.ok) throw new Error("Server error");
+      if (!res.ok) throw new Error();
       setSubmitted(true);
     } catch {
       setError(true);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const inputClasses = "w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-navy-600 bg-white dark:bg-navy-800 text-navy-800 dark:text-white placeholder-silver-400 dark:placeholder-silver-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all";
+  const inputClasses =
+    "w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-navy-800 outline-none transition focus:border-teal-500 dark:border-navy-700 dark:bg-navy-900 dark:text-white";
 
   return (
     <>
-      {/* Hero */}
-      <section className="gradient-navy py-20 md:py-28 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <div className="absolute top-10 right-20 w-72 h-72 bg-teal-500 rounded-full blur-[128px]" />
-          <div className="absolute bottom-10 left-10 w-64 h-64 bg-blue-500 rounded-full blur-[100px]" />
-        </div>
-        <div className="max-w-7xl mx-auto px-4 md:px-8 text-center relative z-10">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-            <span className="inline-flex items-center gap-2 glass rounded-full text-teal-400 px-5 py-2.5 text-sm mb-8 border-glow">
-              <Mail size={16} />
-              Kontakt
-            </span>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mt-3 mb-6">
-              Sprechen Sie{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-300">uns an</span>
-            </h1>
-            <p className="text-silver-300 max-w-2xl mx-auto text-lg leading-relaxed">
-              Wir sind {CONTACT.AVAILABILITY}. Nutzen Sie das Kontaktformular oder rufen Sie uns direkt an.
-            </p>
-          </motion.div>
+      <section className="gradient-navy py-20 md:py-28">
+        <div className="mx-auto max-w-5xl px-4 text-center md:px-8">
+          <h1 className="text-4xl font-bold text-white md:text-5xl">Kontakt aufnehmen</h1>
+          <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-silver-300">
+            Schreiben Sie uns für Umzug, Reinigung, Entrümpelung oder Ihre Festpreisanfrage. Wir melden uns schnell und klar strukturiert zurück.
+          </p>
         </div>
       </section>
 
-      {/* Contact section */}
-      <section className="section-padding bg-white dark:bg-navy-950 gradient-mesh">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-3 gap-12">
-            {/* Contact cards */}
-            <div className="space-y-5">
-              {contactItems.map((item, i) => {
-                const Icon = item.icon;
-                return (
-                  <ScrollReveal key={item.title} delay={i * 0.08}>
-                    <TiltCard intensity={5}>
-                      <div className="group flex items-start gap-4 p-6 bg-gradient-to-br from-white to-slate-50 dark:from-navy-900/70 dark:to-navy-800/70 rounded-2xl border border-gray-200 dark:border-navy-700/50 hover:shadow-xl hover:shadow-teal-500/10 transition-all glass-reflect">
-                        <div className="w-12 h-12 bg-teal-50 dark:bg-teal-500/10 rounded-xl flex items-center justify-center shrink-0 ring-1 ring-teal-200/60 dark:ring-teal-500/20">
-                          <Icon className="text-teal-600 dark:text-teal-400" size={22} />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-navy-800 dark:text-white mb-1">{item.title}</h3>
-                          {item.lines.map((line) => (
-                            <p key={line.label} className="text-silver-600 dark:text-silver-200 text-sm leading-6">
-                              {line.href ? (
-                                <a
-                                  href={line.href}
-                                  target={line.href.startsWith("http") ? "_blank" : undefined}
-                                  rel={line.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                                  className="inline-flex items-center gap-1 hover:text-teal-600 dark:hover:text-teal-400 transition-all duration-200 group-hover:translate-x-0.5"
-                                >
-                                  {line.label}
-                                </a>
-                              ) : line.label}
-                            </p>
-                          ))}
-                        </div>
-                      </div>
-                    </TiltCard>
-                  </ScrollReveal>
-                );
-              })}
-
-              <ScrollReveal delay={0.4}>
-                <div className="p-6 bg-teal-50 dark:bg-teal-500/10 rounded-xl border border-teal-200 dark:border-teal-500/20">
-                  <h3 className="font-semibold text-navy-800 dark:text-white mb-2 flex items-center gap-2">
-                    <MessageCircle size={18} className="text-green-600" />
-                    WhatsApp Direktnachricht
-                  </h3>
-                  <p className="text-silver-600 dark:text-silver-200 text-sm mb-3">Schreiben Sie uns direkt auf WhatsApp!</p>
-                  <a
-                    href={whatsappDefaultUrl()}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-500 text-white rounded-xl text-sm font-medium hover:bg-green-600 transition-all shadow-md btn-shine"
-                  >
-                    WhatsApp öffnen
-                    <ArrowRight size={16} />
-                  </a>
-                </div>
-              </ScrollReveal>
-            </div>
-
-            {/* Form */}
-            <div className="lg:col-span-2">
-              <div aria-live="polite">
-                {submitted ? (
-                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                    className="bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-2xl p-12 text-center"
-                  >
-                    <div className="w-16 h-16 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <Check size={32} className="text-green-600 dark:text-green-400" />
+      <section className="bg-white py-20 dark:bg-navy-950">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 md:px-8 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="space-y-4">
+            {[
+              { icon: Phone, title: "Telefon", value: CONTACT.PRIMARY_PHONE_DISPLAY, href: `tel:${CONTACT.PRIMARY_PHONE}` },
+              { icon: Mail, title: "E-Mail", value: CONTACT.EMAIL, href: `mailto:${CONTACT.EMAIL}` },
+              { icon: MapPin, title: "Standort", value: `${CONTACT.CITY}, ${CONTACT.COUNTRY}` },
+              { icon: MessageCircle, title: "WhatsApp", value: "Direktnachricht starten", href: whatsappDefaultUrl(), external: true },
+            ].map((item) => {
+              const Icon = item.icon;
+              const content = (
+                <div className="rounded-[2rem] border border-gray-100 bg-gray-50/80 p-6 dark:border-navy-700/50 dark:bg-navy-800/60">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-300">
+                      <Icon size={20} />
                     </div>
-                    <h3 className="text-2xl font-bold text-navy-800 dark:text-white mb-3">Nachricht gesendet!</h3>
-                    <p className="text-silver-600 dark:text-silver-200 mb-6">Wir melden uns schnellstmöglich bei Ihnen.</p>
-                    <Link href="/" className="text-teal-600 dark:text-teal-400 font-medium hover:underline">
-                      Zurück zur Startseite
-                    </Link>
-                  </motion.div>
-                ) : (
-                  <ScrollReveal delay={0.1}>
-                    <form onSubmit={handleSubmit} className="bg-white dark:bg-navy-800/60 rounded-2xl border border-gray-200 dark:border-navy-700/50 shadow-sm p-8 md:p-12 space-y-6">
-                      {error && (
-                        <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl p-4 text-red-700 dark:text-red-300 text-sm">
-                          Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie uns telefonisch.
-                        </div>
-                      )}
+                    <div>
+                      <p className="text-sm font-semibold text-navy-800 dark:text-white">{item.title}</p>
+                      <p className="mt-1 text-sm text-silver-600 dark:text-silver-300">{item.value}</p>
+                    </div>
+                  </div>
+                </div>
+              );
 
-                      <div className="grid sm:grid-cols-2 gap-6">
-                        <div>
-                          <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-2">Name *</label>
-                          <input required type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputClasses} placeholder="Ihr Name" />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-2">E-Mail *</label>
-                          <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputClasses} placeholder="email@beispiel.de" />
-                        </div>
-                      </div>
+              if (!item.href) return <div key={item.title}>{content}</div>;
 
-                      <div className="grid sm:grid-cols-2 gap-6">
-                        <div>
-                          <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-2">Telefon</label>
-                          <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputClasses} placeholder="+49 ..." />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-2">Betreff *</label>
-                          <select required value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} className={inputClasses}>
-                            <option value="">Bitte wählen...</option>
-                            <option value="umzug-privat">Privatumzug</option>
-                            <option value="umzug-buero">Büroumzug</option>
-                            <option value="umzug-fern">Fernumzug</option>
-                            <option value="reinigung">Reinigung</option>
-                            <option value="entruempelung">Entrümpelung</option>
-                            <option value="angebot">Angebotsanfrage</option>
-                            <option value="firmenvertrag">Firmenvertrag</option>
-                            <option value="sonstiges">Sonstiges</option>
-                          </select>
-                        </div>
-                      </div>
+              return (
+                <a key={item.title} href={item.href} target={item.external ? "_blank" : undefined} rel={item.external ? "noopener noreferrer" : undefined}>
+                  {content}
+                </a>
+              );
+            })}
+          </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-2">Nachricht *</label>
-                        <textarea required rows={6} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className={`${inputClasses} resize-none`} placeholder="Ihre Nachricht..." />
-                      </div>
-
-                      <label className="flex items-start gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={gdpr}
-                          onChange={(e) => setGdpr(e.target.checked)}
-                          className="mt-1 w-4 h-4 rounded border-gray-300 dark:border-navy-600 text-teal-500 focus:ring-teal-500"
-                          required
-                        />
-                        <span className="text-sm text-silver-600 dark:text-silver-200">
-                          Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
-                          <Link href="/datenschutz" className="text-teal-600 dark:text-teal-400 underline">Datenschutzerklärung</Link>{" "}
-                          zu. *
-                        </span>
-                      </label>
-
-                      <button
-                        type="submit"
-                        disabled={loading || !gdpr}
-                        className="group w-full py-4 bg-teal-500 text-white font-semibold rounded-xl hover:bg-teal-600 transition-all shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 flex items-center justify-center gap-2 btn-shine disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {loading ? (
-                          <>
-                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-                            Wird gesendet...
-                          </>
-                        ) : (
-                          <>
-                            Nachricht senden
-                            <Send size={18} className="group-hover:translate-x-1 transition-transform" />
-                          </>
-                        )}
-                      </button>
-                    </form>
-                  </ScrollReveal>
-                )}
+          <div className="relative rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm dark:border-navy-700/50 dark:bg-navy-900 md:p-8">
+            {submitted ? (
+              <div className="rounded-[2rem] bg-emerald-50 p-8 text-center dark:bg-emerald-500/10">
+                <h2 className="text-2xl font-bold text-navy-800 dark:text-white">Nachricht gesendet</h2>
+                <p className="mt-3 text-sm leading-7 text-silver-600 dark:text-silver-300">
+                  Vielen Dank. Wir melden uns schnellstmöglich bei Ihnen zurück.
+                </p>
+                <Link href="/" className="mt-5 inline-flex text-sm font-semibold text-teal-600 transition hover:text-teal-500">
+                  Zur Startseite
+                </Link>
               </div>
-            </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                {clientValidationError && (
+                  <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                    {clientValidationError}
+                  </div>
+                )}
+                {error && (
+                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+                    Beim Senden ist ein Fehler aufgetreten...
+                  </div>
+                )}
+
+                <div className="absolute -left-[9999px] h-0 w-0 overflow-hidden opacity-0" aria-hidden="true">
+                  <label htmlFor="kontakt-website">Website</label>
+                  <input
+                    id="kontakt-website"
+                    type="text"
+                    name="website"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={honeypot}
+                    onChange={(event) => setHoneypot(event.target.value)}
+                  />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <input required value={form.name} onChange={(event) => updateForm({ name: event.target.value })} placeholder="Ihr Name" className={inputClasses} />
+                  <input required type="email" value={form.email} onChange={(event) => updateForm({ email: event.target.value })} placeholder="E-Mail" className={inputClasses} />
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <input value={form.phone} onChange={(event) => updateForm({ phone: event.target.value })} placeholder="Telefon" className={inputClasses} />
+                  <input required value={form.subject} onChange={(event) => updateForm({ subject: event.target.value })} placeholder="Betreff" className={inputClasses} />
+                </div>
+                <textarea required rows={6} value={form.message} onChange={(event) => updateForm({ message: event.target.value })} placeholder="Ihre Nachricht" className={`${inputClasses} resize-none`} />
+
+                <label className="flex items-start gap-3 text-sm text-silver-600 dark:text-silver-300">
+                  <input type="checkbox" checked={gdpr} onChange={(event) => setGdpr(event.target.checked)} className="mt-1" />
+                  <span>
+                    Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
+                    <Link href="/datenschutz" className="font-semibold text-teal-600 transition hover:text-teal-500">
+                      Datenschutzerklärung
+                    </Link>{" "}
+                    zu.
+                  </span>
+                </label>
+
+                <button type="submit" disabled={loading || !gdpr} className="inline-flex items-center justify-center rounded-2xl bg-teal-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-60">
+                  {loading ? "Wird gesendet..." : "Nachricht senden"}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </section>

@@ -1,28 +1,35 @@
-﻿import type { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = "https://seeltransport.de";
   const now = new Date();
 
   const routes = [
-    "",
-    "/buchen",
-    "/kontakt",
+    "/",
     "/leistungen",
-    "/leistungen/umzug",
     "/leistungen/privatumzug",
     "/leistungen/firmenumzug",
+    "/leistungen/schulumzug",
+    "/leistungen/expressumzug",
+    "/leistungen/endreinigung",
     "/leistungen/entruempelung",
     "/leistungen/entsorgung",
-    "/leistungen/transport",
     "/leistungen/reinigung",
     "/leistungen/wohnungsreinigung",
-    "/leistungen/endreinigung",
-    "/leistungen/expressumzug",
+    "/leistungen/gewerbe",
     "/leistungen/umzug-berlin",
+    "/leistungen/umzug-brandenburg",
     "/leistungen/deutschlandweite-umzuege",
+    "/leistungen/transport",
+    "/leistungen/praxisreinigung",
+    "/leistungen/bueroreinigung",
+    "/leistungen/kitareinigung",
+    "/leistungen/schulreinigung",
+    "/leistungen/gewerbereinigung",
+    "/leistungen/gastronomiereinigung",
+    "/buchen",
     "/unternehmen",
-    "/track",
+    "/kontakt",
     "/impressum",
     "/datenschutz",
     "/agb",
@@ -31,7 +38,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return routes.map((path) => ({
     url: `${base}${path}`,
     lastModified: now,
-    changeFrequency: path === "" ? "daily" : "weekly",
-    priority: path === "" ? 1 : path === "/buchen" ? 0.9 : 0.75,
+    changeFrequency: path === "/" ? "weekly" : "monthly",
+    priority: path === "/" ? 1 : path === "/buchen" ? 0.9 : 0.8,
   }));
 }

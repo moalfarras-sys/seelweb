@@ -1,10 +1,12 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import Image from "next/image";
+import Script from "next/script";
 import { motion } from "framer-motion";
 import { ArrowRight, Check, Trash2, Recycle, Shield, Clock, Leaf, Home } from "lucide-react";
 import ScrollReveal from "@/components/ui/ScrollReveal";
+import { buildFaqSchema } from "@/lib/seo";
 
 const benefits = [
   { icon: Recycle, title: "Fachgerechte Entsorgung", desc: "Umweltgerechte Entsorgung mit Nachweis und Recycling" },
@@ -33,6 +35,10 @@ const faqs = [
 export default function EntruempelungPage() {
   return (
     <>
+      <Script id="entruempelung-faq-schema" type="application/ld+json">
+        {JSON.stringify(buildFaqSchema(faqs.map((f) => ({ question: f.q, answer: f.a }))))}
+      </Script>
+
       <section className="gradient-navy py-20 md:py-28 relative overflow-hidden">
         <div className="absolute inset-0">
           <Image src="/images/waste-disposal-recycling.png" alt="Entrümpelung" fill className="object-cover opacity-25" sizes="100vw" />

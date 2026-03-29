@@ -1,17 +1,20 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getSession();
     if (!session.isLoggedIn) {
       return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
     }
 
+    const showDeleted = request.nextUrl.searchParams.get("showDeleted") === "true";
+
     const orders = await prisma.order.findMany({
+      where: showDeleted ? {} : { deletedAt: null },
       include: {
         customer: true,
         service: true,
@@ -56,6 +59,7 @@ export async function GET() {
 
       return {
         ...order,
+        isDeleted: Boolean(order.deletedAt),
         offers: offer
           ? [
               {

@@ -1,456 +1,436 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  Search, Clock, CheckCircle2, Truck, AlertCircle, FileText,
-  ChevronDown, Send, Loader2, Phone, Mail, MapPin,
-  Calendar, CreditCard, ArrowRight, RefreshCw,
-  ClipboardList, Package, Download, ChevronRight,
+  AlertCircle,
+  Calendar,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Loader2,
+  Search,
+  Trash2,
+  X,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
-interface Order {
+type OrderRow = {
   id: string;
   orderNumber: string;
   status: string;
-  totalPrice: number;
-  netto: number;
-  mwst: number;
+  createdAt: string;
   scheduledAt: string | null;
   timeSlot: string | null;
-  paymentMethod: string;
-  paymentStatus: string;
   notes: string | null;
-  createdAt: string;
-  fromAddress: Record<string, string> | null;
-  toAddress: Record<string, string> | null;
-  distanceKm: number | null;
-  customer: { id: string; name: string; email: string; phone: string; company?: string };
-  service: { nameDe: string; category: string };
+  isDeleted?: boolean;
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  service: {
+    nameDe: string;
+    category: string;
+  };
   offers?: Array<{
     id: string;
     offerNumber: string;
-    token: string;
     status: string;
-    totalPrice: number;
     contracts?: Array<{
       id: string;
-      token: string;
-      status: string;
       contractNumber: string;
+      status: string;
       signedAt?: string | null;
     }>;
-    invoices?: Array<{
-      id: string;
-      invoiceNumber: string;
-      contractId?: string | null;
-      totalAmount: number;
-    }>;
   }>;
-}
-
-const statusConfig: Record<string, { label: string; color: string; bg: string; icon: typeof Clock; next?: string; nextLabel?: string }> = {
-  ANFRAGE:         { label: "Anfrage",          color: "text-amber-700 dark:text-amber-400",     bg: "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20",     icon: Clock,        next: "ANGEBOT",        nextLabel: "Angebot senden" },
-  ANGEBOT:         { label: "Angebot gesendet", color: "text-orange-700 dark:text-orange-400",   bg: "bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20", icon: FileText,     next: "BESTAETIGT",     nextLabel: "Bestätigen" },
-  BESTAETIGT:      { label: "Bestätigt",        color: "text-blue-700 dark:text-blue-400",       bg: "bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20",         icon: CheckCircle2, next: "IN_BEARBEITUNG", nextLabel: "Starten" },
-  IN_BEARBEITUNG:  { label: "In Bearbeitung",   color: "text-purple-700 dark:text-purple-400",   bg: "bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/20", icon: Truck,        next: "ABGESCHLOSSEN",  nextLabel: "Abschließen" },
-  ABGESCHLOSSEN:   { label: "Abgeschlossen",    color: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20", icon: CheckCircle2 },
-  STORNIERT:       { label: "Storniert",        color: "text-red-700 dark:text-red-400",         bg: "bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20",             icon: AlertCircle },
 };
 
-const statusFlow = ["ANFRAGE", "ANGEBOT", "BESTAETIGT", "IN_BEARBEITUNG", "ABGESCHLOSSEN"];
-const fmt = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" });
+const statusOptions = ["ALLE", "ANFRAGE", "ANGEBOT", "BESTAETIGT", "IN_BEARBEITUNG", "ABGESCHLOSSEN", "STORNIERT"] as const;
 
-function ProgressDots({ current }: { current: string }) {
-  const idx = statusFlow.indexOf(current);
-  if (current === "STORNIERT") return <span className="text-[10px] font-semibold text-red-500 bg-red-50 dark:bg-red-500/10 px-2 py-0.5 rounded-full">Storniert</span>;
-  return (
-    <div className="flex items-center gap-0.5">
-      {statusFlow.map((_, i) => (
-        <div key={i} className={cn("h-1.5 rounded-full transition-all", i <= idx ? "w-5 bg-teal-500" : "w-3 bg-gray-200 dark:bg-navy-700")} />
-      ))}
-    </div>
-  );
-}
+const statusLabel: Record<string, string> = {
+  ANFRAGE: "Neu",
+  ANGEBOT: "Angebot",
+  BESTAETIGT: "Bestätigt",
+  IN_BEARBEITUNG: "In Bearbeitung",
+  ABGESCHLOSSEN: "Abgeschlossen",
+  STORNIERT: "Storniert",
+};
+
+const statusBadge: Record<string, string> = {
+  ANFRAGE: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20",
+  ANGEBOT: "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/20",
+  BESTAETIGT: "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-500/10 dark:text-cyan-300 dark:border-cyan-500/20",
+  IN_BEARBEITUNG: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20",
+  ABGESCHLOSSEN: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20",
+  STORNIERT: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-500/10 dark:text-slate-300 dark:border-slate-500/20",
+};
 
 export default function BuchungenPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALLE");
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [exportingAll, setExportingAll] = useState(false);
-  const [toast, setToast] = useState<{ msg: string; type: "ok" | "err" } | null>(null);
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [status, setStatus] = useState<(typeof statusOptions)[number]>("ALLE");
+  const [service, setService] = useState("ALLE");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [showDeleted, setShowDeleted] = useState(false);
+  const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState<OrderRow | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<OrderRow | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [toast, setToast] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
-  const showToast = (msg: string, type: "ok" | "err" = "ok") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3500);
-  };
+  const pageSize = 20;
 
-  const fetchOrders = useCallback(async () => {
+  async function loadOrders() {
     try {
       setLoading(true);
-      const res = await fetch("/api/admin/buchungen");
+      setError("");
+      const res = await fetch(`/api/admin/buchungen?showDeleted=${showDeleted}`, { cache: "no-store" });
       if (!res.ok) throw new Error();
-      setOrders(await res.json());
+      const data = await res.json();
+      setOrders(data);
     } catch {
-      setError("Buchungen konnten nicht geladen werden.");
+      setError("Anfragen konnten nicht geladen werden.");
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  useEffect(() => { fetchOrders(); }, [fetchOrders]);
-
-  async function updateStatus(id: string, status: string) {
-    setActionLoading(`status-${id}`);
-    try {
-      const res = await fetch(`/api/admin/buchungen/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
-      if (!res.ok) throw new Error();
-      const updated: Order = await res.json();
-      setOrders((prev) => prev.map((o) => (o.id === id ? updated : o)));
-      showToast(`Status → ${statusConfig[status]?.label || status}`);
-    } catch { showToast("Status konnte nicht geändert werden.", "err"); }
-    finally { setActionLoading(null); }
   }
 
-  async function sendAngebot(id: string) {
-    setActionLoading(`angebot-${id}`);
-    try {
-      const res = await fetch(`/api/admin/buchungen/${id}/angebot`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
-      if (!res.ok) throw new Error();
-      await fetchOrders();
-      showToast("Angebot erstellt & gesendet");
-    } catch { showToast("Fehler beim Erstellen.", "err"); }
-    finally { setActionLoading(null); }
+  useEffect(() => {
+    loadOrders();
+  }, [showDeleted]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, status, service, dateFrom, dateTo, showDeleted]);
+
+  function showToast(type: "ok" | "err", text: string) {
+    setToast({ type, text });
+    window.setTimeout(() => setToast(null), 3000);
   }
 
-  async function approveOrder(id: string) {
-    setActionLoading(`approve-${id}`);
+  async function updateStatus(id: string, nextStatus: string) {
     try {
-      const res = await fetch(`/api/admin/buchungen/${id}/approve`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+      setSavingId(id);
+      const res = await fetch(`/api/admin/buchungen/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus }),
+      });
       if (!res.ok) throw new Error();
-      const updated: Order = await res.json();
-      setOrders((prev) => prev.map((o) => (o.id === id ? updated : o)));
-      showToast("Buchung bestätigt");
-    } catch { showToast("Fehler.", "err"); }
-    finally { setActionLoading(null); }
-  }
-
-  async function downloadFullExport() {
-    setExportingAll(true);
-    try {
-      const res = await fetch("/api/admin/export/all", { method: "GET" });
-      if (!res.ok) throw new Error();
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `seel-komplettexport-${new Date().toISOString().slice(0, 10)}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-      showToast("Komplettexport wurde heruntergeladen.");
+      const updated = await res.json();
+      setOrders((current) => current.map((order) => (order.id === id ? { ...order, ...updated } : order)));
+      if (selected?.id === id) {
+        setSelected((current) => (current ? { ...current, status: nextStatus } : current));
+      }
+      showToast("ok", "Status wurde aktualisiert.");
     } catch {
-      showToast("Export fehlgeschlagen.", "err");
+      showToast("err", "Status konnte nicht aktualisiert werden.");
     } finally {
-      setExportingAll(false);
+      setSavingId(null);
     }
   }
 
-  const filtered = orders.filter((b) => {
-    const q = search.toLowerCase();
-    const matchSearch = b.customer.name.toLowerCase().includes(q) || b.orderNumber.toLowerCase().includes(q) || b.customer.email.toLowerCase().includes(q);
-    return (statusFilter === "ALLE" || b.status === statusFilter) && matchSearch;
-  });
+  async function softDelete(id: string) {
+    try {
+      setSavingId(id);
+      const res = await fetch(`/api/admin/buchungen/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      setDeleteTarget(null);
+      await loadOrders();
+      showToast("ok", "Eintrag wurde gelöscht.");
+    } catch {
+      showToast("err", "Eintrag konnte nicht gelöscht werden.");
+    } finally {
+      setSavingId(null);
+    }
+  }
 
-  const counts = orders.reduce((acc, o) => { acc[o.status] = (acc[o.status] || 0) + 1; return acc; }, {} as Record<string, number>);
-
-  if (loading) return (
-    <div className="space-y-4 animate-pulse">
-      <div className="h-8 w-48 bg-gray-200 dark:bg-navy-700 rounded-lg" />
-      {[1,2,3,4].map(i => <div key={i} className="h-32 bg-gray-200 dark:bg-navy-700 rounded-2xl" />)}
-    </div>
+  const services = useMemo(
+    () => ["ALLE", ...Array.from(new Set(orders.map((order) => order.service.nameDe))).sort((a, b) => a.localeCompare(b))],
+    [orders]
   );
 
-  if (error && orders.length === 0) return (
-    <div className="flex items-center justify-center min-h-[400px]">
-      <div className="text-center">
-        <AlertCircle size={48} className="text-red-400 mx-auto mb-4" />
-        <p className="text-red-600 dark:text-red-400 font-medium">{error}</p>
-        <button onClick={() => { setError(""); fetchOrders(); }} className="mt-4 px-5 py-2.5 bg-teal-500 text-white rounded-xl text-sm font-medium hover:bg-teal-600">Erneut versuchen</button>
-      </div>
-    </div>
-  );
+  const filtered = useMemo(() => {
+    return orders.filter((order) => {
+      const haystack = [order.customer.name, order.customer.email, order.customer.phone, order.service.nameDe, order.orderNumber]
+        .join(" ")
+        .toLowerCase();
+      const searchMatch = haystack.includes(search.toLowerCase());
+      const statusMatch = status === "ALLE" || order.status === status;
+      const serviceMatch = service === "ALLE" || order.service.nameDe === service;
+      const sourceDate = order.scheduledAt ?? order.createdAt;
+      const dateMatchFrom = !dateFrom || sourceDate >= dateFrom;
+      const dateMatchTo = !dateTo || sourceDate <= `${dateTo}T23:59:59.999Z` || sourceDate <= dateTo;
+      return searchMatch && statusMatch && serviceMatch && dateMatchFrom && dateMatchTo;
+    });
+  }, [orders, search, status, service, dateFrom, dateTo]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {toast && (
-        <div className={cn("fixed top-5 right-5 z-50 px-5 py-3 rounded-xl shadow-2xl text-sm font-medium flex items-center gap-2", toast.type === "ok" ? "bg-emerald-600 text-white" : "bg-red-600 text-white")}>
-          {toast.type === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />} {toast.msg}
+        <div
+          className={`fixed right-5 top-5 z-50 flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium shadow-xl ${
+            toast.type === "ok" ? "bg-emerald-600 text-white" : "bg-red-600 text-white"
+          }`}
+        >
+          {toast.type === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+          {toast.text}
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-navy-800 dark:text-white flex items-center gap-2.5">
-            <ClipboardList size={26} className="text-teal-500" /> Buchungen
-          </h1>
-          <p className="text-silver-500 text-sm mt-0.5">{orders.length} Buchungen</p>
+          <h1 className="text-2xl font-bold text-navy-800 dark:text-white">Verträge / Anfragen</h1>
+          <p className="mt-1 text-sm text-silver-500 dark:text-silver-400">
+            Kundenanfragen prüfen, filtern, aktualisieren und sicher löschen.
+          </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <button onClick={fetchOrders} className="px-4 py-2 rounded-xl border border-gray-200 dark:border-navy-700 text-sm hover:bg-gray-50 dark:hover:bg-navy-800 flex items-center gap-2">
-            <RefreshCw size={15} /> Aktualisieren
-          </button>
-          <button
-            onClick={downloadFullExport}
-            disabled={exportingAll}
-            className="px-4 py-2 rounded-xl bg-navy-800 dark:bg-navy-700 text-white text-sm hover:bg-navy-900 dark:hover:bg-navy-600 disabled:opacity-50 flex items-center gap-2"
-          >
-            {exportingAll ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
-            Alles exportieren (ZIP)
-          </button>
+        <label className="inline-flex items-center gap-2 text-sm text-silver-600 dark:text-silver-300">
+          <input type="checkbox" checked={showDeleted} onChange={(event) => setShowDeleted(event.target.checked)} />
+          Gelöschte anzeigen
+        </label>
+      </div>
+
+      <div className="grid gap-3 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm dark:border-navy-700/50 dark:bg-navy-800/60 md:grid-cols-5">
+        <label className="relative md:col-span-2">
+          <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-silver-400" />
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Kundenname, Telefon, Service oder E-Mail"
+            className="h-11 w-full rounded-2xl border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none focus:border-teal-500 dark:border-navy-700 dark:bg-navy-900 dark:text-white"
+          />
+        </label>
+
+        <select value={status} onChange={(event) => setStatus(event.target.value as (typeof statusOptions)[number])} className="h-11 rounded-2xl border border-gray-200 bg-white px-4 text-sm outline-none focus:border-teal-500 dark:border-navy-700 dark:bg-navy-900 dark:text-white">
+          {statusOptions.map((option) => (
+            <option key={option} value={option}>
+              {option === "ALLE" ? "Alle Status" : statusLabel[option]}
+            </option>
+          ))}
+        </select>
+
+        <select value={service} onChange={(event) => setService(event.target.value)} className="h-11 rounded-2xl border border-gray-200 bg-white px-4 text-sm outline-none focus:border-teal-500 dark:border-navy-700 dark:bg-navy-900 dark:text-white">
+          {services.map((option) => (
+            <option key={option} value={option}>
+              {option === "ALLE" ? "Alle Services" : option}
+            </option>
+          ))}
+        </select>
+
+        <div className="grid grid-cols-2 gap-3 md:col-span-5">
+          <label>
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-silver-500">Von</span>
+            <input type="date" value={dateFrom} onChange={(event) => setDateFrom(event.target.value)} className="h-11 w-full rounded-2xl border border-gray-200 bg-white px-4 text-sm outline-none focus:border-teal-500 dark:border-navy-700 dark:bg-navy-900 dark:text-white" />
+          </label>
+          <label>
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-silver-500">Bis</span>
+            <input type="date" value={dateTo} onChange={(event) => setDateTo(event.target.value)} className="h-11 w-full rounded-2xl border border-gray-200 bg-white px-4 text-sm outline-none focus:border-teal-500 dark:border-navy-700 dark:bg-navy-900 dark:text-white" />
+          </label>
         </div>
       </div>
 
-      {/* Stats Row */}
-      <div className="flex flex-wrap gap-2">
-        {Object.entries(statusConfig).map(([key, val]) => {
-          const c = counts[key] || 0;
-          if (c === 0 && statusFilter !== key) return null;
-          return (
-            <button key={key} onClick={() => setStatusFilter(statusFilter === key ? "ALLE" : key)}
-              className={cn("px-3 py-1.5 rounded-full text-xs font-semibold border flex items-center gap-1.5 transition-all", val.bg, val.color, statusFilter === key && "ring-2 ring-teal-500")}>
-              <val.icon size={13} /> {c} {val.label}
-            </button>
-          );
-        })}
-        {statusFilter !== "ALLE" && (
-          <button onClick={() => setStatusFilter("ALLE")} className="px-3 py-1.5 rounded-full text-xs font-medium border border-gray-200 dark:border-navy-700 text-silver-500 hover:bg-gray-50 dark:hover:bg-navy-800">
-            Alle anzeigen
-          </button>
-        )}
-      </div>
-
-      {/* Search */}
-      <div className="relative">
-        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-silver-400" />
-        <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Suche..."
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-navy-700 bg-white dark:bg-navy-800/50 focus:border-teal-500 outline-none text-sm" />
-      </div>
-
-      {/* Orders - Each is a self-contained card */}
-      {filtered.length === 0 ? (
-        <div className="bg-white dark:bg-navy-800/60 rounded-2xl border border-gray-100 dark:border-navy-700/50 p-12 text-center">
-          <Package size={48} className="text-silver-300 mx-auto mb-3" />
-          <p className="text-silver-500">Keine Buchungen gefunden.</p>
+      {loading ? (
+        <div className="flex items-center gap-3 rounded-3xl border border-gray-100 bg-white px-5 py-6 text-sm text-silver-500 dark:border-navy-700/50 dark:bg-navy-800/60 dark:text-silver-400">
+          <Loader2 size={16} className="animate-spin" />
+          Anfragen werden geladen...
+        </div>
+      ) : error ? (
+        <div className="rounded-3xl border border-red-200 bg-red-50 px-5 py-6 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+          {error}
         </div>
       ) : (
-        <div className="space-y-3">
-          {filtered.map((order) => {
-            const config = statusConfig[order.status] || statusConfig.ANFRAGE;
-            const Icon = config.icon;
-            const isExpanded = expanded === order.id;
-            const isLoading = (key: string) => actionLoading === `${key}-${order.id}`;
+        <>
+          <div className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm dark:border-navy-700/50 dark:bg-navy-800/60">
+            <div className="hidden grid-cols-[1.2fr_1fr_1fr_1fr_1fr_1fr_0.9fr] gap-3 border-b border-gray-100 px-5 py-4 text-xs font-semibold uppercase tracking-wide text-silver-500 dark:border-navy-700/50 md:grid">
+              <span>Kundenname</span>
+              <span>Telefon</span>
+              <span>E-Mail</span>
+              <span>Service</span>
+              <span>Datum</span>
+              <span>Status</span>
+              <span>Aktionen</span>
+            </div>
 
-            return (
-              <div key={order.id} className={cn(
-                "bg-white dark:bg-navy-800/60 rounded-2xl border overflow-hidden transition-all",
-                isExpanded ? "border-teal-300 dark:border-teal-500/30 shadow-lg" : "border-gray-100 dark:border-navy-700/50 hover:border-gray-200 dark:hover:border-navy-700"
-              )}>
-                {/* Card Header - Always Visible */}
-                <button onClick={() => setExpanded(isExpanded ? null : order.id)}
-                  className="w-full text-left p-4 sm:p-5 flex items-center gap-4">
-                  {/* Status Icon */}
-                  <div className={cn("w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border", config.bg)}>
-                    <Icon size={20} className={config.color} />
-                  </div>
-
-                  {/* Main Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-mono text-teal-600 dark:text-teal-400 text-sm font-bold">{order.orderNumber}</span>
-                      <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold border", config.bg, config.color)}>{config.label}</span>
+            <div className="divide-y divide-gray-100 dark:divide-navy-700/50">
+              {paginated.length === 0 ? (
+                <div className="px-5 py-10 text-center text-sm text-silver-500 dark:text-silver-400">Keine Einträge gefunden.</div>
+              ) : (
+                paginated.map((order) => (
+                  <div key={order.id} className="grid gap-4 px-5 py-4 md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr_1fr_0.9fr] md:items-center">
+                    <div>
+                      <p className="font-semibold text-navy-800 dark:text-white">{order.customer.name}</p>
+                      <p className="mt-1 text-xs text-silver-500 dark:text-silver-400">Erstellt: {new Date(order.createdAt).toLocaleString("de-DE")}</p>
                     </div>
-                    <p className="text-sm font-medium text-navy-800 dark:text-white">{order.customer.name}</p>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="text-xs text-silver-500">{order.service.nameDe}</span>
-                      <span className="text-xs text-silver-400">·</span>
-                      <span className="text-xs text-silver-500">{new Date(order.scheduledAt || order.createdAt).toLocaleDateString("de-DE")}</span>
+                    <p className="text-sm text-navy-700 dark:text-silver-200">{order.customer.phone || "—"}</p>
+                    <p className="truncate text-sm text-navy-700 dark:text-silver-200">{order.customer.email}</p>
+                    <p className="text-sm text-navy-700 dark:text-silver-200">{order.service.nameDe}</p>
+                    <div className="text-sm text-navy-700 dark:text-silver-200">
+                      <p>{new Date(order.scheduledAt ?? order.createdAt).toLocaleDateString("de-DE")}</p>
+                      {order.timeSlot && <p className="mt-1 text-xs text-silver-500 dark:text-silver-400">{order.timeSlot}</p>}
                     </div>
-                  </div>
-
-                  {/* Price + Progress */}
-                  <div className="text-right shrink-0 hidden sm:block">
-                    <p className="text-lg font-bold text-navy-800 dark:text-white">{fmt.format(order.totalPrice)}</p>
-                    <div className="mt-1.5"><ProgressDots current={order.status} /></div>
-                  </div>
-
-                  <ChevronRight size={18} className={cn("text-silver-400 shrink-0 transition-transform", isExpanded && "rotate-90")} />
-                </button>
-
-                {/* Expanded Content - Management from within the order */}
-                {isExpanded && (
-                  <div className="border-t border-gray-100 dark:border-navy-700/50">
-                    {/* Smart Action Bar */}
-                    <div className="px-5 py-3 bg-gray-50 dark:bg-navy-900/30 flex flex-wrap items-center gap-2">
-                      {/* Primary smart action based on current status */}
-                      {order.status === "ANFRAGE" && (
-                        <button onClick={() => sendAngebot(order.id)} disabled={!!actionLoading}
-                          className="px-4 py-2 bg-teal-500 text-white text-sm font-semibold rounded-lg hover:bg-teal-600 disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-teal-500/20">
-                          {isLoading("angebot") ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                          Angebot erstellen & senden
-                        </button>
-                      )}
-                      {order.status === "ANGEBOT" && (
-                        <button onClick={() => approveOrder(order.id)} disabled={!!actionLoading}
-                          className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
-                          {isLoading("approve") ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
-                          Buchung bestätigen
-                        </button>
-                      )}
-                      {config.next && order.status !== "ANFRAGE" && order.status !== "ANGEBOT" && (
-                        <button onClick={() => updateStatus(order.id, config.next!)} disabled={!!actionLoading}
-                          className="px-4 py-2 bg-teal-500 text-white text-sm font-semibold rounded-lg hover:bg-teal-600 disabled:opacity-50 flex items-center gap-2">
-                          {isLoading("status") ? <Loader2 size={14} className="animate-spin" /> : <ArrowRight size={14} />}
-                          {config.nextLabel}
-                        </button>
-                      )}
-
-                      {/* Status dropdown for manual override */}
-                      <div className="relative">
-                        <select value={order.status} onChange={(e) => updateStatus(order.id, e.target.value)} disabled={!!actionLoading}
-                          className="pl-3 pr-7 py-2 rounded-lg border border-gray-200 dark:border-navy-700 bg-white dark:bg-navy-800 text-xs appearance-none disabled:opacity-50">
-                          {Object.entries(statusConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-                        </select>
-                        <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-silver-400 pointer-events-none" />
-                      </div>
-
-                      {/* Quick contact */}
-                      <a href={`mailto:${order.customer.email}`} className="p-2 rounded-lg border border-gray-200 dark:border-navy-700 hover:bg-white dark:hover:bg-navy-800" title="E-Mail">
-                        <Mail size={15} className="text-silver-500" />
-                      </a>
-                      <a href={`tel:${order.customer.phone}`} className="p-2 rounded-lg border border-gray-200 dark:border-navy-700 hover:bg-white dark:hover:bg-navy-800" title="Anrufen">
-                        <Phone size={15} className="text-silver-500" />
-                      </a>
-
-                      {order.status !== "STORNIERT" && order.status !== "ABGESCHLOSSEN" && (
-                        <button onClick={() => updateStatus(order.id, "STORNIERT")} disabled={!!actionLoading}
-                          className="ml-auto px-3 py-2 rounded-lg border border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-50 dark:hover:bg-red-500/10 disabled:opacity-50">
-                          Stornieren
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Details Grid */}
-                    <div className="p-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {/* Customer */}
-                      <div className="space-y-1.5">
-                        <p className="text-[10px] font-bold text-silver-400 uppercase tracking-wider">Kunde</p>
-                        <p className="text-sm font-medium text-navy-800 dark:text-white">{order.customer.name}</p>
-                        <p className="text-xs text-silver-500">{order.customer.email}</p>
-                        <p className="text-xs text-silver-500">{order.customer.phone}</p>
-                      </div>
-
-                      {/* Schedule */}
-                      <div className="space-y-1.5">
-                        <p className="text-[10px] font-bold text-silver-400 uppercase tracking-wider">Termin</p>
-                        <p className="text-sm font-medium text-navy-800 dark:text-white flex items-center gap-1.5">
-                          <Calendar size={13} className="text-teal-500" />
-                          {new Date(order.scheduledAt || order.createdAt).toLocaleDateString("de-DE")}
-                        </p>
-                        {order.timeSlot && <p className="text-xs text-silver-500">{order.timeSlot}</p>}
-                      </div>
-
-                      {/* Route */}
-                      <div className="space-y-1.5">
-                        <p className="text-[10px] font-bold text-silver-400 uppercase tracking-wider">Route</p>
-                        {order.fromAddress ? (
-                          <>
-                            <p className="text-xs text-navy-800 dark:text-white flex items-center gap-1"><MapPin size={11} className="text-teal-500 shrink-0" /> {(order.fromAddress as Record<string,string>)?.street || "–"}</p>
-                            {order.toAddress && <p className="text-xs text-navy-800 dark:text-white flex items-center gap-1"><ArrowRight size={11} className="text-silver-400 shrink-0" /> {(order.toAddress as Record<string,string>)?.street || "–"}</p>}
-                            {order.distanceKm && <p className="text-[10px] text-silver-500">{order.distanceKm.toFixed(1)} km</p>}
-                          </>
-                        ) : <p className="text-xs text-silver-400">–</p>}
-                      </div>
-
-                      {/* Pricing */}
-                      <div className="space-y-1.5">
-                        <p className="text-[10px] font-bold text-silver-400 uppercase tracking-wider">Preis</p>
-                        <p className="text-sm text-silver-600 dark:text-silver-400">Netto: {fmt.format(order.netto)}</p>
-                        <p className="text-sm text-silver-600 dark:text-silver-400">MwSt: {fmt.format(order.mwst)}</p>
-                        <p className="text-base font-bold text-teal-600">{fmt.format(order.totalPrice)}</p>
-                        <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border",
-                          order.paymentStatus === "BEZAHLT" ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20"
-                            : "bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20"
-                        )}>
-                          <CreditCard size={10} /> {order.paymentStatus === "BEZAHLT" ? "Bezahlt" : "Ausstehend"}
+                    <div className="flex items-center gap-2">
+                      <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${statusBadge[order.status] ?? statusBadge.ANFRAGE}`}>
+                        {statusLabel[order.status] ?? order.status}
+                      </span>
+                      {order.isDeleted && (
+                        <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+                          Gelöscht
                         </span>
-                      </div>
+                      )}
                     </div>
-
-                    {/* Notes */}
-                    {order.notes && (
-                      <div className="px-5 pb-4">
-                        <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-sm text-amber-800 dark:text-amber-300">
-                          <span className="text-[10px] font-bold uppercase text-amber-600 dark:text-amber-400">Anmerkungen: </span>{order.notes}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Linked Offers */}
-                    {order.offers && order.offers.length > 0 && (
-                      <div className="px-5 pb-4">
-                        <div className="flex flex-wrap gap-2">
-                          {order.offers.map((o) => (
-                            <div key={o.id} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-navy-900/40 border border-gray-100 dark:border-navy-700/30 text-sm">
-                              <FileText size={14} className="text-teal-500" />
-                              <span className="font-mono text-teal-600 text-xs">{o.offerNumber}</span>
-                              <span className="text-xs text-silver-500">{o.status}</span>
-                              <span className="text-xs font-medium">{fmt.format(o.totalPrice)}</span>
-                              <a href={`/api/angebot/${o.token}/pdf`} target="_blank" rel="noopener noreferrer" className="p-1 rounded hover:bg-gray-200 dark:hover:bg-navy-700">
-                                <Download size={12} className="text-silver-500" />
-                              </a>
-                              {o.contracts?.map((contract) => (
-                                <a
-                                  key={contract.id}
-                                  href={`/api/vertrag/${contract.token}/pdf?download=1`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="px-2 py-1 rounded border border-emerald-200 dark:border-emerald-500/30 text-[11px] text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
-                                  title={`Vertrag ${contract.contractNumber} herunterladen`}
-                                >
-                                  Vertrag PDF
-                                </a>
-                              ))}
-                              {o.invoices?.map((invoice) => (
-                                <a
-                                  key={invoice.id}
-                                  href={`/api/rechnung/${invoice.id}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="px-2 py-1 rounded border border-blue-200 dark:border-blue-500/30 text-[11px] text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10"
-                                  title={`Rechnung ${invoice.invoiceNumber} herunterladen`}
-                                >
-                                  Rechnung PDF
-                                </a>
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setSelected(order)} className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-gray-200 text-silver-500 transition hover:border-teal-500 hover:text-teal-600 dark:border-navy-700 dark:text-silver-400">
+                        <Eye size={16} />
+                      </button>
+                      <button onClick={() => setDeleteTarget(order)} disabled={Boolean(order.isDeleted)} className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-gray-200 text-silver-500 transition hover:border-red-500 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-navy-700 dark:text-silver-400">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
-                )}
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between rounded-3xl border border-gray-100 bg-white px-5 py-4 text-sm dark:border-navy-700/50 dark:bg-navy-800/60">
+            <p className="text-silver-500 dark:text-silver-400">
+              Seite {page} von {totalPages} · {filtered.length} Einträge
+            </p>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={page === 1} className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-gray-200 disabled:opacity-50 dark:border-navy-700">
+                <ChevronLeft size={16} />
+              </button>
+              <button onClick={() => setPage((current) => Math.min(totalPages, current + 1))} disabled={page === totalPages} className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-gray-200 disabled:opacity-50 dark:border-navy-700">
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {selected && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm">
+          <div className="h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-2xl dark:bg-navy-900">
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-navy-800 dark:text-white">Anfrage anzeigen</h2>
+                <p className="mt-1 text-sm text-silver-500 dark:text-silver-400">{selected.orderNumber}</p>
               </div>
-            );
-          })}
+              <button onClick={() => setSelected(null)} className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-gray-200 dark:border-navy-700">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="space-y-5">
+              <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4 dark:border-navy-700/50 dark:bg-navy-800/60">
+                <p className="text-xs font-semibold uppercase tracking-wide text-silver-500">Status ändern</p>
+                <div className="mt-3 flex items-center gap-3">
+                  <select
+                    value={selected.status}
+                    onChange={async (event) => {
+                      const nextStatus = event.target.value;
+                      setSelected((current) => (current ? { ...current, status: nextStatus } : current));
+                      await updateStatus(selected.id, nextStatus);
+                    }}
+                    className="h-11 flex-1 rounded-2xl border border-gray-200 bg-white px-4 text-sm outline-none focus:border-teal-500 dark:border-navy-700 dark:bg-navy-900 dark:text-white"
+                  >
+                    {statusOptions.filter((option) => option !== "ALLE").map((option) => (
+                      <option key={option} value={option}>
+                        {statusLabel[option]}
+                      </option>
+                    ))}
+                  </select>
+                  {savingId === selected.id && <Loader2 size={16} className="animate-spin text-silver-400" />}
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <DetailCard title="Kundenname" value={selected.customer.name} />
+                <DetailCard title="Telefon" value={selected.customer.phone || "—"} />
+                <DetailCard title="E-Mail" value={selected.customer.email} />
+                <DetailCard title="Service" value={selected.service.nameDe} />
+                <DetailCard title="Datum" value={new Date(selected.scheduledAt ?? selected.createdAt).toLocaleDateString("de-DE")} />
+                <DetailCard title="Erstellt am" value={new Date(selected.createdAt).toLocaleString("de-DE")} />
+              </div>
+
+              <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4 dark:border-navy-700/50 dark:bg-navy-800/60">
+                <div className="flex items-center gap-2 text-sm font-semibold text-navy-800 dark:text-white">
+                  <Calendar size={16} className="text-teal-500" />
+                  Notizen
+                </div>
+                <p className="mt-3 text-sm leading-6 text-silver-600 dark:text-silver-300">{selected.notes || "Keine zusätzlichen Hinweise vorhanden."}</p>
+              </div>
+
+              <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4 dark:border-navy-700/50 dark:bg-navy-800/60">
+                <p className="text-sm font-semibold text-navy-800 dark:text-white">Verknüpfte Angebote / Verträge</p>
+                <div className="mt-3 space-y-3">
+                  {selected.offers?.length ? (
+                    selected.offers.map((offer) => (
+                      <div key={offer.id} className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-navy-700 dark:bg-navy-900">
+                        <p className="text-sm font-semibold text-navy-800 dark:text-white">{offer.offerNumber}</p>
+                        <p className="mt-1 text-xs text-silver-500 dark:text-silver-400">Status: {offer.status}</p>
+                        {offer.contracts?.length ? (
+                          <div className="mt-3 space-y-2">
+                            {offer.contracts.map((contract) => (
+                              <div key={contract.id} className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+                                {contract.contractNumber} · {contract.status}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="mt-3 text-xs text-silver-500 dark:text-silver-400">Noch kein Vertrag verknüpft.</p>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-silver-500 dark:text-silver-400">Keine Angebote oder Verträge verknüpft.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
+
+      {deleteTarget && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:bg-navy-900">
+            <h2 className="text-lg font-bold text-navy-800 dark:text-white">Eintrag löschen</h2>
+            <p className="mt-3 text-sm leading-6 text-silver-600 dark:text-silver-300">
+              Sind Sie sicher, dass Sie diesen Eintrag löschen möchten?
+            </p>
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button onClick={() => setDeleteTarget(null)} className="rounded-2xl border border-gray-200 px-4 py-2.5 text-sm font-medium dark:border-navy-700">
+                Abbrechen
+              </button>
+              <button onClick={() => softDelete(deleteTarget.id)} disabled={savingId === deleteTarget.id} className="inline-flex items-center gap-2 rounded-2xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
+                {savingId === deleteTarget.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                Löschen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DetailCard({ title, value }: { title: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4 dark:border-navy-700/50 dark:bg-navy-800/60">
+      <p className="text-xs font-semibold uppercase tracking-wide text-silver-500">{title}</p>
+      <p className="mt-2 text-sm font-medium text-navy-800 dark:text-white">{value}</p>
     </div>
   );
 }
