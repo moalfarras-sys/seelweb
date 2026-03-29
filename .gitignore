@@ -56,5 +56,6 @@ build-check.log
 output/
 screenshots/
 data/
+tmp/
 *.jpeg
 !public/**/*.jpeg

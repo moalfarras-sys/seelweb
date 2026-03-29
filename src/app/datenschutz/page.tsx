@@ -1,94 +1,94 @@
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
+import { getPublicSiteSettings } from "@/lib/site-content";
 
 export const metadata: Metadata = buildMetadata({
   title: "Datenschutzerklärung",
   description:
-    "Datenschutzerklärung von SEEL Transport & Reinigung gemäß DSGVO. Informationen zu Datenerfassung, Cookies, Zahlungsdaten und Ihren Rechten.",
+    "Datenschutzerklärung von SEEL Transport & Reinigung gemäß DSGVO mit Informationen zu Formularen, Cookies und Zahlungsdaten.",
   path: "/datenschutz",
 });
 
-export default function DatenschutzPage() {
+export default async function DatenschutzPage() {
+  const settings = await getPublicSiteSettings();
+
   return (
     <>
       <section className="gradient-navy py-16 md:py-20">
         <div className="max-w-4xl mx-auto px-4 md:px-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold text-white">Datenschutzerklärung</h1>
-          <p className="text-silver-300 mt-3">Gemäß DSGVO · Stand: März 2026</p>
+          <h1 className="text-3xl md:text-4xl font-semibold text-white">Datenschutzerklärung</h1>
+          <p className="mt-3 text-white/65">Gemäß DSGVO · Stand: März 2026</p>
         </div>
       </section>
 
-      <section className="section-padding bg-white dark:bg-navy-950">
-        <div className="max-w-4xl mx-auto px-4 md:px-0">
-          <div className="bg-white dark:bg-navy-800/60 rounded-2xl border border-gray-100 dark:border-navy-700/50 shadow-sm p-6 md:p-12 space-y-8 text-sm leading-relaxed text-navy-700 dark:text-silver-300 break-words">
+      <section className="section-padding">
+        <div className="max-w-4xl mx-auto px-4 md:px-8">
+          <div className="glass-strong rounded-[32px] p-6 md:p-12 space-y-8 text-sm leading-relaxed text-slate-700 dark:text-white/70 break-words">
             <div>
-              <h2 className="text-xl font-bold text-navy-800 dark:text-white mb-4">1. Datenschutz auf einen Blick</h2>
-              <h3 className="font-semibold text-navy-800 dark:text-white mb-2">Allgemeine Hinweise</h3>
-              <p>Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie persönlich identifiziert werden können.</p>
-            </div>
-
-            <div>
-              <h2 className="text-xl font-bold text-navy-800 dark:text-white mb-4">2. Verantwortliche Stelle</h2>
+              <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-white">1. Verantwortliche Stelle</h2>
               <p>
-                Seel Transport &amp; Reinigung<br />
-                Deutschland<br />
-                Telefon: +49 172 8003410<br />
-                E-Mail: info@seeltransport.de
+                {settings.company.name}
+                <br />
+                {settings.company.addressLine1}
+                <br />
+                Telefon: {settings.contact.primaryPhoneDisplay}
+                <br />
+                E-Mail: {settings.contact.email}
               </p>
             </div>
 
             <div>
-              <h2 className="text-xl font-bold text-navy-800 dark:text-white mb-4">3. Datenerfassung auf dieser Website</h2>
-
-              <h3 className="font-semibold text-navy-800 dark:text-white mb-2 mt-4">Cookies</h3>
-              <p>Unsere Website verwendet Cookies. Cookies sind kleine Textdateien, die auf Ihrem Endgerät gespeichert werden. Sie richten keinen Schaden an. Wir nutzen Cookies, um unser Angebot nutzerfreundlich zu gestalten. Einige Cookies bleiben auf Ihrem Endgerät gespeichert, bis Sie diese löschen.</p>
-
-              <h3 className="font-semibold text-navy-800 dark:text-white mb-2 mt-4">Server-Log-Dateien</h3>
-              <p>Der Provider der Seiten erhebt und speichert automatisch Informationen in sogenannten Server-Log-Dateien, die Ihr Browser automatisch an uns übermittelt (Browsertyp, Betriebssystem, Referrer URL, Hostname, Uhrzeit).</p>
-
-              <h3 className="font-semibold text-navy-800 dark:text-white mb-2 mt-4">Kontakt- und Buchungsformulare</h3>
-              <p>Wenn Sie uns per Kontaktformular oder Buchungsformular Anfragen zukommen lassen, werden Ihre Angaben einschließlich der von Ihnen angegebenen Kontaktdaten zwecks Bearbeitung der Anfrage und für den Fall von Anschlussfragen bei uns gespeichert. Diese Daten geben wir nicht ohne Ihre Einwilligung weiter.</p>
-              <p className="mt-2">Die Verarbeitung der in das Buchungsformular eingegebenen Daten erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung).</p>
-            </div>
-
-            <div>
-              <h2 className="text-xl font-bold text-navy-800 dark:text-white mb-4">4. Zahlungsdaten</h2>
-              <p>Für die Abwicklung von Online-Zahlungen nutzen wir den Zahlungsdienstleister Stripe, Inc. Ihre Zahlungsdaten werden direkt von Stripe verarbeitet und nicht auf unseren Servern gespeichert. Die Datenschutzerklärung von Stripe finden Sie unter:{" "}
-                <a href="https://stripe.com/de/privacy" target="_blank" rel="noopener noreferrer" className="text-teal-600 dark:text-teal-400 underline break-all">stripe.com/de/privacy</a>
+              <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-white">2. Erhebung personenbezogener Daten</h2>
+              <p>
+                Wir verarbeiten personenbezogene Daten, wenn Sie unsere Website besuchen, Kontaktformulare ausfüllen, eine Buchung anfragen oder uns im Rahmen einer Ausschreibung kontaktieren.
               </p>
             </div>
 
             <div>
-              <h2 className="text-xl font-bold text-navy-800 dark:text-white mb-4">5. Google Maps</h2>
-              <p>Diese Website nutzt den Kartendienst Google Maps zur Entfernungsberechnung. Bei der Nutzung wird eine Verbindung zu den Servern von Google hergestellt. Dabei kann Ihre IP-Adresse an Google übermittelt werden. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse).</p>
+              <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-white">3. Kontakt- und Buchungsformulare</h2>
+              <p>
+                Angaben aus Formularen werden zur Bearbeitung Ihrer Anfrage, zur Angebotserstellung und für eventuelle Rückfragen verarbeitet. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO, soweit es um vorvertragliche Maßnahmen oder Vertragsabwicklung geht.
+              </p>
             </div>
 
             <div>
-              <h2 className="text-xl font-bold text-navy-800 dark:text-white mb-4">6. Ihre Rechte</h2>
-              <p>Sie haben jederzeit das Recht auf:</p>
-              <ul className="list-disc pl-5 mt-2 space-y-1">
-                <li>Auskunft über Ihre bei uns gespeicherten Daten (Art. 15 DSGVO)</li>
-                <li>Berichtigung unrichtiger Daten (Art. 16 DSGVO)</li>
-                <li>Löschung Ihrer Daten (Art. 17 DSGVO)</li>
-                <li>Einschränkung der Verarbeitung (Art. 18 DSGVO)</li>
-                <li>Datenübertragbarkeit (Art. 20 DSGVO)</li>
-                <li>Widerspruch gegen die Verarbeitung (Art. 21 DSGVO)</li>
-                <li>Beschwerde bei einer Aufsichtsbehörde (Art. 77 DSGVO)</li>
+              <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-white">4. Cookies und technische Daten</h2>
+              <p>
+                Unsere Website verwendet notwendige technische Cookies sowie serverseitige Logdaten, um den Betrieb, die Sicherheit und die Nutzung der Website sicherzustellen.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-white">5. Zahlungsdaten</h2>
+              <p>
+                Für Online-Zahlungen kann Stripe als Zahlungsdienstleister eingesetzt werden. Zahlungsdaten werden dabei direkt durch Stripe verarbeitet. Weitere Informationen finden Sie unter{" "}
+                <a href="https://stripe.com/de/privacy" target="_blank" rel="noopener noreferrer" className="text-emerald-700 underline dark:text-teal-300">
+                  stripe.com/de/privacy
+                </a>.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-white">6. Karten- und Standortdienste</h2>
+              <p>
+                Für Entfernungsberechnung und Adressauswahl können externe Karten- und Geocoding-Dienste genutzt werden. Dabei kann Ihre IP-Adresse an den jeweiligen Anbieter übermittelt werden.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-white">7. Ihre Rechte</h2>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Auskunft über gespeicherte Daten gemäß Art. 15 DSGVO</li>
+                <li>Berichtigung unrichtiger Daten gemäß Art. 16 DSGVO</li>
+                <li>Löschung gemäß Art. 17 DSGVO</li>
+                <li>Einschränkung der Verarbeitung gemäß Art. 18 DSGVO</li>
+                <li>Datenübertragbarkeit gemäß Art. 20 DSGVO</li>
+                <li>Widerspruch gegen die Verarbeitung gemäß Art. 21 DSGVO</li>
               </ul>
             </div>
 
-            <div>
-              <h2 className="text-xl font-bold text-navy-800 dark:text-white mb-4">7. Datenspeicherung</h2>
-              <p>Wir speichern Ihre personenbezogenen Daten nur so lange, wie es für die Erfüllung des jeweiligen Zwecks erforderlich ist oder gesetzliche Aufbewahrungsfristen bestehen. Buchungsdaten werden gemäß den handels- und steuerrechtlichen Aufbewahrungsfristen (6 bzw. 10 Jahre) gespeichert.</p>
-            </div>
-
-            <div>
-              <h2 className="text-xl font-bold text-navy-800 dark:text-white mb-4">8. SSL-/TLS-Verschlüsselung</h2>
-              <p>Diese Seite nutzt aus Sicherheitsgründen und zum Schutz der Übertragung vertraulicher Inhalte eine SSL-/TLS-Verschlüsselung. Eine verschlüsselte Verbindung erkennen Sie daran, dass die Adresszeile des Browsers von &quot;http://&quot; auf &quot;https://&quot; wechselt.</p>
-            </div>
-
-            <div className="border-t border-gray-200 dark:border-navy-700 pt-6 text-silver-500">
-              <p>Seel Transport &amp; Reinigung · Deutschland · Stand: März 2026</p>
+            <div className="border-t border-slate-200 pt-6 text-slate-500 dark:border-white/10 dark:text-white/40">
+              <p>{settings.company.name} · {settings.company.addressLine1} · Stand: März 2026</p>
             </div>
           </div>
         </div>
@@ -96,5 +96,3 @@ export default function DatenschutzPage() {
     </>
   );
 }
-
-

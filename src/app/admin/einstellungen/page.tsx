@@ -1,591 +1,227 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useState } from "react";
 import {
-  Save,
-  Shield,
-  Star,
-  BadgeCheck,
-  Loader2,
-  CheckCircle,
-  RefreshCw,
-  Mail,
-  Bell,
   Building2,
+  CheckCircle2,
+  Loader2,
+  Mail,
   Phone,
-  CreditCard,
+  Save,
+  ShieldCheck,
+  Sparkles,
 } from "lucide-react";
+import type { PublicSiteContent } from "@/types/site-content";
 
 const inputClass =
-  "w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-navy-600 bg-white dark:bg-navy-800/50 text-navy-800 dark:text-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none text-sm transition-colors";
+  "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500 dark:border-navy-700 dark:bg-navy-900 dark:text-white";
 
-const readOnlyClass =
-  "w-full px-4 py-2.5 rounded-xl border border-gray-100 dark:border-navy-700 bg-gray-50 dark:bg-navy-800/30 text-navy-600 dark:text-silver-400 text-sm cursor-default outline-none";
-
-type SettingsData = {
-  company: {
-    name: string;
-    address: string;
-    city: string;
-    country: string;
-    vatId: string;
-    taxNo: string;
-    registerCourt: string;
-    registerNo: string;
-  };
-  contact: {
-    primaryPhoneDisplay: string;
-    secondaryPhoneDisplay: string;
-    email: string;
-    websiteUrl: string;
-    websiteDisplay: string;
-    availability: string;
-  };
-  bank: {
-    name: string;
-    iban: string;
-    bic: string;
-    accountHolder: string;
-  };
-  trustBadges: {
-    badge1: string;
-    badge2: string;
-    badge3: string;
-  };
-  googlePlaceId: string;
-};
-
-type ReviewsData = {
-  rating: number;
-  totalReviews: number;
-  fetchedAt: string;
-} | null;
+type SaveState = "idle" | "saving" | "saved" | "error";
 
 export default function EinstellungenPage() {
-  const [settings, setSettings] = useState<SettingsData | null>(null);
-  const [reviews, setReviews] = useState<ReviewsData>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [refreshingReviews, setRefreshingReviews] = useState(false);
-
-  const [badge1, setBadge1] = useState("");
-  const [badge2, setBadge2] = useState("");
-  const [badge3, setBadge3] = useState("");
-
-  const loadSettings = useCallback(async () => {
-    try {
-      const res = await fetch("/api/admin/settings");
-      if (!res.ok) throw new Error();
-      const data: SettingsData = await res.json();
-      setSettings(data);
-      setBadge1(data.trustBadges?.badge1 || "");
-      setBadge2(data.trustBadges?.badge2 || "");
-      setBadge3(data.trustBadges?.badge3 || "");
-    } catch {
-      /* settings unavailable */
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const loadReviews = useCallback(async () => {
-    try {
-      const res = await fetch("/api/admin/google-reviews");
-      if (res.ok) setReviews(await res.json());
-    } catch {
-      /* reviews unavailable */
-    }
-  }, []);
+  const [settings, setSettings] = useState<PublicSiteContent | null>(null);
+  const [saveState, setSaveState] = useState<SaveState>("idle");
 
   useEffect(() => {
-    loadSettings();
-    loadReviews();
-  }, [loadSettings, loadReviews]);
+    async function load() {
+      const response = await fetch("/api/admin/settings", { cache: "no-store" });
+      if (!response.ok) return;
+      const data = (await response.json()) as PublicSiteContent;
+      setSettings(data);
+    }
+
+    load();
+  }, []);
+
+  function update<K extends keyof PublicSiteContent>(key: K, value: PublicSiteContent[K]) {
+    setSettings((current) => (current ? { ...current, [key]: value } : current));
+  }
 
   async function handleSave() {
-    setSaving(true);
+    if (!settings) return;
+    setSaveState("saving");
     try {
-      const res = await fetch("/api/admin/settings", {
+      const response = await fetch("/api/admin/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trustBadges: { badge1, badge2, badge3 } }),
+        body: JSON.stringify(settings),
       });
-      if (!res.ok) throw new Error();
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+
+      if (!response.ok) throw new Error("save_failed");
+      setSaveState("saved");
+      window.setTimeout(() => setSaveState("idle"), 2500);
     } catch {
-      /* save failed */
-    } finally {
-      setSaving(false);
+      setSaveState("error");
     }
   }
 
-  async function handleRefreshReviews() {
-    setRefreshingReviews(true);
-    try {
-      const res = await fetch("/api/admin/google-reviews", { method: "POST" });
-      if (res.ok) setReviews(await res.json());
-    } catch {
-      /* refresh failed */
-    }
-    setRefreshingReviews(false);
-  }
-
-  if (loading) {
+  if (!settings) {
     return (
-      <div className="flex items-center gap-3 text-silver-500 dark:text-silver-400 py-12 justify-center">
-        <Loader2 size={20} className="animate-spin" />
-        Einstellungen werden geladen…
+      <div className="flex items-center justify-center gap-3 py-20 text-slate-500">
+        <Loader2 size={18} className="animate-spin" />
+        Einstellungen werden geladen...
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
+    <div className="mx-auto max-w-5xl space-y-8">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-navy-800 dark:text-white">
-            Einstellungen
-          </h1>
-          <p className="text-silver-500 dark:text-silver-400 text-sm">
-            Systemkonfiguration und Firmendaten
+          <h1 className="text-2xl font-bold text-navy-800 dark:text-white">Einstellungen</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Zentrale Pflege für Kontakt-, Firmen-, Vertrauens- und Homepage-Inhalte.
           </p>
         </div>
         <button
           onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-xl hover:from-teal-600 hover:to-teal-700 text-sm font-semibold shadow-lg transition-all disabled:opacity-60"
+          disabled={saveState === "saving"}
+          className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-70"
         >
-          {saving ? (
-            <Loader2 size={18} className="animate-spin" />
-          ) : saved ? (
-            <CheckCircle size={18} />
-          ) : (
-            <Save size={18} />
-          )}
-          {saving ? "Speichern…" : saved ? "Gespeichert!" : "Speichern"}
+          {saveState === "saving" ? <Loader2 size={16} className="animate-spin" /> : saveState === "saved" ? <CheckCircle2 size={16} /> : <Save size={16} />}
+          {saveState === "saving" ? "Speichert..." : saveState === "saved" ? "Gespeichert" : "Änderungen speichern"}
         </button>
       </div>
 
-      <div className="space-y-6 max-w-3xl">
-        {/* ── Firmendaten ── */}
-        <div className="glass-card rounded-2xl p-6">
-          <h2 className="text-lg font-bold text-navy-800 dark:text-white mb-5 flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
-              <Building2 size={16} className="text-white" />
-            </div>
-            Firmendaten
-          </h2>
-          <p className="text-xs text-silver-400 dark:text-silver-500 mb-4">
-            Aus der Konfiguration – Änderungen erfordern Code-Anpassung
-          </p>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                Firmenname
-              </label>
-              <input
-                readOnly
-                value={settings?.company.name || ""}
-                className={readOnlyClass}
-              />
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                  Adresse
-                </label>
-                <input
-                  readOnly
-                  value={settings?.company.address || ""}
-                  className={readOnlyClass}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                  Stadt / Land
-                </label>
-                <input
-                  readOnly
-                  value={
-                    settings
-                      ? `${settings.company.city}, ${settings.company.country}`
-                      : ""
-                  }
-                  className={readOnlyClass}
-                />
-              </div>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                  USt-IdNr.
-                </label>
-                <input
-                  readOnly
-                  value={settings?.company.vatId || ""}
-                  className={readOnlyClass}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                  Steuernummer
-                </label>
-                <input
-                  readOnly
-                  value={settings?.company.taxNo || ""}
-                  className={readOnlyClass}
-                />
-              </div>
-            </div>
+      <section className="glass-card rounded-[28px] p-6">
+        <div className="mb-5 flex items-center gap-3">
+          <div className="rounded-2xl bg-emerald-500/10 p-3 text-emerald-700 dark:text-emerald-300">
+            <Building2 size={18} />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Firmendaten</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Diese Angaben werden in Impressum, Footer und Dokumenten wiederverwendet.</p>
           </div>
         </div>
 
-        {/* ── Kontaktdaten ── */}
-        <div className="glass-card rounded-2xl p-6">
-          <h2 className="text-lg font-bold text-navy-800 dark:text-white mb-5 flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center">
-              <Phone size={16} className="text-white" />
-            </div>
-            Kontaktdaten
-          </h2>
-          <div className="space-y-4">
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                  Telefon 1
-                </label>
-                <input
-                  readOnly
-                  value={settings?.contact.primaryPhoneDisplay || ""}
-                  className={readOnlyClass}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                  Telefon 2 (WhatsApp)
-                </label>
-                <input
-                  readOnly
-                  value={settings?.contact.secondaryPhoneDisplay || ""}
-                  className={readOnlyClass}
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                E-Mail
-              </label>
-              <input
-                readOnly
-                value={settings?.contact.email || ""}
-                className={readOnlyClass}
-              />
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                  Website
-                </label>
-                <input
-                  readOnly
-                  value={settings?.contact.websiteUrl || ""}
-                  className={readOnlyClass}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                  Erreichbarkeit
-                </label>
-                <input
-                  readOnly
-                  value={settings?.contact.availability || ""}
-                  className={readOnlyClass}
-                />
-              </div>
-            </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <input className={inputClass} value={settings.company.name} onChange={(event) => update("company", { ...settings.company, name: event.target.value })} placeholder="Firmenname" />
+          <input className={inputClass} value={settings.company.addressLine1} onChange={(event) => update("company", { ...settings.company, addressLine1: event.target.value })} placeholder="Adresse" />
+          <input className={inputClass} value={settings.company.city} onChange={(event) => update("company", { ...settings.company, city: event.target.value })} placeholder="Stadt" />
+          <input className={inputClass} value={settings.company.country} onChange={(event) => update("company", { ...settings.company, country: event.target.value })} placeholder="Land" />
+          <input className={inputClass} value={settings.company.vatId} onChange={(event) => update("company", { ...settings.company, vatId: event.target.value })} placeholder="USt-IdNr." />
+          <input className={inputClass} value={settings.company.taxNo} onChange={(event) => update("company", { ...settings.company, taxNo: event.target.value })} placeholder="Steuernummer" />
+          <input className={inputClass} value={settings.company.registerCourt} onChange={(event) => update("company", { ...settings.company, registerCourt: event.target.value })} placeholder="Registergericht" />
+          <input className={inputClass} value={settings.company.registerNo} onChange={(event) => update("company", { ...settings.company, registerNo: event.target.value })} placeholder="Registernummer" />
+        </div>
+      </section>
+
+      <section className="glass-card rounded-[28px] p-6">
+        <div className="mb-5 flex items-center gap-3">
+          <div className="rounded-2xl bg-sky-500/10 p-3 text-sky-700 dark:text-sky-300">
+            <Phone size={18} />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Kontakt</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Zentrale Nummern und Kontakttexte für Header, Footer und Kontaktflächen.</p>
           </div>
         </div>
 
-        {/* ── Bankverbindung ── */}
-        <div className="glass-card rounded-2xl p-6">
-          <h2 className="text-lg font-bold text-navy-800 dark:text-white mb-5 flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
-              <CreditCard size={16} className="text-white" />
-            </div>
-            Bankverbindung
-          </h2>
-          <div className="space-y-4">
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                  Bank
-                </label>
-                <input
-                  readOnly
-                  value={settings?.bank.name || ""}
-                  className={readOnlyClass}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                  Kontoinhaber
-                </label>
-                <input
-                  readOnly
-                  value={settings?.bank.accountHolder || ""}
-                  className={readOnlyClass}
-                />
-              </div>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                  IBAN
-                </label>
-                <input
-                  readOnly
-                  value={settings?.bank.iban || ""}
-                  className={readOnlyClass}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                  BIC
-                </label>
-                <input
-                  readOnly
-                  value={settings?.bank.bic || ""}
-                  className={readOnlyClass}
-                />
-              </div>
-            </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <input className={inputClass} value={settings.contact.primaryPhone} onChange={(event) => update("contact", { ...settings.contact, primaryPhone: event.target.value })} placeholder="Telefon intern" />
+          <input className={inputClass} value={settings.contact.primaryPhoneDisplay} onChange={(event) => update("contact", { ...settings.contact, primaryPhoneDisplay: event.target.value })} placeholder="Telefon sichtbar" />
+          <input className={inputClass} value={settings.contact.secondaryPhone} onChange={(event) => update("contact", { ...settings.contact, secondaryPhone: event.target.value })} placeholder="Sekundäre Nummer intern" />
+          <input className={inputClass} value={settings.contact.secondaryPhoneDisplay} onChange={(event) => update("contact", { ...settings.contact, secondaryPhoneDisplay: event.target.value })} placeholder="Sekundäre Nummer sichtbar" />
+          <input className={inputClass} value={settings.contact.email} onChange={(event) => update("contact", { ...settings.contact, email: event.target.value })} placeholder="E-Mail" />
+          <input className={inputClass} value={settings.contact.whatsappNumber} onChange={(event) => update("contact", { ...settings.contact, whatsappNumber: event.target.value })} placeholder="WhatsApp Nummer ohne +" />
+          <input className={inputClass} value={settings.contact.websiteUrl} onChange={(event) => update("contact", { ...settings.contact, websiteUrl: event.target.value })} placeholder="Website URL" />
+          <input className={inputClass} value={settings.contact.websiteDisplay} onChange={(event) => update("contact", { ...settings.contact, websiteDisplay: event.target.value })} placeholder="Website sichtbar" />
+          <div className="md:col-span-2">
+            <input className={inputClass} value={settings.contact.availability} onChange={(event) => update("contact", { ...settings.contact, availability: event.target.value })} placeholder="Erreichbarkeit" />
+          </div>
+        </div>
+      </section>
+
+      <section className="glass-card rounded-[28px] p-6">
+        <div className="mb-5 flex items-center gap-3">
+          <div className="rounded-2xl bg-violet-500/10 p-3 text-violet-700 dark:text-violet-300">
+            <Mail size={18} />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Bankdaten</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Nur pflegen, wenn die Daten auf Dokumenten und im Impressum erscheinen sollen.</p>
           </div>
         </div>
 
-        {/* ── Vertrauensabzeichen (editable) ── */}
-        <div className="glass-card rounded-2xl p-6">
-          <h2 className="text-lg font-bold text-navy-800 dark:text-white mb-5 flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-              <BadgeCheck size={16} className="text-white" />
-            </div>
-            Vertrauensabzeichen
-          </h2>
-          <p className="text-xs text-silver-400 dark:text-silver-500 mb-4">
-            Texte, die auf der Website als Trust-Badges angezeigt werden
-          </p>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                Badge 1
-              </label>
-              <input
-                value={badge1}
-                onChange={(e) => setBadge1(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                Badge 2
-              </label>
-              <input
-                value={badge2}
-                onChange={(e) => setBadge2(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                Badge 3
-              </label>
-              <input
-                value={badge3}
-                onChange={(e) => setBadge3(e.target.value)}
-                className={inputClass}
-              />
-            </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <input className={inputClass} value={settings.bank.name} onChange={(event) => update("bank", { ...settings.bank, name: event.target.value })} placeholder="Bank" />
+          <input className={inputClass} value={settings.bank.accountHolder} onChange={(event) => update("bank", { ...settings.bank, accountHolder: event.target.value })} placeholder="Kontoinhaber" />
+          <input className={inputClass} value={settings.bank.iban} onChange={(event) => update("bank", { ...settings.bank, iban: event.target.value })} placeholder="IBAN" />
+          <input className={inputClass} value={settings.bank.bic} onChange={(event) => update("bank", { ...settings.bank, bic: event.target.value })} placeholder="BIC" />
+        </div>
+      </section>
+
+      <section className="glass-card rounded-[28px] p-6">
+        <div className="mb-5 flex items-center gap-3">
+          <div className="rounded-2xl bg-amber-500/10 p-3 text-amber-700 dark:text-amber-300">
+            <Sparkles size={18} />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Homepage Inhalte</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Hero-Texte, Abschluss-CTA sowie echte Vertrauensargumente.</p>
           </div>
         </div>
 
-        {/* ── Google Bewertungen ── */}
-        <div className="glass-card rounded-2xl p-6">
-          <h2 className="text-lg font-bold text-navy-800 dark:text-white mb-5 flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center">
-              <Star size={16} className="text-white" />
-            </div>
-            Google Bewertungen
-          </h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                Google Place ID
-              </label>
-              <input
-                readOnly
-                value={settings?.googlePlaceId || "Nicht konfiguriert"}
-                className={readOnlyClass}
-              />
-              <p className="text-xs text-silver-400 dark:text-silver-500 mt-1">
-                Wird über die Umgebungsvariable GOOGLE_PLACE_ID gesetzt
-              </p>
-            </div>
+        <div className="space-y-4">
+          <input className={inputClass} value={settings.homepage.heroBadge} onChange={(event) => update("homepage", { ...settings.homepage, heroBadge: event.target.value })} placeholder="Hero Badge" />
+          <input className={inputClass} value={settings.homepage.heroTitle} onChange={(event) => update("homepage", { ...settings.homepage, heroTitle: event.target.value })} placeholder="Hero Titel" />
+          <textarea className={`${inputClass} min-h-28`} value={settings.homepage.heroDescription} onChange={(event) => update("homepage", { ...settings.homepage, heroDescription: event.target.value })} placeholder="Hero Beschreibung" />
+          <div className="grid gap-4 md:grid-cols-2">
+            <input className={inputClass} value={settings.homepage.primaryCtaLabel} onChange={(event) => update("homepage", { ...settings.homepage, primaryCtaLabel: event.target.value })} placeholder="Primäre CTA" />
+            <input className={inputClass} value={settings.homepage.secondaryCtaLabel} onChange={(event) => update("homepage", { ...settings.homepage, secondaryCtaLabel: event.target.value })} placeholder="Sekundäre CTA" />
+          </div>
+          <input className={inputClass} value={settings.homepage.finalCtaTitle} onChange={(event) => update("homepage", { ...settings.homepage, finalCtaTitle: event.target.value })} placeholder="Abschluss CTA Titel" />
+          <textarea className={`${inputClass} min-h-24`} value={settings.homepage.finalCtaDescription} onChange={(event) => update("homepage", { ...settings.homepage, finalCtaDescription: event.target.value })} placeholder="Abschluss CTA Beschreibung" />
+        </div>
+      </section>
 
-            {reviews ? (
-              <div className="grid sm:grid-cols-3 gap-4">
-                <div className="rounded-xl border border-gray-100 dark:border-navy-700/50 bg-gray-50/80 dark:bg-navy-800/40 p-4 text-center">
-                  <p className="text-2xl font-bold text-navy-800 dark:text-white">
-                    {reviews.rating.toFixed(1)}
-                  </p>
-                  <p className="text-xs text-silver-500 mt-1">Bewertung</p>
-                </div>
-                <div className="rounded-xl border border-gray-100 dark:border-navy-700/50 bg-gray-50/80 dark:bg-navy-800/40 p-4 text-center">
-                  <p className="text-2xl font-bold text-navy-800 dark:text-white">
-                    {reviews.totalReviews}
-                  </p>
-                  <p className="text-xs text-silver-500 mt-1">Bewertungen</p>
-                </div>
-                <div className="rounded-xl border border-gray-100 dark:border-navy-700/50 bg-gray-50/80 dark:bg-navy-800/40 p-4 text-center">
-                  <p className="text-sm font-medium text-navy-800 dark:text-white">
-                    {new Date(reviews.fetchedAt).toLocaleString("de-DE")}
-                  </p>
-                  <p className="text-xs text-silver-500 mt-1">Letzter Abruf</p>
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-silver-500 dark:text-silver-400">
-                Keine Bewertungsdaten verfügbar.
-              </p>
-            )}
-
-            <button
-              onClick={handleRefreshReviews}
-              disabled={refreshingReviews}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 dark:border-navy-600 text-sm font-medium text-navy-700 dark:text-silver-200 hover:bg-gray-50 dark:hover:bg-navy-800/50 transition-colors disabled:opacity-60"
-            >
-              <RefreshCw
-                size={16}
-                className={refreshingReviews ? "animate-spin" : ""}
-              />
-              {refreshingReviews
-                ? "Wird aktualisiert…"
-                : "Bewertungen aktualisieren"}
-            </button>
+      <section className="glass-card rounded-[28px] p-6">
+        <div className="mb-5 flex items-center gap-3">
+          <div className="rounded-2xl bg-emerald-500/10 p-3 text-emerald-700 dark:text-emerald-300">
+            <ShieldCheck size={18} />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Vertrauen & Positionierung</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Vier kurze Trust-Claims und vier Argumente für den Bereich „Warum wir“.</p>
           </div>
         </div>
 
-        {/* ── Benachrichtigungen ── */}
-        <div className="glass-card rounded-2xl p-6">
-          <h2 className="text-lg font-bold text-navy-800 dark:text-white mb-5 flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-              <Bell size={16} className="text-white" />
-            </div>
-            Benachrichtigungen
-          </h2>
-          <div className="space-y-2">
-            {[
-              "E-Mail bei neuer Buchung",
-              "E-Mail bei neuer Ausschreibung",
-              "E-Mail bei Zahlung eingegangen",
-              "Tägliche Zusammenfassung",
-            ].map((label) => (
-              <label
-                key={label}
-                className="flex items-center justify-between p-3 rounded-xl hover:bg-black/[0.03] dark:hover:bg-white/[0.03] cursor-pointer transition-colors"
-              >
-                <span className="text-sm font-medium text-navy-700 dark:text-silver-200">
-                  {label}
-                </span>
-                <input
-                  type="checkbox"
-                  defaultChecked
-                  className="w-4 h-4 rounded border-gray-300 dark:border-navy-600 text-teal-600 focus:ring-teal-500 bg-white dark:bg-navy-800"
-                />
-              </label>
-            ))}
-          </div>
-        </div>
+        <div className="space-y-4">
+          {settings.trustBar.map((item, index) => (
+            <input
+              key={item.id}
+              className={inputClass}
+              value={item.label}
+              onChange={(event) =>
+                update(
+                  "trustBar",
+                  settings.trustBar.map((currentItem, currentIndex) =>
+                    currentIndex === index ? { ...currentItem, label: event.target.value } : currentItem,
+                  ),
+                )
+              }
+              placeholder={`Trust Claim ${index + 1}`}
+            />
+          ))}
 
-        {/* ── SMTP ── */}
-        <div className="glass-card rounded-2xl p-6">
-          <h2 className="text-lg font-bold text-navy-800 dark:text-white mb-5 flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-              <Mail size={16} className="text-white" />
-            </div>
-            E-Mail-Einstellungen (SMTP)
-          </h2>
-          <div className="space-y-4">
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                  SMTP Host
-                </label>
-                <input
-                  defaultValue="smtp.example.com"
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                  SMTP Port
-                </label>
-                <input defaultValue="587" className={inputClass} />
-              </div>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                  Benutzername
-                </label>
-                <input
-                  defaultValue="info@seeltransport.de"
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                  Passwort
-                </label>
-                <input
-                  type="password"
-                  defaultValue="********"
-                  className={inputClass}
-                />
-              </div>
-            </div>
-          </div>
+          {settings.whyChooseUs.map((item, index) => (
+            <input
+              key={`${item}-${index}`}
+              className={inputClass}
+              value={item}
+              onChange={(event) =>
+                update(
+                  "whyChooseUs",
+                  settings.whyChooseUs.map((currentItem, currentIndex) =>
+                    currentIndex === index ? event.target.value : currentItem,
+                  ),
+                )
+              }
+              placeholder={`Warum wir ${index + 1}`}
+            />
+          ))}
         </div>
-
-        {/* ── Sicherheit ── */}
-        <div className="glass-card rounded-2xl p-6">
-          <h2 className="text-lg font-bold text-navy-800 dark:text-white mb-5 flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center">
-              <Shield size={16} className="text-white" />
-            </div>
-            Sicherheit
-          </h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-navy-800 dark:text-silver-200 mb-1.5">
-                Admin-Passwort ändern
-              </label>
-              <input
-                type="password"
-                placeholder="Neues Passwort"
-                className={`${inputClass} placeholder:text-silver-400 dark:placeholder:text-silver-600`}
-              />
-            </div>
-            <div>
-              <input
-                type="password"
-                placeholder="Passwort bestätigen"
-                className={`${inputClass} placeholder:text-silver-400 dark:placeholder:text-silver-600`}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      </section>
     </div>
   );
 }

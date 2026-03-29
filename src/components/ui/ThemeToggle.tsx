@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Moon, Sun } from "lucide-react";
+import { LoaderCircle, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export function ThemeToggle() {
@@ -12,8 +12,8 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <button className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
-        <span className="sr-only">Laden…</span>
+      <button className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5" aria-hidden="true">
+        <LoaderCircle size={16} className="animate-spin text-slate-400" />
       </button>
     );
   }

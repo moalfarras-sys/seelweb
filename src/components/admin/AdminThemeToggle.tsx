@@ -17,12 +17,11 @@ export default function AdminThemeToggle() {
       type="button"
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className="inline-flex items-center gap-2 rounded-xl border border-sky-200/70 bg-white/90 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-sky-50 dark:border-white/10 dark:bg-navy-900/70 dark:text-slate-200 dark:hover:bg-navy-800"
-      aria-label="Design umschalten"
-      title="Design umschalten"
+      aria-label={isDark ? "Helles Design aktivieren" : "Dunkles Design aktivieren"}
+      title={isDark ? "Helles Design aktivieren" : "Dunkles Design aktivieren"}
     >
       {isDark ? <Sun size={14} /> : <Moon size={14} />}
-      <span>{isDark ? "Light" : "Dark"}</span>
+      <span>{isDark ? "Hell" : "Dunkel"}</span>
     </button>
   );
 }
-
