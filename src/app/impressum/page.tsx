@@ -5,79 +5,123 @@ import { getPublicSiteSettings } from "@/lib/site-content";
 export const metadata: Metadata = buildMetadata({
   title: "Impressum",
   description:
-    "Impressum von SEEL Transport & Reinigung mit Kontaktdaten, Umsatzsteuer-ID und rechtlichen Hinweisen.",
+    "Impressum von SEEL Transport & Reinigung mit zentral gepflegten Kontakt- und Unternehmensdaten.",
   path: "/impressum",
 });
 
 export default async function ImpressumPage() {
   const settings = await getPublicSiteSettings();
+  const addressLines = [settings.company.addressLine1, settings.company.addressLine2, `${settings.company.city}, ${settings.company.country}`].filter(Boolean);
 
   return (
     <>
       <section className="gradient-navy py-16 md:py-20">
-        <div className="max-w-4xl mx-auto px-4 md:px-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-semibold text-white">Impressum</h1>
+        <div className="mx-auto max-w-5xl px-4 text-center md:px-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.32em] text-teal-300">Rechtliche Angaben</p>
+          <h1 className="mt-4 text-3xl font-semibold text-white md:text-5xl">Impressum</h1>
+          <p className="mt-4 text-base leading-8 text-white/68">
+            Zentrale Unternehmens- und Kontaktdaten von {settings.company.name}.
+          </p>
         </div>
       </section>
 
       <section className="section-padding">
-        <div className="max-w-4xl mx-auto px-4 md:px-8">
-          <div className="glass-strong rounded-[32px] p-8 md:p-12 space-y-8 text-sm leading-relaxed text-slate-700 dark:text-white/70">
-            <div>
-              <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-white">Angaben gemäß § 5 TMG</h2>
-              <p>
-                {settings.company.name}
-                <br />
-                {settings.company.addressLine1}
-              </p>
-            </div>
+        <div className="mx-auto max-w-5xl px-4 md:px-8">
+          <div className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
+            <aside className="space-y-6">
+              <div className="glass-card rounded-[30px] p-6">
+                <p className="text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-white/45">Unternehmen</p>
+                <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">{settings.company.name}</h2>
+                <div className="mt-4 space-y-2 text-sm leading-7 text-slate-600 dark:text-white/62">
+                  {addressLines.map((line) => (
+                    <p key={line}>{line}</p>
+                  ))}
+                </div>
+              </div>
 
-            <div>
-              <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-white">Kontakt</h2>
-              <p>
-                Telefon: <a href={`tel:${settings.contact.primaryPhone}`} className="text-emerald-700 dark:text-teal-300">{settings.contact.primaryPhoneDisplay}</a>
-                <br />
-                Telefon (Zweitnummer): <a href={`tel:${settings.contact.secondaryPhone}`} className="text-emerald-700 dark:text-teal-300">{settings.contact.secondaryPhoneDisplay}</a>
-                <br />
-                E-Mail: <a href={`mailto:${settings.contact.email}`} className="text-emerald-700 dark:text-teal-300">{settings.contact.email}</a>
-                <br />
-                Website: <a href={settings.contact.websiteUrl} className="text-emerald-700 dark:text-teal-300">{settings.contact.websiteDisplay}</a>
-              </p>
-            </div>
+              <div className="glass-card rounded-[30px] p-6">
+                <p className="text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-white/45">Direkter Kontakt</p>
+                <div className="mt-4 space-y-3 text-sm leading-7 text-slate-600 dark:text-white/62">
+                  <p>
+                    Telefon:{" "}
+                    <a href={`tel:${settings.contact.primaryPhone}`} className="font-semibold text-emerald-700 dark:text-teal-300">
+                      {settings.contact.primaryPhoneDisplay}
+                    </a>
+                  </p>
+                  <p>
+                    E-Mail:{" "}
+                    <a href={`mailto:${settings.contact.email}`} className="font-semibold text-emerald-700 dark:text-teal-300">
+                      {settings.contact.email}
+                    </a>
+                  </p>
+                  <p>
+                    Website:{" "}
+                    <a href={settings.contact.websiteUrl} className="font-semibold text-emerald-700 dark:text-teal-300">
+                      {settings.contact.websiteDisplay}
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </aside>
 
-            <div>
-              <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-white">Umsatzsteuer-Identifikationsnummer</h2>
-              <p>Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz: {settings.company.vatId || "Bitte ergänzen"}</p>
-            </div>
+            <div className="glass-strong rounded-[32px] p-8 md:p-10">
+              <div className="space-y-8 text-sm leading-8 text-slate-700 dark:text-white/68">
+                <section>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Angaben gemäß § 5 TMG</h2>
+                  <div className="mt-4 space-y-1">
+                    <p>{settings.company.name}</p>
+                    {addressLines.map((line) => (
+                      <p key={line}>{line}</p>
+                    ))}
+                    {settings.company.legalRepresentative && <p>Vertreten durch: {settings.company.legalRepresentative}</p>}
+                  </div>
+                </section>
 
-            <div>
-              <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-white">Bankverbindung</h2>
-              <p>
-                Bank: {settings.bank.name}
-                <br />
-                IBAN: {settings.bank.iban}
-                <br />
-                BIC: {settings.bank.bic}
-                <br />
-                Kontoinhaber: {settings.bank.accountHolder}
-              </p>
-            </div>
+                <section>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Kontakt</h2>
+                  <div className="mt-4 space-y-1">
+                    <p>Telefon: {settings.contact.primaryPhoneDisplay}</p>
+                    {settings.contact.secondaryPhoneDisplay && <p>Weitere Nummer: {settings.contact.secondaryPhoneDisplay}</p>}
+                    <p>E-Mail: {settings.contact.email}</p>
+                    <p>Servicegebiet: {settings.contact.serviceRegion}</p>
+                  </div>
+                </section>
 
-            <div>
-              <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-white">Streitschlichtung</h2>
-              <p>
-                Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:{" "}
-                <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener noreferrer" className="text-emerald-700 underline dark:text-teal-300">
-                  https://ec.europa.eu/consumers/odr/
-                </a>
-              </p>
-              <p className="mt-2">
-                Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
-              </p>
-            </div>
+                <section>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Steuer- und Registerangaben</h2>
+                  <div className="mt-4 space-y-1">
+                    <p>Umsatzsteuer-ID gemäß § 27a UStG: {settings.company.vatId || "Bitte ergänzen"}</p>
+                    <p>Steuernummer: {settings.company.taxNo || "Bitte ergänzen"}</p>
+                    {settings.company.registerCourt && <p>Registergericht: {settings.company.registerCourt}</p>}
+                    {settings.company.registerNo && <p>Registernummer: {settings.company.registerNo}</p>}
+                  </div>
+                </section>
 
-            <div className="border-t border-slate-200 pt-6 text-slate-500 dark:border-white/10 dark:text-white/40">
-              <p>{settings.company.name} · {settings.company.addressLine1} · Stand: März 2026</p>
+                <section>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Bankverbindung</h2>
+                  <div className="mt-4 space-y-1">
+                    <p>Bank: {settings.bank.name}</p>
+                    <p>IBAN: {settings.bank.iban}</p>
+                    <p>BIC: {settings.bank.bic}</p>
+                    <p>Kontoinhaber: {settings.bank.accountHolder}</p>
+                  </div>
+                </section>
+
+                <section>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Hinweis zur Streitbeilegung</h2>
+                  <p className="mt-4">
+                    Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung bereit:{" "}
+                    <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-700 underline dark:text-teal-300">
+                      https://ec.europa.eu/consumers/odr/
+                    </a>
+                    . Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
+                  </p>
+                </section>
+
+                <div className="border-t border-slate-200 pt-6 text-xs uppercase tracking-[0.24em] text-slate-500 dark:border-white/10 dark:text-white/38">
+                  Stand: März 2026
+                </div>
+              </div>
             </div>
           </div>
         </div>

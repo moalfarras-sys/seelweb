@@ -13,7 +13,7 @@ import { getHomepageGalleryItems, getPublicSiteSettings } from "@/lib/site-conte
 export const metadata: Metadata = buildMetadata({
   title: "Umzüge, Reinigung und Entrümpelung",
   description:
-    "SEEL Transport & Reinigung ist Ihre Umzugsfirma in Berlin für Privatumzüge, Firmenumzüge, Reinigung und Entrümpelung in Berlin und Brandenburg.",
+    "SEEL Transport & Reinigung begleitet Umzug, Reinigung und Entrümpelung in Berlin, Brandenburg und bei geplanten deutschlandweiten Einsätzen.",
   path: "/",
 });
 
@@ -260,8 +260,9 @@ export default async function HomePage() {
 
       <Gallery
         images={galleryImages}
-        title="Unsere Arbeit in Bildern"
-        subtitle="Galerie"
+        title={settings.homepage.galleryTitle}
+        subtitle={settings.homepage.galleryEyebrow}
+        description={settings.homepage.galleryDescription}
       />
 
       <section className="py-20">

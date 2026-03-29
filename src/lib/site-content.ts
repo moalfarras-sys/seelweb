@@ -60,8 +60,10 @@ function createDefaultSettings(): PublicSiteContent {
     company: {
       name: COMPANY_LEGAL.NAME,
       addressLine1: COMPANY_LEGAL.ADDRESS_LINE_1,
+      addressLine2: COMPANY_LEGAL.ADDRESS_LINE_2,
       city: CONTACT.CITY,
       country: CONTACT.COUNTRY,
+      legalRepresentative: COMPANY_LEGAL.LEGAL_REPRESENTATIVE,
       vatId: COMPANY_LEGAL.VAT_ID,
       taxNo: COMPANY_LEGAL.TAX_NO,
       registerCourt: COMPANY_LEGAL.REGISTER_COURT,
@@ -77,6 +79,7 @@ function createDefaultSettings(): PublicSiteContent {
       websiteUrl: CONTACT.WEBSITE_URL,
       websiteDisplay: CONTACT.WEBSITE_DISPLAY,
       availability: CONTACT.AVAILABILITY,
+      serviceRegion: CONTACT.SERVICE_REGION,
     },
     bank: {
       name: COMPANY_BANK.BANK_NAME,
@@ -85,7 +88,7 @@ function createDefaultSettings(): PublicSiteContent {
       accountHolder: COMPANY_BANK.ACCOUNT_HOLDER,
     },
     homepage: {
-      heroBadge: "Berlin & Brandenburg",
+      heroBadge: "Berlin · Brandenburg · deutschlandweite Einsätze",
       heroTitle: "Umzüge, Reinigung und Entrümpelung mit klarer Organisation.",
       heroDescription:
         "SEEL Transport & Reinigung begleitet private und gewerbliche Einsätze mit festen Ansprechpartnern, transparenten Preisen und einem ruhigen, professionellen Ablauf.",
@@ -94,9 +97,13 @@ function createDefaultSettings(): PublicSiteContent {
       finalCtaTitle: "Bereit für Ihren nächsten Einsatz?",
       finalCtaDescription:
         "Senden Sie uns Ihre Anfrage online oder sprechen Sie direkt mit uns über Termin, Umfang und Ablauf.",
+      galleryEyebrow: "Echte Einsätze",
+      galleryTitle: "Ein kuratierter Einblick in laufende Arbeiten und abgeschlossene Projekte.",
+      galleryDescription:
+        "Keine Stockfotos und keine zufällige Bilderwand. Die Galerie zeigt reale Einsätze aus Umzug, Reinigung und Objektbetreuung mit klarer Auswahl nach Leistungsart.",
     },
     trustBar: [
-      { id: "region", label: "Berlin & Brandenburg" },
+      { id: "region", label: CONTACT.SERVICE_REGION },
       { id: "availability", label: CONTACT.AVAILABILITY },
       { id: "pricing", label: "Transparente Preise" },
       { id: "insurance", label: "Professionelle und versicherte Abwicklung" },
@@ -107,6 +114,83 @@ function createDefaultSettings(): PublicSiteContent {
       "Transparente Preisstruktur ohne unklare Standardfloskeln.",
       "Leistungen aus einer Hand: Umzug, Reinigung, Entsorgung und Expressfälle.",
     ],
+  };
+}
+
+function cleanText(value: string | null | undefined) {
+  return (value || "").trim();
+}
+
+function normalizeCompany(company: PublicSiteContent["company"]) {
+  const rawAddressLine1 = cleanText(company.addressLine1);
+  const rawAddressLine2 = cleanText(company.addressLine2);
+  const isWeakBerlinPlaceholder = /^(berlin,\s*deutschland|berlin)$/i.test(rawAddressLine1);
+  return {
+    ...company,
+    addressLine1: isWeakBerlinPlaceholder ? "Geschäftssitz in Berlin" : rawAddressLine1,
+    addressLine2: /^(berlin,\s*deutschland|berlin)$/i.test(rawAddressLine2) ? "" : rawAddressLine2,
+    city: cleanText(company.city) || "Berlin",
+    country: cleanText(company.country) || "Deutschland",
+    legalRepresentative: cleanText(company.legalRepresentative),
+  };
+}
+
+function normalizeContact(contact: PublicSiteContent["contact"]) {
+  return {
+    ...contact,
+    availability: cleanText(contact.availability) || "24/7 für Sie erreichbar",
+    serviceRegion:
+      cleanText(contact.serviceRegion) || "Berlin, Brandenburg & deutschlandweite Einsätze",
+  };
+}
+
+function normalizeHomepage(homepage: PublicSiteContent["homepage"], contact: PublicSiteContent["contact"]) {
+  const heroBadge = cleanText(homepage.heroBadge);
+  return {
+    ...homepage,
+    heroBadge:
+      !heroBadge || heroBadge === "Berlin & Brandenburg"
+        ? "Berlin · Brandenburg · deutschlandweite Einsätze"
+        : heroBadge,
+    galleryEyebrow: cleanText(homepage.galleryEyebrow) || "Echte Einsätze",
+    galleryTitle:
+      cleanText(homepage.galleryTitle) ||
+      "Ein kuratierter Einblick in laufende Arbeiten und abgeschlossene Projekte.",
+    galleryDescription:
+      cleanText(homepage.galleryDescription) ||
+      "Keine Stockfotos und keine zufällige Bilderwand. Die Galerie zeigt reale Einsätze aus Umzug, Reinigung und Objektbetreuung mit klarer Auswahl nach Leistungsart.",
+  };
+}
+
+function normalizeSettings(settings: PublicSiteContent): PublicSiteContent {
+  const company = normalizeCompany(settings.company);
+  const contact = normalizeContact(settings.contact);
+  const homepage = normalizeHomepage(settings.homepage, contact);
+  return {
+    ...settings,
+    company,
+    contact,
+    homepage,
+    trustBar: settings.trustBar.map((item, index) => ({
+      id: item.id || `trust-${index + 1}`,
+      label:
+        (!cleanText(item.label) || cleanText(item.label) === "Berlin & Brandenburg"
+          ? [
+              contact.serviceRegion,
+              contact.availability,
+              "Transparente Preise",
+              "Professionelle und versicherte Abwicklung",
+            ][index]
+          : cleanText(item.label)) ||
+        [
+          contact.serviceRegion,
+          contact.availability,
+          "Transparente Preise",
+          "Professionelle und versicherte Abwicklung",
+        ][index] ||
+        "",
+    })),
+    whyChooseUs: settings.whyChooseUs.map((item) => cleanText(item)).filter(Boolean),
   };
 }
 
@@ -200,15 +284,33 @@ async function ensureFileContent(): Promise<SiteContentData> {
     const raw = await fs.readFile(SITE_CONTENT_FILE, "utf-8");
     const parsed = JSON.parse(raw) as Partial<SiteContentData>;
     return {
-      settings: {
+      settings: normalizeSettings({
         ...createDefaultSettings(),
         ...(parsed.settings || {}),
-      },
+        company: {
+          ...createDefaultSettings().company,
+          ...(parsed.settings?.company || {}),
+        },
+        contact: {
+          ...createDefaultSettings().contact,
+          ...(parsed.settings?.contact || {}),
+        },
+        bank: {
+          ...createDefaultSettings().bank,
+          ...(parsed.settings?.bank || {}),
+        },
+        homepage: {
+          ...createDefaultSettings().homepage,
+          ...(parsed.settings?.homepage || {}),
+        },
+        trustBar: parsed.settings?.trustBar || createDefaultSettings().trustBar,
+        whyChooseUs: parsed.settings?.whyChooseUs || createDefaultSettings().whyChooseUs,
+      }),
       galleryItems: normalizeGalleryItems(parsed.galleryItems || []),
     };
   } catch {
     const seeded: SiteContentData = {
-      settings: createDefaultSettings(),
+      settings: normalizeSettings(createDefaultSettings()),
       galleryItems: await createDefaultGalleryItems(),
     };
     await fs.writeFile(SITE_CONTENT_FILE, JSON.stringify(seeded, null, 2), "utf-8");
@@ -226,7 +328,7 @@ export async function saveSiteContent(input: SiteContentData) {
     SITE_CONTENT_FILE,
     JSON.stringify(
       {
-        settings: input.settings,
+        settings: normalizeSettings(input.settings),
         galleryItems: normalizeGalleryItems(input.galleryItems),
       },
       null,
@@ -240,7 +342,7 @@ export async function updateSiteSettings(settings: Partial<PublicSiteContent>) {
   const current = await getSiteContent();
   const next: SiteContentData = {
     ...current,
-    settings: {
+    settings: normalizeSettings({
       ...current.settings,
       ...settings,
       company: {
@@ -261,7 +363,7 @@ export async function updateSiteSettings(settings: Partial<PublicSiteContent>) {
       },
       trustBar: settings.trustBar || current.settings.trustBar,
       whyChooseUs: settings.whyChooseUs || current.settings.whyChooseUs,
-    },
+    }),
   };
   await saveSiteContent(next);
   return next.settings;

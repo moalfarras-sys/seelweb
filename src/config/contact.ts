@@ -22,6 +22,7 @@ export const CONTACT = {
   CITY: "Berlin",
   COUNTRY: "Deutschland",
   AVAILABILITY: "24/7 für Sie erreichbar",
+  SERVICE_REGION: "Berlin, Brandenburg & deutschlandweite Einsätze",
 
   WEBSITE_URL: "https://seeltransport.de",
   WEBSITE_DISPLAY: "www.seeltransport.de",
@@ -29,7 +30,9 @@ export const CONTACT = {
 
 export const COMPANY_LEGAL = {
   NAME: "SEEL Transport & Reinigung",
-  ADDRESS_LINE_1: "Berlin, Deutschland",
+  ADDRESS_LINE_1: "Geschäftssitz in Berlin",
+  ADDRESS_LINE_2: "",
+  LEGAL_REPRESENTATIVE: "LISAVETA AL-SHAMAILEH",
   VAT_ID: "DE454962817",
   TAX_NO: "33/205/02397",
   REGISTER_COURT: "Berlin",
@@ -43,14 +46,14 @@ export const COMPANY_BANK = {
   ACCOUNT_HOLDER: "LISAVETA AL-SHAMAILEH",
 } as const;
 
-export const WHATSAPP_DEFAULT_MESSAGE = `Hallo 👋
-Ich habe Ihre Website besucht und interessiere mich für einen Umzug.
+export const WHATSAPP_DEFAULT_MESSAGE = `Hallo,
+ich habe Ihre Website besucht und interessiere mich für einen Einsatz.
 
 Bitte senden Sie mir ein Angebot.
 
 Startadresse:
 Zieladresse:
-Wohnungsgröße:
+Leistungsumfang:
 Gewünschtes Datum:
 
 Vielen Dank.`;

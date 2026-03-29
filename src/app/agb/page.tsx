@@ -41,7 +41,7 @@ export default function AGBPage() {
                 </div>
                 <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
                   <p className="text-[11px] uppercase tracking-[0.24em] text-teal-100">Geltung</p>
-                  <p className="mt-1 text-white font-semibold">Deutschlandweit</p>
+                  <p className="mt-1 text-white font-semibold">Berlin, Brandenburg & deutschlandweite Einsätze</p>
                 </div>
               </div>
             </div>

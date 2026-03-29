@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://seeltransport.de"),
   title: "SEEL Transport - Umzüge, Reinigung und Entrümpelung in Berlin",
   description:
-    "Professionelle Umzüge, Transporte, Reinigung und Entrümpelung in Berlin und Brandenburg. Transparent kalkuliert, zuverlässig umgesetzt.",
+    "Professionelle Umzüge, Transporte, Reinigung und Entrümpelung in Berlin, Brandenburg und bei geplanten deutschlandweiten Einsätzen.",
   keywords: [
     "Umzug Berlin",
     "Umzugsfirma Berlin",
@@ -51,29 +51,6 @@ export const metadata: Metadata = {
   },
 };
 
-const localBusinessSchema = {
-  "@context": "https://schema.org",
-  "@type": ["LocalBusiness", "MovingCompany"],
-  name: "SEEL Transport & Reinigung",
-  url: "https://seeltransport.de",
-  logo: "https://seeltransport.de/images/logo.jpeg",
-  telephone: "+49 172 8003410",
-  email: "info@seeltransport.de",
-  address: {
-    "@type": "PostalAddress",
-    addressCountry: "DE",
-    addressLocality: "Berlin",
-  },
-  areaServed: [{ "@type": "City", name: "Berlin" }, { "@type": "State", name: "Brandenburg" }],
-  openingHoursSpecification: {
-    "@type": "OpeningHoursSpecification",
-    dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-    opens: "00:00",
-    closes: "23:59",
-  },
-  priceRange: "EUR",
-};
-
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -83,6 +60,29 @@ export default async function RootLayout({
   const pathname = headersList.get("x-next-url") ?? headersList.get("x-invoke-path") ?? "";
   const isAdmin = pathname.startsWith("/admin");
   const siteContent = await getPublicSiteSettings();
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": ["LocalBusiness", "MovingCompany"],
+    name: siteContent.company.name,
+    url: siteContent.contact.websiteUrl,
+    logo: `${siteContent.contact.websiteUrl}/images/logo.jpeg`,
+    telephone: siteContent.contact.primaryPhoneDisplay,
+    email: siteContent.contact.email,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: [siteContent.company.addressLine1, siteContent.company.addressLine2].filter(Boolean).join(", "),
+      addressLocality: siteContent.company.city,
+      addressCountry: "DE",
+    },
+    areaServed: siteContent.contact.serviceRegion,
+    openingHoursSpecification: {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      opens: "00:00",
+      closes: "23:59",
+    },
+    priceRange: "EUR",
+  };
 
   return (
     <html lang="de" suppressHydrationWarning>

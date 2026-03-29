@@ -29,8 +29,10 @@ export type PublicSiteContent = {
   company: {
     name: string;
     addressLine1: string;
+    addressLine2: string;
     city: string;
     country: string;
+    legalRepresentative: string;
     vatId: string;
     taxNo: string;
     registerCourt: string;
@@ -46,6 +48,7 @@ export type PublicSiteContent = {
     websiteUrl: string;
     websiteDisplay: string;
     availability: string;
+    serviceRegion: string;
   };
   bank: {
     name: string;
@@ -61,6 +64,9 @@ export type PublicSiteContent = {
     secondaryCtaLabel: string;
     finalCtaTitle: string;
     finalCtaDescription: string;
+    galleryEyebrow: string;
+    galleryTitle: string;
+    galleryDescription: string;
   };
   trustBar: TrustItem[];
   whyChooseUs: string[];

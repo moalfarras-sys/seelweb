@@ -13,10 +13,11 @@ function buildWhatsappUrl(number: string) {
 
 export default function Footer() {
   const { company, contact } = useSiteContent();
+  const addressLines = [company.addressLine1, company.addressLine2, `${company.city}, ${company.country}`].filter(Boolean);
 
   return (
     <footer className="relative z-10 overflow-hidden border-t border-slate-200 bg-stone-50 dark:border-white/5 dark:bg-[rgba(8,13,24,0.88)]">
-      <div className="absolute inset-0 pointer-events-none opacity-10 dark:opacity-20">
+      <div className="pointer-events-none absolute inset-0 opacity-10 dark:opacity-20">
         <div className="absolute left-12 top-12 h-56 w-56 rounded-full bg-emerald-400 blur-[120px]" />
         <div className="absolute bottom-0 right-8 h-48 w-48 rounded-full bg-sky-400 blur-[100px]" />
       </div>
@@ -32,7 +33,7 @@ export default function Footer() {
               </div>
             </div>
             <p className="mt-5 text-sm leading-7 text-slate-500 dark:text-white/60">
-              Umzüge, Transporte, Reinigung und Entrümpelung für Berlin und Brandenburg. Transparent kalkuliert und zuverlässig umgesetzt.
+              Strukturierte Einsätze für Umzug, Reinigung und Entrümpelung in {contact.serviceRegion}. Ruhig geplant, transparent kalkuliert und professionell umgesetzt.
             </p>
             <a href={buildWhatsappUrl(contact.whatsappNumber)} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 transition hover:bg-emerald-600">
               <WhatsAppIcon className="h-5 w-5 fill-white" />
@@ -54,7 +55,7 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Schnellzugriff</h3>
             <div className="mt-5 space-y-3 text-sm text-slate-500 dark:text-white/60">
-              <Link href="/buchen" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Jetzt buchen</Link>
+              <Link href="/buchen" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Preise & Buchen</Link>
               <Link href="/unternehmen" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Unternehmen</Link>
               <Link href="/kontakt" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Kontakt</Link>
               <Link href="/impressum" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Impressum</Link>
@@ -69,7 +70,11 @@ export default function Footer() {
             <div className="mt-5 space-y-4 text-sm text-slate-500 dark:text-white/60">
               <div className="flex items-start gap-3">
                 <MapPin size={16} className="mt-0.5 text-emerald-600 dark:text-teal-300" />
-                <span>{company.city}, {company.country}</span>
+                <div className="space-y-1">
+                  {addressLines.map((line) => (
+                    <p key={line}>{line}</p>
+                  ))}
+                </div>
               </div>
               <a href={`tel:${contact.primaryPhone}`} className="flex items-center gap-3 transition hover:text-emerald-700 dark:hover:text-teal-300">
                 <Phone size={16} className="text-emerald-600 dark:text-teal-300" />
@@ -79,16 +84,16 @@ export default function Footer() {
                 <Mail size={16} className="text-emerald-600 dark:text-teal-300" />
                 {contact.email}
               </a>
-              <div className="flex items-center gap-3">
-                <Clock size={16} className="text-emerald-600 dark:text-teal-300" />
-                <span>{contact.availability}</span>
+              <div className="flex items-start gap-3">
+                <Clock size={16} className="mt-0.5 text-emerald-600 dark:text-teal-300" />
+                <span>{contact.availability} · {contact.serviceRegion}</span>
               </div>
             </div>
           </div>
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-slate-200 pt-6 text-sm text-slate-400 dark:border-white/5 dark:text-white/40 md:flex-row md:items-center md:justify-between">
-          <p>&copy; {new Date().getFullYear()} SEEL Transport & Reinigung. Alle Rechte vorbehalten.</p>
+          <p>&copy; {new Date().getFullYear()} {company.name}. Alle Rechte vorbehalten.</p>
           <div className="flex flex-wrap items-center gap-4">
             <Link href="/leistungen/umzug-berlin" className="transition hover:text-emerald-700 dark:hover:text-teal-300">Umzugsfirma Berlin</Link>
             <Link href="/leistungen/privatumzug" className="transition hover:text-emerald-700 dark:hover:text-teal-300">Privatumzug</Link>

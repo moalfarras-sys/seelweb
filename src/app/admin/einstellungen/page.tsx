@@ -96,9 +96,11 @@ export default function EinstellungenPage() {
 
         <div className="grid gap-4 md:grid-cols-2">
           <input className={inputClass} value={settings.company.name} onChange={(event) => update("company", { ...settings.company, name: event.target.value })} placeholder="Firmenname" />
-          <input className={inputClass} value={settings.company.addressLine1} onChange={(event) => update("company", { ...settings.company, addressLine1: event.target.value })} placeholder="Adresse" />
+          <input className={inputClass} value={settings.company.addressLine1} onChange={(event) => update("company", { ...settings.company, addressLine1: event.target.value })} placeholder="Adresszeile 1" />
+          <input className={inputClass} value={settings.company.addressLine2} onChange={(event) => update("company", { ...settings.company, addressLine2: event.target.value })} placeholder="Adresszeile 2 / PLZ" />
           <input className={inputClass} value={settings.company.city} onChange={(event) => update("company", { ...settings.company, city: event.target.value })} placeholder="Stadt" />
           <input className={inputClass} value={settings.company.country} onChange={(event) => update("company", { ...settings.company, country: event.target.value })} placeholder="Land" />
+          <input className={inputClass} value={settings.company.legalRepresentative} onChange={(event) => update("company", { ...settings.company, legalRepresentative: event.target.value })} placeholder="Vertreten durch" />
           <input className={inputClass} value={settings.company.vatId} onChange={(event) => update("company", { ...settings.company, vatId: event.target.value })} placeholder="USt-IdNr." />
           <input className={inputClass} value={settings.company.taxNo} onChange={(event) => update("company", { ...settings.company, taxNo: event.target.value })} placeholder="Steuernummer" />
           <input className={inputClass} value={settings.company.registerCourt} onChange={(event) => update("company", { ...settings.company, registerCourt: event.target.value })} placeholder="Registergericht" />
@@ -126,6 +128,7 @@ export default function EinstellungenPage() {
           <input className={inputClass} value={settings.contact.whatsappNumber} onChange={(event) => update("contact", { ...settings.contact, whatsappNumber: event.target.value })} placeholder="WhatsApp Nummer ohne +" />
           <input className={inputClass} value={settings.contact.websiteUrl} onChange={(event) => update("contact", { ...settings.contact, websiteUrl: event.target.value })} placeholder="Website URL" />
           <input className={inputClass} value={settings.contact.websiteDisplay} onChange={(event) => update("contact", { ...settings.contact, websiteDisplay: event.target.value })} placeholder="Website sichtbar" />
+          <input className={inputClass} value={settings.contact.serviceRegion} onChange={(event) => update("contact", { ...settings.contact, serviceRegion: event.target.value })} placeholder="Servicegebiet" />
           <div className="md:col-span-2">
             <input className={inputClass} value={settings.contact.availability} onChange={(event) => update("contact", { ...settings.contact, availability: event.target.value })} placeholder="Erreichbarkeit" />
           </div>
@@ -170,6 +173,9 @@ export default function EinstellungenPage() {
             <input className={inputClass} value={settings.homepage.primaryCtaLabel} onChange={(event) => update("homepage", { ...settings.homepage, primaryCtaLabel: event.target.value })} placeholder="Primäre CTA" />
             <input className={inputClass} value={settings.homepage.secondaryCtaLabel} onChange={(event) => update("homepage", { ...settings.homepage, secondaryCtaLabel: event.target.value })} placeholder="Sekundäre CTA" />
           </div>
+          <input className={inputClass} value={settings.homepage.galleryEyebrow} onChange={(event) => update("homepage", { ...settings.homepage, galleryEyebrow: event.target.value })} placeholder="Galerie Eyebrow" />
+          <input className={inputClass} value={settings.homepage.galleryTitle} onChange={(event) => update("homepage", { ...settings.homepage, galleryTitle: event.target.value })} placeholder="Galerie Titel" />
+          <textarea className={`${inputClass} min-h-24`} value={settings.homepage.galleryDescription} onChange={(event) => update("homepage", { ...settings.homepage, galleryDescription: event.target.value })} placeholder="Galerie Beschreibung" />
           <input className={inputClass} value={settings.homepage.finalCtaTitle} onChange={(event) => update("homepage", { ...settings.homepage, finalCtaTitle: event.target.value })} placeholder="Abschluss CTA Titel" />
           <textarea className={`${inputClass} min-h-24`} value={settings.homepage.finalCtaDescription} onChange={(event) => update("homepage", { ...settings.homepage, finalCtaDescription: event.target.value })} placeholder="Abschluss CTA Beschreibung" />
         </div>

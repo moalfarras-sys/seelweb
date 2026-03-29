@@ -22,6 +22,8 @@ function buildWhatsappUrl(number: string) {
 
 export default function KontaktPage() {
   const { company, contact } = useSiteContent();
+  const addressLines = [company.addressLine1, company.addressLine2, `${company.city}, ${company.country}`].filter(Boolean);
+  const addressSummary = company.addressLine2 ? addressLines.join(", ") : company.addressLine1;
   const searchParams = useSearchParams();
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [honeypot, setHoneypot] = useState("");
@@ -114,9 +116,9 @@ export default function KontaktPage() {
             <div className="glass rounded-[30px] p-6 text-white">
               <div className="grid gap-4 md:grid-cols-3">
                 {[
-                  { label: "Standort", value: `${company.city}, ${company.country}` },
+                  { label: "Servicegebiet", value: contact.serviceRegion },
                   { label: "Telefon", value: contact.primaryPhoneDisplay },
-                  { label: "E-Mail", value: contact.email },
+                  { label: "Erreichbarkeit", value: contact.availability },
                 ].map((item) => (
                   <div key={item.label} className="rounded-2xl border border-white/10 bg-white/5 p-4">
                     <p className="text-xs uppercase tracking-[0.24em] text-white/55">{item.label}</p>
@@ -135,7 +137,7 @@ export default function KontaktPage() {
             {[
               { icon: Phone, title: "Telefon", value: contact.primaryPhoneDisplay, href: `tel:${contact.primaryPhone}` },
               { icon: Mail, title: "E-Mail", value: contact.email, href: `mailto:${contact.email}` },
-              { icon: MapPin, title: "Standort", value: `${company.city}, ${company.country}` },
+              { icon: MapPin, title: "Adresse", value: addressSummary },
               { icon: MessageCircle, title: "WhatsApp", value: "Direktnachricht starten", href: buildWhatsappUrl(contact.whatsappNumber), external: true },
             ].map((item) => {
               const Icon = item.icon;
@@ -172,6 +174,15 @@ export default function KontaktPage() {
                   </p>
                 </div>
               </div>
+            </div>
+
+            <div className="glass-card rounded-[28px] p-6">
+              <p className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-white/45">So arbeiten wir</p>
+              <ul className="mt-4 space-y-3 text-sm leading-7 text-slate-600 dark:text-white/60">
+                <li>Eine zentrale Anlaufstelle für Umzug, Reinigung und Entrümpelung.</li>
+                <li>Feste Rückmeldungen zu Termin, Leistungsumfang und Preisrahmen.</li>
+                <li>Serviceeinsätze in {contact.serviceRegion}.</li>
+              </ul>
             </div>
           </div>
 

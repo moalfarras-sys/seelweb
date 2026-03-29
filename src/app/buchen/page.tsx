@@ -7,6 +7,7 @@ import { de } from "date-fns/locale";
 import { formatCurrency } from "@/lib/utils";
 import AddressAutocomplete, { type AddressResult } from "@/components/maps/AddressAutocomplete";
 import RouteMap from "@/components/maps/RouteMap";
+import { useSiteContent } from "@/components/SiteContentProvider";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
@@ -177,6 +178,7 @@ const steps = [
 ];
 
 export default function BuchenPage() {
+  const { company, contact } = useSiteContent();
   const search = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [services, setServices] = useState<ServiceType[]>([]);
@@ -569,11 +571,14 @@ export default function BuchenPage() {
 
           {/* Header & Progress Bar */}
           <div className="mb-10">
+            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-teal-600 dark:text-teal-300">
+              Preise, Planung und Anfrage in einem Ablauf
+            </p>
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-3">
-              Service Buchen
+              Einsatz anfragen und strukturiert konfigurieren
             </h1>
             <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl">
-              Konfigurieren Sie jetzt Ihre gewünschten Leistungen schnell und einfach.
+              Stellen Sie Ihre Leistungen zusammen, wählen Sie Termin und Kontaktdaten und erhalten Sie eine saubere Preisorientierung für {contact.serviceRegion}.
             </p>
 
             <div className="mt-8">
@@ -631,9 +636,9 @@ export default function BuchenPage() {
                 >
                   <div className="space-y-2">
                     <h2 className="text-xl font-bold flex items-center gap-2">
-                      <Wand2 className="text-teal-500" /> Womit können wir helfen?
+                      <Wand2 className="text-teal-500" /> Welche Leistung dürfen wir für Sie planen?
                     </h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Wählen Sie einen oder mehrere Services aus, die Sie benötigen.</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Wählen Sie eine oder mehrere Leistungen aus und konfigurieren Sie den Einsatz direkt im nächsten Schritt.</p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -947,7 +952,7 @@ export default function BuchenPage() {
 
                   <div className="bg-white/50 dark:bg-navy-800/40 border border-white/60 dark:border-navy-700 p-5 rounded-2xl shadow-sm space-y-5">
                     <h3 className="font-semibold text-lg flex items-center gap-2 border-b border-slate-200/50 dark:border-navy-700/50 pb-3">
-                      <User size={18} className="text-blue-500" /> Kontakt & Zahlung
+                      <User size={18} className="text-blue-500" /> Kontaktdaten & Zahlungsart
                     </h3>
 
                     <div className="grid sm:grid-cols-2 gap-4">
@@ -1159,19 +1164,19 @@ export default function BuchenPage() {
 
                 <div className="pt-4 border-t border-slate-200 dark:border-navy-700 space-y-2">
                   <p className="flex items-center gap-2 text-xs text-slate-500">
-                    <CheckCircle2 size={14} className="text-teal-500" /> 24/7 erreichbar
+                    <CheckCircle2 size={14} className="text-teal-500" /> {contact.availability}
                   </p>
                   <p className="flex items-center gap-2 text-xs text-slate-500">
-                    <CheckCircle2 size={14} className="text-teal-500" /> Transparent kalkuliert
+                    <CheckCircle2 size={14} className="text-teal-500" /> Transparent kalkulierte Preisstruktur
                   </p>
                   <p className="flex items-center gap-2 text-xs text-slate-500">
-                    <ShieldCheck size={14} className="text-teal-500" /> Versichert nach HGB §451e
+                    <ShieldCheck size={14} className="text-teal-500" /> Professionelle und versicherte Abwicklung
                   </p>
                   <p className="flex items-center gap-2 text-xs text-slate-500">
-                    <Clock3 size={14} className="text-teal-500" /> Berlin & Brandenburg
+                    <Clock3 size={14} className="text-teal-500" /> {contact.serviceRegion}
                   </p>
                   <p className="flex items-center gap-2 text-xs text-slate-500">
-                    <CheckCircle2 size={14} className="text-teal-500" /> Flexible Termine auch kurzfristig
+                    <CheckCircle2 size={14} className="text-teal-500" /> Direkte Rückmeldung durch {company.name}
                   </p>
                 </div>
               </div>

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
+import { COMPANY_LEGAL, CONTACT } from "@/config/contact";
 
 type OfferItem = {
   id: string;
@@ -55,6 +56,9 @@ export default function VertragPage() {
   const [signing, setSigning] = useState(false);
   const [signed, setSigned] = useState(false);
   const [signError, setSignError] = useState("");
+  const companyAddressLine = [COMPANY_LEGAL.ADDRESS_LINE_1, COMPANY_LEGAL.ADDRESS_LINE_2, `${CONTACT.CITY}, ${CONTACT.COUNTRY}`]
+    .filter(Boolean)
+    .join(" · ");
 
   useEffect(() => {
     if (!token) return;
@@ -256,7 +260,7 @@ export default function VertragPage() {
                 <div className="w-12 h-12 bg-[#0d9ea0] rounded-xl flex items-center justify-center text-white font-bold text-lg">S</div>
                 <div>
                   <h1 className="text-white font-bold text-lg">SEEL Transport & Reinigung</h1>
-                  <p className="text-slate-400 text-xs">Berlin, Deutschland</p>
+                  <p className="text-slate-400 text-xs">{companyAddressLine}</p>
                 </div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-xl px-5 py-4 border border-white/20">
@@ -277,7 +281,7 @@ export default function VertragPage() {
               <div className="p-4 bg-slate-50 rounded-xl">
                 <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Auftragnehmer</p>
                 <p className="font-bold text-slate-800">SEEL Transport & Reinigung</p>
-                <p className="text-sm text-slate-500">Berlin, Deutschland</p>
+                <p className="text-sm text-slate-500">{companyAddressLine}</p>
                 <p className="text-sm text-slate-500">info@seeltransport.de</p>
                 <p className="text-sm text-slate-500">+49 172 8003410</p>
               </div>

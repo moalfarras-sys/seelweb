@@ -69,7 +69,7 @@ export function getBusinessSettings(): BusinessSettings {
       accountHolder: COMPANY_BANK.ACCOUNT_HOLDER,
     },
     trustBadges: {
-      badge1: "Zuverlässiger Service in Berlin & Brandenburg",
+      badge1: "Zuverlässiger Service in Berlin, Brandenburg und bundesweit nach Planung",
       badge2: "Flexible Termine auch kurzfristig",
       badge3: "Transparente Preise & schnelle Kommunikation",
     },

@@ -102,11 +102,19 @@ export default function UnternehmenPage() {
                 Gewerbliche Einsätze mit ruhiger Planung und sauberer Angebotsstruktur.
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-white/72">
-                {company.name} begleitet Firmen, Schulen und öffentliche Einrichtungen mit strukturierten Angeboten für Umzug, Reinigung und Entsorgung.
+                {company.name} begleitet Firmen, Schulen und öffentliche Einrichtungen mit strukturierten Angeboten für Umzug, Reinigung und Entsorgung in {contact.serviceRegion}.
               </p>
               <div className="mt-8">
                 <a href="#ausschreibung" className="inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 font-semibold text-slate-900 transition hover:bg-slate-100">
                   Ausschreibung einreichen <ArrowRight size={18} />
+                </a>
+              </div>
+              <div className="mt-6 flex flex-wrap gap-3 text-sm text-white/70">
+                <a href={`tel:${contact.primaryPhone}`} className="rounded-full border border-white/15 bg-white/5 px-4 py-2 transition hover:bg-white/10">
+                  {contact.primaryPhoneDisplay}
+                </a>
+                <a href={`mailto:${contact.email}`} className="rounded-full border border-white/15 bg-white/5 px-4 py-2 transition hover:bg-white/10">
+                  {contact.email}
                 </a>
               </div>
             </div>
