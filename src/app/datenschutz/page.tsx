@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
@@ -32,7 +32,7 @@ export default function DatenschutzPage() {
               <p>
                 Seel Transport &amp; Reinigung<br />
                 Deutschland<br />
-                Telefon: +49 160 7746966<br />
+                Telefon: +49 172 8003410<br />
                 E-Mail: info@seeltransport.de
               </p>
             </div>

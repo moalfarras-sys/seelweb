@@ -8,7 +8,7 @@ export default function HeroVideo() {
     <div className="absolute inset-0 w-full h-full overflow-hidden z-0">
       {/* Real hero background image */}
       <Image
-        src="/images/moving-truck-hero.png"
+        src="/images/umzug-1.jpeg"
         alt="Seel Transport Hero"
         fill
         className="object-cover object-center"

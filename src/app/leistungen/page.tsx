@@ -21,7 +21,7 @@ export default async function LeistungenPage() {
       title: "Privat- und Regionalumzüge",
       description: "Privatumzüge, Berlin-Umzüge und Brandenburg-Routen mit klarer Taktung und transparenter Preisstruktur.",
       href: "/leistungen/umzug-berlin",
-      image: "/images/moving-truck-hero.png",
+      image: "/images/umzug-1.jpeg",
       price: formatPricePerHour(prices.umzugStandard),
       bullets: ["Privatumzug Berlin", "Umzug Berlin-Brandenburg", "Montage und Tragehilfe", "Halteverbotszonen auf Wunsch"],
     },

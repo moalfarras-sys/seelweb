@@ -80,7 +80,7 @@ export default async function HomePage() {
       description: "Strukturierte Umzüge mit erfahrenem Team, festen Zeitfenstern und optionaler Montage.",
       href: "/leistungen/umzug-berlin",
       price: formatPricePerHour(prices.umzugStandard),
-      image: "/images/moving-workers-furniture.png",
+      image: "/images/umzug-1.jpeg",
     },
     {
       title: "Büro- & Gewerbeumzug",
@@ -115,7 +115,7 @@ export default async function HomePage() {
       description: "Kurzfristige Umzüge mit priorisierter Disposition für besonders dringende Fälle.",
       href: "/leistungen/expressumzug",
       price: formatPricePerHour(prices.umzugExpress),
-      image: "/images/moving-truck-hero.png",
+      image: "/images/Express.jpeg",
     },
   ];
 
@@ -172,7 +172,7 @@ export default async function HomePage() {
           <div className="relative">
             <div className="relative overflow-hidden rounded-[2rem] border border-white/20 shadow-2xl shadow-black/20">
               <Image
-                src="/images/moving-workers-furniture.png"
+                src="/images/umzug-1.jpeg"
                 alt="SEEL Transport Team beim Umzug in Berlin"
                 width={960}
                 height={1080}

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
 import { motion } from "framer-motion";
@@ -45,6 +46,14 @@ export default function ExpressumzugPage() {
       </Script>
 
       <section className="gradient-navy py-20 md:py-28 relative overflow-hidden">
+        <Image
+          src="/images/Express.jpeg"
+          alt="Expressumzug Berlin"
+          fill
+          className="object-cover opacity-20"
+          priority
+          sizes="100vw"
+        />
         <div className="max-w-5xl mx-auto px-4 md:px-8 text-center relative z-10">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
             <div className="w-20 h-20 bg-amber-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6">

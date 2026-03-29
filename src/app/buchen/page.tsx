@@ -389,6 +389,23 @@ export default function BuchenPage() {
     };
   }, [selectedDate, services, computedDurationMin, timeSlot]);
 
+  const estimatedTotal = useMemo(() => {
+    if (!publicPrices || services.length === 0) return null;
+    const rateMap: Record<ServiceType, number> = {
+      MOVING: publicPrices.umzugStandard,
+      HOME_CLEANING: publicPrices.reinigungWohnung,
+      MOVE_OUT_CLEANING: publicPrices.endreinigung,
+      OFFICE_CLEANING: publicPrices.reinigungBuero,
+      DISPOSAL: publicPrices.entruempelung,
+    };
+    const netto = services.reduce((sum, s) => {
+      const c = ensureCfg(s);
+      return sum + rateMap[s] * c.hours;
+    }, 0);
+    const mwst = Math.round(netto * 0.19 * 100) / 100;
+    return { netto, mwst, total: Math.round((netto + mwst) * 100) / 100 };
+  }, [publicPrices, services, ensureCfg]);
+
   const bookingReady = Boolean(
     quote &&
       selectedDate &&
@@ -1066,11 +1083,7 @@ export default function BuchenPage() {
                 )}
 
                 <div className="pt-4 border-t border-slate-200 dark:border-navy-700">
-                  {quoteError ? (
-                    <div className="p-3 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-xl text-red-600 dark:text-red-400 text-sm text-center">
-                      Bitte füllen Sie notwendige Felder (wie PLZ) aus.
-                    </div>
-                  ) : quote ? (
+                  {quote ? (
                     <div className="space-y-3">
                       <div className="flex justify-between text-sm text-slate-500">
                         <span>Zwischensumme</span>
@@ -1101,7 +1114,6 @@ export default function BuchenPage() {
                         </p>
                       )}
 
-                      {/* Discount Input inside widget */}
                       <div className="mt-4 pt-4 border-t border-slate-200 dark:border-navy-700">
                         <input
                           value={discountCode}
@@ -1111,12 +1123,38 @@ export default function BuchenPage() {
                         />
                       </div>
                     </div>
-                  ) : (
+                  ) : isCalculating ? (
                     <div className="flex items-center justify-center py-6">
                       <div className="w-5 h-5 border-2 border-teal-500/30 border-t-teal-500 rounded-full animate-spin" />
                       <span className="ml-2 text-sm text-slate-500">Berechne...</span>
                     </div>
-                  )}
+                  ) : estimatedTotal ? (
+                    <div className="space-y-3">
+                      <div className="flex justify-between text-sm text-slate-500">
+                        <span>Netto (Schätzung)</span>
+                        <span>{formatCurrency(estimatedTotal.netto)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm text-slate-500">
+                        <span>MwSt. (19%)</span>
+                        <span>{formatCurrency(estimatedTotal.mwst)}</span>
+                      </div>
+                      <div className="pt-3 mt-3 border-t border-slate-200 dark:border-navy-700 flex justify-between items-end">
+                        <div>
+                          <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Geschätzt</p>
+                        </div>
+                        <div className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-600 to-blue-600 dark:from-teal-400 dark:to-blue-400">
+                          {formatCurrency(estimatedTotal.total)}
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-amber-600">
+                        Richtwert auf Basis der Stundensätze. Endpreis nach Adresseingabe.
+                      </p>
+                    </div>
+                  ) : quoteError ? (
+                    <div className="p-3 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-xl text-red-600 dark:text-red-400 text-sm text-center">
+                      Bitte füllen Sie notwendige Felder (wie PLZ) aus.
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="pt-4 border-t border-slate-200 dark:border-navy-700 space-y-2">
