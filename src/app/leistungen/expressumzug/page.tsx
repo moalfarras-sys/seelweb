@@ -45,7 +45,7 @@ export default function ExpressumzugPage() {
         {JSON.stringify(buildFaqSchema(faqs.map((f) => ({ question: f.q, answer: f.a }))))}
       </Script>
 
-      <section className="gradient-navy py-20 md:py-28 relative overflow-hidden">
+      <section className="gradient-navy relative overflow-hidden py-20 md:py-28">
         <Image
           src="/images/Express.jpeg"
           alt="SEEL Transport Expressumzug Berlin – kurzfristiger Umzug innerhalb 24 Stunden"
@@ -54,19 +54,19 @@ export default function ExpressumzugPage() {
           priority
           sizes="100vw"
         />
-        <div className="max-w-5xl mx-auto px-4 md:px-8 text-center relative z-10">
+        <div className="relative z-10 mx-auto max-w-5xl px-4 text-center md:px-8">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-            <div className="w-20 h-20 bg-amber-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-amber-500/20">
               <Zap className="text-amber-400" size={40} />
             </div>
-            <span className="inline-flex items-center gap-2 bg-amber-500/20 rounded-full text-amber-300 px-4 py-1.5 text-sm mb-4 font-bold">
+            <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-500/20 px-4 py-1.5 text-sm font-bold text-amber-300">
               <Zap size={14} /> Express-Service
             </span>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Expressumzug in Berlin</h1>
-            <p className="text-silver-300 max-w-2xl mx-auto text-lg">
+            <h1 className="mb-4 text-4xl font-bold text-white md:text-5xl">Expressumzug in Berlin</h1>
+            <p className="mx-auto max-w-2xl text-lg text-silver-300">
               Kurzfristiger Umzug ohne Qualitätsverlust. Wenn es schnell gehen muss, organisiert unser Team den kompletten Ablauf zuverlässig.
             </p>
-            <Link href="/buchen?service=express" className="inline-flex items-center gap-2 mt-8 px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg shadow-amber-500/25">
+            <Link href="/buchen?service=express" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-4 font-semibold text-white shadow-lg shadow-amber-500/25 transition-all hover:from-amber-600 hover:to-orange-600">
               Expressumzug buchen <ArrowRight size={18} />
             </Link>
           </motion.div>
@@ -74,10 +74,10 @@ export default function ExpressumzugPage() {
       </section>
 
       <section className="section-padding bg-white dark:bg-navy-950">
-        <div className="max-w-5xl mx-auto">
+        <div className="mx-auto max-w-5xl">
           <ScrollReveal>
-            <h2 className="text-2xl md:text-3xl font-bold text-navy-800 dark:text-white mb-10 text-center">Warum Express?</h2>
-            <div className="grid md:grid-cols-3 gap-6">
+            <h2 className="mb-10 text-center text-2xl font-bold text-navy-800 dark:text-white md:text-3xl">Warum Express?</h2>
+            <div className="grid gap-6 md:grid-cols-3">
               {[
                 { icon: Clock, title: "Innerhalb 24–48h", desc: "Kurzfristige Umzüge ohne lange Wartezeit" },
                 { icon: Truck, title: "Volle Leistung", desc: "Gleiche Qualität wie regulär – nur schneller disponiert" },
@@ -85,11 +85,11 @@ export default function ExpressumzugPage() {
               ].map((b) => {
                 const Icon = b.icon;
                 return (
-                  <div key={b.title} className="bg-gray-50 dark:bg-navy-800/60 rounded-2xl p-6 border border-gray-100 dark:border-navy-700/50">
-                    <div className="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center mb-4">
+                  <div key={b.title} className="rounded-2xl border border-gray-100 bg-gray-50 p-6 dark:border-navy-700/50 dark:bg-navy-800/60">
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
                       <Icon className="text-amber-500" size={24} />
                     </div>
-                    <h3 className="font-bold text-navy-800 dark:text-white mb-2">{b.title}</h3>
+                    <h3 className="mb-2 font-bold text-navy-800 dark:text-white">{b.title}</h3>
                     <p className="text-sm text-silver-600 dark:text-silver-300">{b.desc}</p>
                   </div>
                 );
@@ -100,13 +100,13 @@ export default function ExpressumzugPage() {
       </section>
 
       <section className="section-padding bg-gray-50 dark:bg-navy-900">
-        <div className="max-w-5xl mx-auto">
+        <div className="mx-auto max-w-5xl">
           <ScrollReveal>
-            <h2 className="text-2xl md:text-3xl font-bold text-navy-800 dark:text-white mb-8 text-center">Leistungsumfang</h2>
-            <div className="grid md:grid-cols-2 gap-4">
+            <h2 className="mb-8 text-center text-2xl font-bold text-navy-800 dark:text-white md:text-3xl">Leistungsumfang</h2>
+            <div className="grid gap-4 md:grid-cols-2">
               {features.map((f) => (
-                <div key={f} className="flex items-start gap-3 bg-white dark:bg-navy-800/60 rounded-xl p-4 border border-gray-100 dark:border-navy-700/50">
-                  <Check size={18} className="text-teal-500 mt-0.5 shrink-0" />
+                <div key={f} className="flex items-start gap-3 rounded-xl border border-gray-100 bg-white p-4 dark:border-navy-700/50 dark:bg-navy-800/60">
+                  <Check size={18} className="mt-0.5 shrink-0 text-teal-500" />
                   <span className="text-sm text-navy-700 dark:text-silver-200">{f}</span>
                 </div>
               ))}
@@ -116,15 +116,18 @@ export default function ExpressumzugPage() {
       </section>
 
       <section className="section-padding bg-white dark:bg-navy-950">
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="mx-auto max-w-3xl text-center">
           <ScrollReveal>
-            <h2 className="text-2xl font-bold text-navy-800 dark:text-white mb-4">Preishinweis</h2>
-            <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-6 text-left max-w-lg mx-auto">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="text-amber-600 shrink-0 mt-0.5" size={20} />
-                <div>
-                  <p className="font-semibold text-amber-900 dark:text-amber-300 mb-2">Prioritätszuschlag</p>
-                  <ul className="text-sm text-amber-800 dark:text-amber-300 space-y-1">
+            <h2 className="mb-5 text-2xl font-bold text-navy-800 dark:text-white">Preishinweis</h2>
+            <div className="glass-strong mx-auto max-w-3xl rounded-[28px] p-6 text-left sm:p-8">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-amber-400/20 bg-amber-500/12">
+                  <AlertTriangle className="text-amber-300" size={22} />
+                </div>
+                <div className="min-w-0">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-amber-300/80">Expresszuschlag</p>
+                  <p className="mb-4 text-2xl font-bold text-white">Prioritätszuschlag</p>
+                  <ul className="space-y-3 text-base leading-8 text-white/80">
                     <li>Basispreis Express: ab 75 € / Std.</li>
                     <li>Prioritätszuschlag: +40 %</li>
                     <li>Wochenende/Abend: gemäß Preisliste</li>
@@ -137,14 +140,14 @@ export default function ExpressumzugPage() {
       </section>
 
       <section className="section-padding bg-gray-50 dark:bg-navy-900">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl font-bold text-navy-800 dark:text-white mb-8 text-center">Häufige Fragen</h2>
+        <div className="mx-auto max-w-3xl">
+          <h2 className="mb-8 text-center text-2xl font-bold text-navy-800 dark:text-white">Häufige Fragen</h2>
           <div className="space-y-3">
             {faqs.map((faq) => (
-              <details key={faq.q} className="group bg-white dark:bg-navy-800/60 rounded-xl border border-gray-100 dark:border-navy-700/50">
-                <summary className="px-5 py-4 cursor-pointer font-medium text-navy-800 dark:text-white text-sm flex items-center justify-between">
+              <details key={faq.q} className="group rounded-xl border border-gray-100 bg-white dark:border-navy-700/50 dark:bg-navy-800/60">
+                <summary className="flex cursor-pointer items-center justify-between px-5 py-4 text-sm font-medium text-navy-800 dark:text-white">
                   {faq.q}
-                  <span className="text-teal-500 transition-transform group-open:rotate-45 text-lg">+</span>
+                  <span className="text-lg text-teal-500 transition-transform group-open:rotate-45">+</span>
                 </summary>
                 <div className="px-5 pb-4 text-sm text-silver-600 dark:text-silver-300">{faq.a}</div>
               </details>
@@ -154,11 +157,11 @@ export default function ExpressumzugPage() {
       </section>
 
       <section className="gradient-navy section-padding">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="mx-auto max-w-4xl text-center">
           <ScrollReveal>
-            <h2 className="text-3xl font-bold text-white mb-4">Schnell umziehen ohne Kompromisse</h2>
-            <p className="text-silver-300 mb-8">Express-Service für dringende Umzüge mit verlässlicher Umsetzung.</p>
-            <Link href="/buchen?service=express" className="inline-flex items-center gap-2 px-10 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg shadow-amber-500/25">
+            <h2 className="mb-4 text-3xl font-bold text-white">Schnell umziehen ohne Kompromisse</h2>
+            <p className="mb-8 text-silver-300">Express-Service für dringende Umzüge mit verlässlicher Umsetzung.</p>
+            <Link href="/buchen?service=express" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-10 py-4 font-semibold text-white shadow-lg shadow-amber-500/25 transition-all hover:from-amber-600 hover:to-orange-600">
               Expressumzug anfragen <ArrowRight size={20} />
             </Link>
           </ScrollReveal>
