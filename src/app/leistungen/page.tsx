@@ -14,6 +14,28 @@ export const metadata: Metadata = buildMetadata({
 
 export default async function LeistungenPage() {
   const prices = await getPrices();
+  const serviceLinks = [
+    { label: "Privatumzug", href: "/leistungen/privatumzug" },
+    { label: "Firmenumzug", href: "/leistungen/firmenumzug" },
+    { label: "Schulumzug", href: "/leistungen/schulumzug" },
+    { label: "Expressumzug", href: "/leistungen/expressumzug" },
+    { label: "Endreinigung", href: "/leistungen/endreinigung" },
+    { label: "Entrümpelung", href: "/leistungen/entruempelung" },
+    { label: "Entsorgung", href: "/leistungen/entsorgung" },
+    { label: "Reinigung", href: "/leistungen/reinigung" },
+    { label: "Wohnungsreinigung", href: "/leistungen/wohnungsreinigung" },
+    { label: "Gewerbe", href: "/leistungen/gewerbe" },
+    { label: "Umzug Berlin", href: "/leistungen/umzug-berlin" },
+    { label: "Umzug Brandenburg", href: "/leistungen/umzug-brandenburg" },
+    { label: "Deutschlandweite Umzüge", href: "/leistungen/deutschlandweite-umzuege" },
+    { label: "Transport", href: "/leistungen/transport" },
+    { label: "Praxisreinigung", href: "/leistungen/praxisreinigung" },
+    { label: "Büroreinigung", href: "/leistungen/bueroreinigung" },
+    { label: "Kitareinigung", href: "/leistungen/kitareinigung" },
+    { label: "Schulreinigung", href: "/leistungen/schulreinigung" },
+    { label: "Gewerbereinigung", href: "/leistungen/gewerbereinigung" },
+    { label: "Gastronomiereinigung", href: "/leistungen/gastronomiereinigung" },
+  ];
 
   const sections = [
     {
@@ -108,6 +130,25 @@ export default async function LeistungenPage() {
               </div>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="py-12">
+        <div className="mx-auto max-w-7xl px-4 md:px-8">
+          <nav aria-label="Alle Leistungen">
+            <ul className="flex flex-wrap gap-3">
+              {serviceLinks.map((service) => (
+                <li key={service.href}>
+                  <Link
+                    href={service.href}
+                    className="inline-flex rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-emerald-400 hover:text-emerald-700 dark:border-white/10 dark:text-white/70 dark:hover:text-teal-300"
+                  >
+                    {service.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
       </section>
 
