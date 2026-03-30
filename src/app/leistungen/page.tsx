@@ -105,7 +105,12 @@ export default async function LeistungenPage() {
       <section className="py-20">
         <div className="mx-auto max-w-7xl space-y-12 px-4 md:px-8">
           {sections.map((section, index) => (
-            <article key={section.id} id={section.id} className="glass-card grid items-center gap-8 overflow-hidden rounded-[2rem] lg:grid-cols-2">
+            <article key={section.id} id={section.id} className="glass-card relative grid items-center gap-8 overflow-hidden rounded-[2rem] lg:grid-cols-2">
+              <Link
+                href={section.href}
+                aria-label={`${section.title} ansehen`}
+                className="absolute inset-0 z-10 rounded-[2rem]"
+              />
               <div className={index % 2 === 1 ? "order-2 lg:order-1" : ""}>
                 <div className="relative h-72">
                   <Image src={section.image} alt={section.alt} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
@@ -123,7 +128,7 @@ export default async function LeistungenPage() {
                     </div>
                   ))}
                 </div>
-                <Link href={section.href} className="btn-primary-glass mt-6 inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold">
+                <Link href={section.href} className="btn-primary-glass relative z-20 mt-6 inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold">
                   Details ansehen
                   <ArrowRight size={16} />
                 </Link>
