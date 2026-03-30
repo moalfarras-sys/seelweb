@@ -54,9 +54,6 @@ export const metadata: Metadata = {
     type: "website",
     images: [{ url: "/images/logo.jpeg", width: 512, height: 512, alt: "SEEL Transport Logo" }],
   },
-  alternates: {
-    canonical: "https://seeltransport.de",
-  },
 };
 
 export default async function RootLayout({
