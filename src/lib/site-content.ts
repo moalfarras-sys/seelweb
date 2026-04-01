@@ -93,9 +93,9 @@ function createDefaultSettings(): PublicSiteContent {
     },
     homepage: {
       heroBadge: "Berlin · Brandenburg · deutschlandweite Einsätze",
-      heroTitle: "Umzüge, Reinigung und Entrümpelung mit klarer Organisation.",
+      heroTitle: "Umzug, Reinigung und Entrümpelung mit klarer Struktur.",
       heroDescription:
-        "SEEL Transport & Reinigung begleitet private und gewerbliche Einsätze mit festen Ansprechpartnern, transparenten Preisen und einem ruhigen, professionellen Ablauf.",
+        "SEEL Transport & Reinigung begleitet private und gewerbliche Einsätze in Berlin, Brandenburg und auf Wunsch deutschlandweit – mit festen Ansprechpartnern, transparenter Preisstruktur und einem ruhigen, professionellen Ablauf.",
       primaryCtaLabel: "Angebot anfragen",
       secondaryCtaLabel: "Direkt anrufen",
       finalCtaTitle: "Bereit für Ihren nächsten Einsatz?",
@@ -407,6 +407,11 @@ export async function saveGalleryItems(items: GalleryItem[]) {
 export async function getHomepageGalleryItems() {
   const items = await getGalleryItems();
   return items.filter((item) => item.isVisible && item.showOnHomepage);
+}
+
+export async function getPublicGalleryItems() {
+  const items = await getGalleryItems();
+  return items.filter((item) => item.isVisible);
 }
 
 export async function upsertGalleryItem(

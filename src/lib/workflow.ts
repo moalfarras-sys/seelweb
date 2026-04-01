@@ -169,6 +169,7 @@ function parseExtrasMap(value: unknown): Map<string, string[]> {
 
 const SERVICE_LABELS: Record<string, string> = {
   MOVING: "Umzug",
+  EXPRESS_MOVING: "Expressumzug",
   HOME_CLEANING: "Wohnungsreinigung",
   OFFICE_CLEANING: "Büroreinigung",
   MOVE_OUT_CLEANING: "Endreinigung",

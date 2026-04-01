@@ -13,6 +13,7 @@ const JSON_UTF8_HEADERS = {
 
 const SERVICE_LABELS: Record<string, string> = {
   MOVING: "Umzug",
+  EXPRESS_MOVING: "Expressumzug",
   HOME_CLEANING: "Wohnungsreinigung",
   OFFICE_CLEANING: "Büroreinigung",
   MOVE_OUT_CLEANING: "Endreinigung",
@@ -42,6 +43,7 @@ type IncomingServicePayload = {
   heavyItems?: number;
   express24h?: boolean;
   express48h?: boolean;
+  businessMove?: boolean;
   evening?: boolean;
 };
 
@@ -290,6 +292,7 @@ export async function POST(req: NextRequest) {
           heavyItems: svc.heavyItems,
           express24h: svc.express24h || svc.serviceType === "EXPRESS_MOVING",
           express48h: svc.express48h,
+          businessMove: svc.businessMove,
           evening: svc.evening,
           weekend: selectedDate.getDay() === 0 || selectedDate.getDay() === 6,
           extras: (svc.extras || []).map((e) => ({ code: String(e.code || ""), selected: Boolean(e.selected), quantity: Number(e.quantity || 1) })),

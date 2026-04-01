@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { DEFAULT_PRICING_SETTINGS } from "@/lib/pricing/settings";
+import { PUBLIC_PRICING_REVALIDATE_PATHS } from "@/lib/public-service-pricing";
 
 async function requireAdmin() {
   const session = await getSession();
@@ -75,6 +76,9 @@ export async function PUT(req: NextRequest) {
   });
 
   revalidatePath("/", "layout");
+  for (const path of PUBLIC_PRICING_REVALIDATE_PATHS) {
+    revalidatePath(path);
+  }
 
   return NextResponse.json(updated);
 }

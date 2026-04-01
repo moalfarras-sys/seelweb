@@ -84,3 +84,20 @@ export function getServiceBasePrice(snapshot: PricingSettingsSnapshot, serviceTy
   if (serviceType === "OFFICE_CLEANING") return snapshot.baseOfficeCleaningEur;
   return 0;
 }
+
+export function getPublicHourlyRate(
+  snapshot: PricingSettingsSnapshot,
+  serviceType: string,
+  options?: { businessMove?: boolean; express24h?: boolean; express48h?: boolean }
+) {
+  if (serviceType === "MOVING") {
+    if (options?.businessMove) return snapshot.publicOfficeMovingEur;
+    if (options?.express24h || options?.express48h) return snapshot.publicMovingExpressEur;
+    return snapshot.publicMovingStandardEur;
+  }
+  if (serviceType === "DISPOSAL") return snapshot.publicDisposalEur;
+  if (serviceType === "HOME_CLEANING") return snapshot.publicHomeCleaningEur;
+  if (serviceType === "MOVE_OUT_CLEANING") return snapshot.publicMoveOutCleaningEur;
+  if (serviceType === "OFFICE_CLEANING") return snapshot.publicOfficeCleaningEur;
+  return 0;
+}

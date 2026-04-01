@@ -1,24 +1,13 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { getPricingSettingsSnapshot } from "@/lib/pricing/settings";
-
-export type PublicPrices = {
-  umzugStandard: number;
-  umzugExpress: number;
-  umzugExpressSurchargePct: number;
-  reinigungWohnung: number;
-  reinigungBuero: number;
-  gewerbeUmzug: number;
-  entruempelung: number;
-  endreinigung: number;
-  minimumHoursLabel: string;
-};
+import { formatPricePerHour, type PublicPrices } from "@/lib/public-prices-shared";
 
 const FALLBACK_PRICES: PublicPrices = {
   umzugStandard: 59,
-  umzugExpress: 79,
-  umzugExpressSurchargePct: 30,
+  umzugExpress: 75,
+  umzugExpressSurchargePct: 40,
   reinigungWohnung: 34,
-  reinigungBuero: 38,
+  reinigungBuero: 34,
   gewerbeUmzug: 59,
   entruempelung: 49,
   endreinigung: 34,
@@ -45,6 +34,4 @@ export async function getPrices(): Promise<PublicPrices> {
   }
 }
 
-export function formatPricePerHour(value: number) {
-  return `ab ${value.toLocaleString("de-DE")} EUR/Std.`;
-}
+export { formatPricePerHour };

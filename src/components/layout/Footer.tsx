@@ -16,93 +16,141 @@ export default function Footer() {
   const addressLines = [company.addressLine1, company.addressLine2, `${company.city}, ${company.country}`].filter(Boolean);
 
   return (
-    <footer className="relative z-10 overflow-hidden border-t border-slate-200/70 bg-stone-50/90 backdrop-blur-sm dark:border-white/5 dark:bg-[rgba(7,11,20,0.92)]">
-      <div className="pointer-events-none absolute inset-0 opacity-10 dark:opacity-20">
-        <div className="absolute left-12 top-12 h-56 w-56 rounded-full bg-emerald-400 blur-[120px]" />
-        <div className="absolute bottom-0 right-8 h-48 w-48 rounded-full bg-sky-400 blur-[100px]" />
+    <footer className="relative z-10 overflow-hidden border-t border-white/[0.06] bg-[linear-gradient(180deg,rgba(2,8,16,0.97)_0%,rgba(2,6,14,1)_100%)] text-white">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-0 top-0 h-80 w-80 rounded-full bg-sky-400/8 blur-[130px]" />
+        <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-cyan-400/8 blur-[130px]" />
+        <div className="cine-grid absolute inset-0 opacity-20" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-4 py-16 md:px-8">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <Image src="/images/logo.jpeg" alt="SEEL Transport & Reinigung Logo" width={46} height={46} className="rounded-[14px] ring-1 ring-black/8 dark:ring-white/10" />
+      <div className="relative mx-auto max-w-7xl px-4 py-20 md:px-8">
+        <div className="mb-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="premium-panel rounded-[34px] border-white/[0.06] bg-white/[0.04] p-8 text-white shadow-[0_28px_84px_rgba(0,0,0,0.40)]">
+            <div className="flex items-center gap-4">
+              <Image
+                src="/images/logo.jpeg"
+                alt="SEEL Transport & Reinigung Logo"
+                width={56}
+                height={56}
+                className="rounded-[20px] border border-white/[0.08]"
+              />
               <div>
-                <p className="font-display text-[1.1rem] font-bold text-slate-900 dark:text-white">SEEL</p>
-                <p className="text-[0.65rem] uppercase tracking-[0.28em] text-slate-400 dark:text-white/45">Transport & Reinigung</p>
+                <p className="font-display text-xl font-bold tracking-[0.12em]">SEEL</p>
+                <p className="text-[0.68rem] uppercase tracking-[0.4em] text-white/40">Transport & Reinigung</p>
               </div>
             </div>
-            <p className="mt-5 text-sm leading-7 text-slate-500 dark:text-white/60">
-              Strukturierte Einsätze für Umzug, Reinigung und Entrümpelung in {contact.serviceRegion}. Ruhig geplant, transparent kalkuliert und professionell umgesetzt.
+            <p className="mt-6 max-w-2xl text-sm leading-8 text-white/60">
+              Strukturierte Einsätze für Umzug, Reinigung und Entrümpelung in {contact.serviceRegion}. Ruhig geplant,
+              transparent kalkuliert und professionell umgesetzt.
             </p>
-            <a href={buildWhatsappUrl(contact.whatsappNumber)} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 transition hover:bg-emerald-600">
-              <WhatsAppIcon className="h-5 w-5 fill-white" />
-            </a>
-          </div>
-
-          <div>
-            <h3 className="font-display text-sm font-bold uppercase tracking-[0.2em] text-slate-800 dark:text-white">Leistungen</h3>
-            <div className="mt-5 space-y-3 text-sm text-slate-500 dark:text-white/60">
-              <Link href="/leistungen/umzug-berlin" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Umzugsfirma Berlin</Link>
-              <Link href="/leistungen/privatumzug" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Privatumzug</Link>
-              <Link href="/leistungen/firmenumzug" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Firmenumzug</Link>
-              <Link href="/leistungen/schulumzug" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Schulumzug</Link>
-              <Link href="/leistungen/reinigung" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Reinigung</Link>
-              <Link href="/leistungen/entruempelung" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Entrümpelung</Link>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <a href={`tel:${contact.primaryPhone}`} className="btn-secondary-glass bg-white/[0.06] text-white border border-white/[0.08]">
+                {contact.primaryPhoneDisplay}
+              </a>
+              <a
+                href={buildWhatsappUrl(contact.whatsappNumber)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost-premium gap-2 border-white/[0.08] bg-white/[0.04] text-white/80"
+              >
+                <WhatsAppIcon className="h-4 w-4 fill-current" />
+                WhatsApp
+              </a>
             </div>
           </div>
 
-          <div>
-            <h3 className="font-display text-sm font-bold uppercase tracking-[0.2em] text-slate-800 dark:text-white">Schnellzugriff</h3>
-            <div className="mt-5 space-y-3 text-sm text-slate-500 dark:text-white/60">
-              <Link href="/buchen" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Preise & Buchen</Link>
-              <Link href="/unternehmen" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Unternehmen</Link>
-              <Link href="/kontakt" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Kontakt</Link>
-              <Link href="/impressum" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Impressum</Link>
-              <Link href="/datenschutz" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">Datenschutz</Link>
-              <Link href="/agb" className="block transition hover:text-emerald-700 dark:hover:text-teal-300">AGB</Link>
-              <CookieSettingsButton />
-            </div>
-          </div>
-
-          <div>
-            <h3 className="font-display text-sm font-bold uppercase tracking-[0.2em] text-slate-800 dark:text-white">Kontakt</h3>
-            <div className="mt-5 space-y-4 text-sm text-slate-500 dark:text-white/60">
+          <div className="rounded-[34px] border border-white/[0.06] bg-white/[0.03] p-8 backdrop-blur-2xl">
+            <p className="text-[11px] uppercase tracking-[0.34em] text-cyan-200/70">Kontaktfenster</p>
+            <div className="mt-5 space-y-4 text-sm text-white/60">
               <div className="flex items-start gap-3">
-                <MapPin size={16} className="mt-0.5 text-emerald-600 dark:text-teal-300" />
+                <MapPin size={16} className="mt-0.5 text-cyan-300/80" />
                 <div className="space-y-1">
                   {addressLines.map((line) => (
                     <p key={line}>{line}</p>
                   ))}
                 </div>
               </div>
-              <a href={`tel:${contact.primaryPhone}`} className="flex items-center gap-3 transition hover:text-emerald-700 dark:hover:text-teal-300">
-                <Phone size={16} className="text-emerald-600 dark:text-teal-300" />
-                {contact.primaryPhoneDisplay}
-              </a>
-              <a href={`mailto:${contact.email}`} className="flex items-center gap-3 transition hover:text-emerald-700 dark:hover:text-teal-300">
-                <Mail size={16} className="text-emerald-600 dark:text-teal-300" />
+              <a href={`mailto:${contact.email}`} className="flex items-center gap-3 transition hover:text-cyan-200">
+                <Mail size={16} className="text-cyan-300/80" />
                 {contact.email}
               </a>
               <div className="flex items-start gap-3">
-                <Clock size={16} className="mt-0.5 text-emerald-600 dark:text-teal-300" />
+                <Clock size={16} className="mt-0.5 text-cyan-300/80" />
                 <span>{contact.availability} · {contact.serviceRegion}</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-4 border-t border-slate-200 pt-6 text-sm text-slate-400 dark:border-white/5 dark:text-white/40 md:flex-row md:items-center md:justify-between">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-[0.28em] text-white/82">Leistungen</h3>
+            <div className="mt-5 space-y-3 text-sm text-white/50">
+              <Link href="/leistungen/umzug-berlin" className="block transition hover:text-cyan-200">Umzugsfirma Berlin</Link>
+              <Link href="/leistungen/privatumzug" className="block transition hover:text-cyan-200">Privatumzug</Link>
+              <Link href="/leistungen/firmenumzug" className="block transition hover:text-cyan-200">Firmenumzug</Link>
+              <Link href="/leistungen/schulumzug" className="block transition hover:text-cyan-200">Schulumzug</Link>
+              <Link href="/leistungen/reinigung" className="block transition hover:text-cyan-200">Reinigung</Link>
+              <Link href="/leistungen/entruempelung" className="block transition hover:text-cyan-200">Entrümpelung</Link>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-[0.28em] text-white/82">Schnellzugriff</h3>
+            <div className="mt-5 space-y-3 text-sm text-white/50">
+              <Link href="/buchen" className="block transition hover:text-cyan-200">Preise & Buchen</Link>
+              <Link href="/unternehmen" className="block transition hover:text-cyan-200">Unternehmen</Link>
+              <Link href="/kontakt" className="block transition hover:text-cyan-200">Kontakt</Link>
+              <Link href="/impressum" className="block transition hover:text-cyan-200">Impressum</Link>
+              <Link href="/datenschutz" className="block transition hover:text-cyan-200">Datenschutz</Link>
+              <Link href="/agb" className="block transition hover:text-cyan-200">AGB</Link>
+              <CookieSettingsButton />
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-[0.28em] text-white/82">Direktkontakt</h3>
+            <div className="mt-5 space-y-4 text-sm text-white/50">
+              <a href={`tel:${contact.primaryPhone}`} className="flex items-center gap-3 transition hover:text-cyan-200">
+                <Phone size={16} className="text-cyan-300/80" />
+                {contact.primaryPhoneDisplay}
+              </a>
+              <a href={`mailto:${contact.email}`} className="flex items-center gap-3 transition hover:text-cyan-200">
+                <Mail size={16} className="text-cyan-300/80" />
+                {contact.email}
+              </a>
+              <a
+                href={buildWhatsappUrl(contact.whatsappNumber)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 transition hover:text-cyan-200"
+              >
+                <WhatsAppIcon className="h-4 w-4 fill-cyan-300" />
+                WhatsApp starten
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-[0.28em] text-white/82">Vertrauen</h3>
+            <div className="mt-5 space-y-3 text-sm text-white/50">
+              <p>Transparente Preisstruktur</p>
+              <p>Professionelle und versicherte Abwicklung</p>
+              <p>Strukturierte Rückmeldung zu Termin und Umfang</p>
+              <p>Serviceeinsätze in {contact.serviceRegion}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-14 flex flex-col gap-4 border-t border-white/[0.06] pt-6 text-sm text-white/35 md:flex-row md:items-center md:justify-between">
           <div className="space-y-1">
             <p>&copy; {new Date().getFullYear()} {company.name}. Alle Rechte vorbehalten.</p>
-            {company.vatId ? (
-              <p className="text-xs text-slate-400 dark:text-white/35">USt-IdNr.: {company.vatId}</p>
-            ) : null}
+            {company.vatId ? <p className="text-xs text-white/25">USt-IdNr.: {company.vatId}</p> : null}
           </div>
           <div className="flex flex-wrap items-center gap-4">
-            <Link href="/leistungen/umzug-berlin" className="transition hover:text-emerald-700 dark:hover:text-teal-300">Umzugsfirma Berlin</Link>
-            <Link href="/leistungen/privatumzug" className="transition hover:text-emerald-700 dark:hover:text-teal-300">Privatumzug</Link>
-            <Link href="/buchen" className="transition hover:text-emerald-700 dark:hover:text-teal-300">Buchen</Link>
+            <Link href="/leistungen/umzug-berlin" className="transition hover:text-cyan-200">Umzugsfirma Berlin</Link>
+            <Link href="/leistungen/privatumzug" className="transition hover:text-cyan-200">Privatumzug</Link>
+            <Link href="/buchen" className="transition hover:text-cyan-200">Buchen</Link>
           </div>
         </div>
       </div>

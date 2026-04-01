@@ -92,7 +92,7 @@ export default async function GewerbePage() {
           </p>
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
             <Link
-              href="/buchen?service=MOVING"
+              href="/buchen?service=MOVING&variant=business"
               className="btn-primary-glass inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold"
             >
               Gewerbeumzug anfragen
@@ -166,7 +166,7 @@ export default async function GewerbePage() {
           </p>
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
-              href="/buchen?service=MOVING"
+              href="/buchen?service=MOVING&variant=business"
               className="btn-primary-glass inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold"
             >
               Jetzt buchen

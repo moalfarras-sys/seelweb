@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { DayPicker } from "react-day-picker";
 import { de } from "date-fns/locale";
 import { formatCurrency } from "@/lib/utils";
+import { getBookingMarketingPriceLabel, getMovingPublicRate } from "@/lib/public-service-pricing-shared";
 import AddressAutocomplete, { type AddressResult } from "@/components/maps/AddressAutocomplete";
 import RouteMap from "@/components/maps/RouteMap";
 import { useSiteContent } from "@/components/SiteContentProvider";
@@ -31,7 +32,7 @@ import {
   FileText
 } from "lucide-react";
 
-type ServiceType = "HOME_CLEANING" | "MOVE_OUT_CLEANING" | "OFFICE_CLEANING" | "MOVING" | "DISPOSAL";
+type ServiceType = "HOME_CLEANING" | "MOVE_OUT_CLEANING" | "OFFICE_CLEANING" | "MOVING" | "EXPRESS_MOVING" | "DISPOSAL";
 
 type ServiceCfg = {
   hours: number;
@@ -47,6 +48,7 @@ type ServiceCfg = {
   hasElevatorTo: boolean;
   express24h: boolean;
   express48h: boolean;
+  businessMove: boolean;
 };
 
 type QuoteServiceInput = {
@@ -63,6 +65,7 @@ type QuoteServiceInput = {
   hasElevatorTo: boolean;
   express24h: boolean;
   express48h: boolean;
+  businessMove?: boolean;
   extras: string[];
 };
 
@@ -105,6 +108,7 @@ const MIN_HOURS: Record<ServiceType, number> = {
   MOVE_OUT_CLEANING: 3,
   OFFICE_CLEANING: 2,
   MOVING: 2,
+  EXPRESS_MOVING: 2,
   DISPOSAL: 1,
 };
 
@@ -113,6 +117,7 @@ const LABELS: Record<ServiceType, string> = {
   MOVE_OUT_CLEANING: "Endreinigung",
   OFFICE_CLEANING: "Büro Reinigung",
   MOVING: "Umzug",
+  EXPRESS_MOVING: "Expressumzug",
   DISPOSAL: "Entrümpelung",
 };
 
@@ -120,7 +125,8 @@ const SERVICE_META: Record<ServiceType, { desc: string; icon: typeof Home; color
   HOME_CLEANING: { desc: "Flexible Reinigung nach Stunden", icon: Home, color: "text-blue-500" },
   MOVE_OUT_CLEANING: { desc: "Abnahmebereit beim Auszug", icon: Sparkles, color: "text-amber-500" },
   OFFICE_CLEANING: { desc: "Regelmäßige Gewerbereinigung", icon: Building2, color: "text-indigo-500" },
-  MOVING: { desc: "Umzug inkl. Route und Express", icon: Truck, color: "text-teal-500" },
+  MOVING: { desc: "Standardumzug mit Route und klarer Planung", icon: Truck, color: "text-teal-500" },
+  EXPRESS_MOVING: { desc: "Kurzfristig verfügbar mit priorisierter Disposition", icon: Truck, color: "text-orange-500" },
   DISPOSAL: { desc: "Entrümpelung inkl. Entsorgung", icon: Trash2, color: "text-rose-500" },
 };
 
@@ -138,6 +144,7 @@ const EMPTY_CFG: ServiceCfg = {
   hasElevatorTo: false,
   express24h: false,
   express48h: false,
+  businessMove: false,
 };
 
 const SMART_PRESETS: Record<
@@ -163,6 +170,11 @@ const SMART_PRESETS: Record<
     { label: "Studio", hint: "4h · 15m³", patch: { hours: 4, volumeM3: 15 } },
     { label: "Wohnung", hint: "6h · 25m³", patch: { hours: 6, volumeM3: 25 } },
     { label: "Familie", hint: "8h · 40m³", patch: { hours: 8, volumeM3: 40 } },
+  ],
+  EXPRESS_MOVING: [
+    { label: "Schnell", hint: "4h ? 15m?", patch: { hours: 4, volumeM3: 15, express24h: true } },
+    { label: "Direkt", hint: "6h ? 25m?", patch: { hours: 6, volumeM3: 25, express24h: true } },
+    { label: "Komplett", hint: "8h ? 40m?", patch: { hours: 8, volumeM3: 40, express24h: true } },
   ],
   DISPOSAL: [
     { label: "Klein", hint: "2h · 4m³", patch: { hours: 2, volumeM3: 4 } },
@@ -222,11 +234,16 @@ export default function BuchenPage() {
   useEffect(() => {
     const raw = search.get("service");
     if (!raw) return;
-    const mapped = raw === "EXPRESS_MOVING" || raw === "express" ? "MOVING" : raw;
-    if (["HOME_CLEANING", "MOVE_OUT_CLEANING", "OFFICE_CLEANING", "MOVING", "DISPOSAL"].includes(mapped)) {
+    const variant = search.get("variant");
+    const mapped = raw === "express" ? "EXPRESS_MOVING" : raw;
+    if (["HOME_CLEANING", "MOVE_OUT_CLEANING", "OFFICE_CLEANING", "MOVING", "EXPRESS_MOVING", "DISPOSAL"].includes(mapped)) {
       const s = mapped as ServiceType;
+      const businessMove = s === "MOVING" && variant === "business";
       setServices([s]);
-      setCfgs((p) => ({ ...p, [s]: { ...EMPTY_CFG, hours: MIN_HOURS[s], express24h: raw !== mapped } }));
+      setCfgs((p) => ({
+        ...p,
+        [s]: { ...EMPTY_CFG, hours: MIN_HOURS[s], express24h: s === "EXPRESS_MOVING", businessMove },
+      }));
       setCurrentStep(2); // Auto-advance if service pre-selected
     }
   }, [search]);
@@ -261,16 +278,17 @@ export default function BuchenPage() {
         serviceType: s,
         zip: c.addressFrom?.zip || c.addressTo?.zip || "",
         hours: c.hours,
-        workers: s === "MOVING" ? 2 : 1,
-        distanceKm: s === "MOVING" ? c.distanceKm : undefined,
-        volumeM3: s === "MOVING" || s === "DISPOSAL" ? c.volumeM3 : undefined,
+        workers: s === "MOVING" || s === "EXPRESS_MOVING" ? 2 : 1,
+        distanceKm: s === "MOVING" || s === "EXPRESS_MOVING" ? c.distanceKm : undefined,
+        volumeM3: s === "MOVING" || s === "EXPRESS_MOVING" || s === "DISPOSAL" ? c.volumeM3 : undefined,
         areaM2: s === "MOVE_OUT_CLEANING" ? c.areaM2 : undefined,
-        floorFrom: s === "MOVING" || s === "DISPOSAL" ? c.floorFrom : undefined,
-        floorTo: s === "MOVING" ? c.floorTo : undefined,
+        floorFrom: s === "MOVING" || s === "EXPRESS_MOVING" || s === "DISPOSAL" ? c.floorFrom : undefined,
+        floorTo: s === "MOVING" || s === "EXPRESS_MOVING" ? c.floorTo : undefined,
         hasElevatorFrom: c.hasElevatorFrom,
         hasElevatorTo: c.hasElevatorTo,
-        express24h: s === "MOVING" ? c.express24h : false,
+        express24h: s === "MOVING" || s === "EXPRESS_MOVING" ? c.express24h || s === "EXPRESS_MOVING" : false,
         express48h: s === "MOVING" ? c.express48h : false,
+        businessMove: s === "MOVING" ? c.businessMove : false,
         extras: [],
       };
     });
@@ -278,17 +296,18 @@ export default function BuchenPage() {
 
   const marketingPriceLabel = useCallback((serviceType: ServiceType) => {
     if (!publicPrices) return "";
-    if (serviceType === "MOVING") return `ab ${publicPrices.umzugStandard} EUR/Std. - ${publicPrices.minimumHoursLabel}`;
-    if (serviceType === "HOME_CLEANING") return `ab ${publicPrices.reinigungWohnung} EUR/Std. - ${publicPrices.minimumHoursLabel}`;
-    if (serviceType === "MOVE_OUT_CLEANING") return `ab ${publicPrices.endreinigung} EUR/Std. - ${publicPrices.minimumHoursLabel}`;
-    if (serviceType === "OFFICE_CLEANING") return `ab ${publicPrices.reinigungBuero} EUR/Std. - ${publicPrices.minimumHoursLabel}`;
-    return `ab ${publicPrices.entruempelung} EUR/Std. - ${publicPrices.minimumHoursLabel}`;
-  }, [publicPrices]);
+    const cfg = ensureCfg(serviceType);
+    return getBookingMarketingPriceLabel(publicPrices, serviceType, {
+      businessMove: serviceType === "MOVING" ? cfg.businessMove : false,
+      express24h: serviceType === "EXPRESS_MOVING" ? true : serviceType === "MOVING" ? cfg.express24h : false,
+      express48h: serviceType === "MOVING" ? cfg.express48h : false,
+    });
+  }, [ensureCfg, publicPrices]);
 
   const computedDurationMin = useMemo(() => {
     const total = services.reduce((sum, s) => {
       const c = ensureCfg(s);
-      if (s === "MOVING") {
+      if (s === "MOVING" || s === "EXPRESS_MOVING") {
         const routePart = Math.max(0, Math.ceil((c.durationMin || 0) / 30) * 30);
         const floorPart = Math.max(0, (c.floorFrom + c.floorTo) * 10);
         const volumePart = Math.max(0, Math.ceil((c.volumeM3 || 0) / 15) * 20);
@@ -407,16 +426,23 @@ export default function BuchenPage() {
 
   const estimatedTotal = useMemo(() => {
     if (!publicPrices || services.length === 0) return null;
-    const rateMap: Record<ServiceType, number> = {
-      MOVING: publicPrices.umzugStandard,
-      HOME_CLEANING: publicPrices.reinigungWohnung,
-      MOVE_OUT_CLEANING: publicPrices.endreinigung,
-      OFFICE_CLEANING: publicPrices.reinigungBuero,
-      DISPOSAL: publicPrices.entruempelung,
-    };
     const netto = services.reduce((sum, s) => {
       const c = ensureCfg(s);
-      return sum + rateMap[s] * c.hours;
+      const rate =
+        s === "MOVING" || s === "EXPRESS_MOVING"
+          ? getMovingPublicRate(publicPrices, {
+              businessMove: c.businessMove,
+              express24h: s === "EXPRESS_MOVING" ? true : c.express24h,
+              express48h: c.express48h,
+            })
+          : s === "HOME_CLEANING"
+            ? publicPrices.reinigungWohnung
+            : s === "MOVE_OUT_CLEANING"
+              ? publicPrices.endreinigung
+              : s === "OFFICE_CLEANING"
+                ? publicPrices.reinigungBuero
+                : publicPrices.entruempelung;
+      return sum + rate * c.hours;
     }, 0);
     const mwst = Math.round(netto * 0.19 * 100) / 100;
     return { netto, mwst, total: Math.round((netto + mwst) * 100) / 100 };
@@ -512,27 +538,27 @@ export default function BuchenPage() {
 
   if (done) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6 md:p-8 bg-slate-50 dark:bg-navy-950 relative overflow-hidden">
+      <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-10 md:p-8">
         {/* Abstract Background */}
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-teal-400/20 dark:bg-teal-500/10 blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-400/20 dark:bg-blue-500/10 blur-[120px] pointer-events-none" />
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-teal-400/15 dark:bg-teal-500/10 blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-400/15 dark:bg-blue-500/10 blur-[120px] pointer-events-none" />
 
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="max-w-xl w-full mx-auto relative z-10"
+          className="relative z-10 mx-auto w-full max-w-xl"
         >
-          <div className="backdrop-blur-2xl bg-white/70 dark:bg-navy-900/40 border border-white/50 dark:border-navy-700/50 shadow-2xl rounded-3xl p-8 overflow-hidden relative">
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-blue-500" />
+          <div className="premium-panel relative overflow-hidden rounded-[34px] p-8 shadow-[0_36px_100px_rgba(2,8,18,0.2)]">
+            <div className="absolute left-0 top-0 h-2 w-full bg-gradient-to-r from-sky-500 via-cyan-400 to-teal-300" />
 
             <div className="flex justify-center mb-6">
-              <div className="h-20 w-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-500 border-4 border-white dark:border-navy-800 shadow-lg">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-emerald-100 text-emerald-500 shadow-lg dark:border-[#040a14] dark:bg-emerald-900/30">
                 <CheckCircle2 size={40} className="text-emerald-500" />
               </div>
             </div>
 
             <div className="text-center space-y-2 mb-8">
-              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-600 to-blue-600 dark:from-teal-400 dark:to-blue-400">
+              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-cyan-600 dark:from-sky-400 dark:to-cyan-400">
                 Buchung erfolgreich!
               </h1>
               <p className="text-slate-600 dark:text-slate-400">
@@ -540,8 +566,8 @@ export default function BuchenPage() {
               </p>
             </div>
 
-            <div className="bg-white/50 dark:bg-navy-950/50 rounded-2xl p-6 border border-slate-200/50 dark:border-navy-700/50 space-y-4 mb-8">
-              <div className="flex justify-between items-center pb-4 border-b border-slate-200 dark:border-navy-800">
+            <div className="mb-8 space-y-4 rounded-2xl border border-slate-200/50 bg-white/50 p-6 dark:border-white/10 dark:bg-white/5">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-4 dark:border-white/10">
                 <span className="text-slate-500 dark:text-slate-400 text-sm">Tracking-Nummer</span>
                 <span className="font-mono font-medium text-slate-800 dark:text-slate-200">{doneTracking}</span>
               </div>
@@ -552,14 +578,14 @@ export default function BuchenPage() {
             </div>
 
             <div className="grid sm:grid-cols-2 gap-3">
-              <a href={done.offerPdfUrl} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-navy-900 hover:opacity-90 transition-opacity font-medium">
+              <a href={done.offerPdfUrl} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 font-medium text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-slate-950">
                 <FileText size={18} />
                 PDF Herunterladen
               </a>
-              <a href={`/angebot/${done.offerToken}`} className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-white dark:bg-navy-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-navy-700 hover:bg-slate-50 dark:hover:bg-navy-700 transition-colors font-medium">
+              <a href={`/angebot/${done.offerToken}`} className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10">
                 Angebot ansehen
               </a>
-              <a href={`/track?tracking=${encodeURIComponent(doneTracking)}`} className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-white dark:bg-navy-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-navy-700 hover:bg-slate-50 dark:hover:bg-navy-700 transition-colors font-medium sm:col-span-2">
+              <a href={`/track?tracking=${encodeURIComponent(doneTracking)}`} className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10 sm:col-span-2">
                 Sendungsverfolgung
               </a>
               {done.paypalRedirectUrl && (
@@ -575,23 +601,23 @@ export default function BuchenPage() {
   }
 
   return (
-    <main className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-navy-950 relative overflow-hidden transition-colors duration-500">
+    <main className="relative min-h-screen overflow-hidden px-4 py-10 transition-colors duration-500 sm:px-6 lg:px-8">
       {/* Dynamic Glassmorphic Backgrounds */}
-      <div className="fixed top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-teal-400/20 dark:bg-teal-600/10 blur-[140px] pointer-events-none transition-transform duration-1000 ease-in-out" style={{ transform: `translate(${currentStep * 5}%, ${currentStep * 5}%)` }} />
-      <div className="fixed bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-400/20 dark:bg-blue-600/10 blur-[140px] pointer-events-none transition-transform duration-1000 ease-in-out" style={{ transform: `translate(-${currentStep * 5}%, -${currentStep * 5}%)` }} />
+      <div className="fixed top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-teal-400/15 dark:bg-teal-600/8 blur-[140px] pointer-events-none transition-transform duration-1000 ease-in-out" style={{ transform: `translate(${currentStep * 5}%, ${currentStep * 5}%)` }} />
+      <div className="fixed bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-400/15 dark:bg-blue-600/8 blur-[140px] pointer-events-none transition-transform duration-1000 ease-in-out" style={{ transform: `translate(-${currentStep * 5}%, -${currentStep * 5}%)` }} />
 
-      <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-6 lg:gap-8 relative z-10">
+      <div className="relative z-10 mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:gap-8">
 
         {/* Left Column: Form Steps */}
         <div className="flex-1 w-full space-y-6">
 
           {/* Header & Progress Bar */}
           <div className="mb-10">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-teal-600 dark:text-teal-300">
+            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-sky-700 dark:text-cyan-300">
               Preise, Planung und Anfrage in einem Ablauf
             </p>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-3">
-              Einsatz anfragen und strukturiert konfigurieren
+            <h1 className="font-display mb-3 text-4xl font-bold tracking-tight text-slate-900 dark:text-white md:text-6xl">
+              Online buchen und strukturiert konfigurieren
             </h1>
             <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl">
               Stellen Sie Ihre Leistungen zusammen, wählen Sie Termin und Kontaktdaten und erhalten Sie eine saubere Preisorientierung für {contact.serviceRegion}.
@@ -600,9 +626,9 @@ export default function BuchenPage() {
             <div className="mt-8">
               <div className="flex items-center justify-between relative">
                 {/* Progress Line */}
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-200 dark:bg-navy-800 rounded-full z-0 overflow-hidden">
+                <div className="absolute left-0 top-1/2 z-0 h-1 w-full -translate-y-1/2 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-teal-500 to-blue-500 rounded-full"
+                    className="h-full rounded-full bg-gradient-to-r from-sky-600 to-cyan-400"
                     initial={{ width: "0%" }}
                     animate={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
                     transition={{ duration: 0.5, ease: "easeInOut" }}
@@ -621,9 +647,9 @@ export default function BuchenPage() {
                           }
                         }}
                         disabled={step.id > currentStep && !(step.id === 2 && services.length > 0) && !(step.id === 3 && isStep2Valid)}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-300 shadow-sm
-                                            ${isActive ? 'bg-teal-600 text-white shadow-teal-500/30 scale-110 shadow-lg' :
-                            isPast ? 'bg-teal-50 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400 border border-teal-200 dark:border-teal-800' : 'bg-white dark:bg-navy-800 border-2 border-slate-200 dark:border-navy-700 text-slate-400 dark:text-slate-500'}
+                        className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold shadow-sm transition-all duration-300
+                                            ${isActive ? 'scale-110 bg-slate-950 text-white shadow-[0_18px_40px_rgba(0,0,0,0.20)] dark:bg-white dark:text-[#040a14]' :
+                            isPast ? 'border border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-300' : 'border-2 border-slate-200 bg-white text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500'}
                                         `}
                       >
                         {isPast ? <CheckCircle2 size={18} /> : step.id}
@@ -639,7 +665,7 @@ export default function BuchenPage() {
           </div>
 
           {/* Main Form Container - Glassmorphic */}
-          <div className="glass-strong rounded-[2rem] p-6 sm:p-10 min-h-[500px] relative overflow-hidden">
+          <div className="premium-panel min-h-[500px] overflow-hidden rounded-[34px] p-6 sm:p-10">
             <AnimatePresence mode="wait">
               {currentStep === 1 && (
                 <motion.div
@@ -654,10 +680,12 @@ export default function BuchenPage() {
                     <h2 className="text-xl font-bold flex items-center gap-2">
                       <Wand2 className="text-teal-500" /> Welche Leistung dürfen wir für Sie planen?
                     </h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Wählen Sie eine oder mehrere Leistungen aus und konfigurieren Sie den Einsatz direkt im nächsten Schritt.</p>
+                    <p className="max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-400">
+                      Wählen Sie eine oder mehrere Leistungen aus und konfigurieren Sie den Einsatz direkt im nächsten Schritt.
+                    </p>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {(Object.keys(LABELS) as ServiceType[]).map((s) => {
                       const Icon = SERVICE_META[s].icon;
                       const isSelected = services.includes(s);
@@ -665,34 +693,34 @@ export default function BuchenPage() {
                         <button
                           key={s}
                           onClick={() => toggleService(s)}
-                          className={`p-6 rounded-2xl border text-left transition-all duration-500 relative overflow-hidden group
+                      className={`group relative overflow-hidden rounded-[26px] border p-5 text-left transition-all duration-500 sm:p-6
                                             ${isSelected
-                              ? "border-teal-500 ring-1 ring-teal-500 bg-teal-50/80 dark:bg-teal-900/40 shadow-lg shadow-teal-500/10 transform -translate-y-1"
-                              : "glass hover:-translate-y-1"
+                              ? "translate-y-[-4px] border-sky-300 bg-sky-50/70 ring-1 ring-sky-300 shadow-[0_22px_44px_rgba(14,165,233,0.10)] dark:bg-sky-500/10"
+                              : "glass-card hover:-translate-y-1"
                             }`}
                         >
                           {/* Glow effect on hover */}
                           <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                           <div className="flex items-start gap-4 relative z-10">
-                            <div className={`p-3 rounded-xl transition-colors ${isSelected ? 'bg-teal-100 dark:bg-teal-800/50' : 'bg-slate-100 dark:bg-navy-900'}`}>
-                              <Icon size={24} className={isSelected ? 'text-teal-600 dark:text-teal-400' : 'text-slate-500 dark:text-slate-400'} />
+                            <div className={`rounded-[18px] p-3 transition-colors ${isSelected ? 'bg-sky-100 dark:bg-sky-500/20' : 'bg-slate-100 dark:bg-slate-950/40'}`}>
+                              <Icon size={24} className={isSelected ? 'text-sky-700 dark:text-cyan-300' : 'text-slate-500 dark:text-slate-400'} />
                             </div>
                             <div className="flex-1">
-                              <h3 className={`font-semibold mb-1 ${isSelected ? 'text-teal-900 dark:text-teal-100' : 'text-slate-800 dark:text-slate-200'}`}>
+                              <h3 className={`mb-1 text-base font-semibold sm:text-lg ${isSelected ? 'text-sky-950 dark:text-cyan-100' : 'text-slate-800 dark:text-slate-200'}`}>
                                 {LABELS[s]}
                               </h3>
-                              <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                              <p className="line-clamp-2 text-sm leading-5 text-slate-600 dark:text-slate-400">
                                 {SERVICE_META[s].desc}
                               </p>
                               {marketingPriceLabel(s) && (
-                                <p className="mt-2 text-xs font-semibold text-teal-600 dark:text-teal-300">
+                                <p className="mt-2 text-sm font-semibold leading-5 text-sky-700 dark:text-cyan-300">
                                   {marketingPriceLabel(s)}
                                 </p>
                               )}
                             </div>
                             <div className="mt-1">
-                              <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${isSelected ? 'bg-teal-500 border-teal-500' : 'border-slate-300 dark:border-slate-600'}`}>
+                              <div className={`flex h-6 w-6 items-center justify-center rounded-full border transition-colors ${isSelected ? 'border-sky-500 bg-sky-500' : 'border-slate-300 dark:border-slate-600'}`}>
                                 {isSelected && <CheckCircle2 size={12} className="text-white" />}
                               </div>
                             </div>
@@ -702,11 +730,11 @@ export default function BuchenPage() {
                     })}
                   </div>
 
-                  <div className="pt-8 flex justify-end">
+                  <div className="flex justify-end pt-8">
                     <button
                       disabled={services.length === 0}
                       onClick={handleNextStep}
-                      className="btn-shine flex items-center gap-3 px-8 py-4 rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-navy-900 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1 transition-all duration-300 font-bold text-lg shadow-xl"
+                      className="btn-primary-glass w-full gap-3 px-8 py-4 text-lg font-bold disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                     >
                       Weiter zu Details <ArrowRight size={20} />
                     </button>
@@ -727,7 +755,7 @@ export default function BuchenPage() {
                     <h2 className="text-xl font-bold flex items-center gap-2">
                       <MapPin className="text-blue-500" /> Konfiguration
                     </h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Passen Sie die Details für Ihre gewählten Services an.</p>
+                    <p className="text-sm leading-6 text-slate-600 dark:text-slate-400">Passen Sie die Details für Ihre gewählten Services an.</p>
                   </div>
 
                   <div className="space-y-6">
@@ -735,13 +763,13 @@ export default function BuchenPage() {
                       const c = ensureCfg(s);
                       const Icon = SERVICE_META[s].icon;
                       return (
-                        <div key={s} className="bg-white/50 dark:bg-navy-800/40 border border-white/60 dark:border-navy-700 p-5 rounded-2xl shadow-sm space-y-5">
-                          <div className="flex items-center gap-3 border-b border-slate-200/50 dark:border-navy-700/50 pb-3">
-                            <div className="p-2 bg-slate-100 dark:bg-navy-900 rounded-lg">
+                        <div key={s} className="premium-panel space-y-5 rounded-[28px] p-5">
+                          <div className="flex items-center gap-3 border-b border-slate-200/60 pb-3 dark:border-white/10">
+                            <div className="rounded-[16px] bg-slate-100 p-2 dark:bg-slate-950/40">
                               <Icon size={18} className="text-slate-700 dark:text-slate-300" />
                             </div>
                             <h3 className="font-semibold text-lg">{LABELS[s]}</h3>
-                            <span className="ml-auto text-xs font-medium bg-slate-200/50 dark:bg-navy-700 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-full">
+                            <span className="ml-auto rounded-full bg-slate-200/60 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-white/10 dark:text-slate-300">
                               Min. {MIN_HOURS[s]} Std.
                             </span>
                           </div>
@@ -755,7 +783,7 @@ export default function BuchenPage() {
                                   key={preset.label}
                                   type="button"
                                   onClick={() => setCfg(s, preset.patch)}
-                                  className="p-2 rounded-xl border border-slate-200/60 dark:border-navy-700 bg-white/70 dark:bg-navy-900/50 hover:border-teal-400 hover:bg-teal-50/50 dark:hover:bg-teal-900/20 transition-all text-left flex flex-col justify-center items-center text-center"
+                                  className="flex flex-col items-center justify-center rounded-2xl border border-slate-200/60 bg-white/70 p-2 text-left text-center transition-all hover:border-sky-300 hover:bg-sky-50/50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-sky-500/10"
                                 >
                                   <span className="font-medium text-sm text-slate-800 dark:text-slate-200">{preset.label}</span>
                                   <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{preset.hint}</span>
@@ -773,12 +801,12 @@ export default function BuchenPage() {
                                   min={MIN_HOURS[s]}
                                   value={c.hours}
                                   onChange={(e) => setCfg(s, { hours: Math.max(MIN_HOURS[s], Number(e.target.value)) })}
-                                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-teal-500 outline-none transition-shadow"
+                                  className="input-glass"
                                 />
                               </div>
                             </div>
 
-                            {(s === "MOVING" || s === "DISPOSAL" || s === "MOVE_OUT_CLEANING") && (
+                            {(s === "MOVING" || s === "EXPRESS_MOVING" || s === "DISPOSAL" || s === "MOVE_OUT_CLEANING") && (
                               <div className="space-y-2">
                                 <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                   {s === "MOVE_OUT_CLEANING" ? "Fläche (m²)" : "Volumen (m³)"}
@@ -788,7 +816,7 @@ export default function BuchenPage() {
                                   min={1}
                                   value={s === "MOVE_OUT_CLEANING" ? c.areaM2 : c.volumeM3}
                                   onChange={(e) => setCfg(s, s === "MOVE_OUT_CLEANING" ? { areaM2: Number(e.target.value) } : { volumeM3: Number(e.target.value) })}
-                                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-teal-500 outline-none transition-shadow"
+                                  className="input-glass"
                                 />
                               </div>
                             )}
@@ -797,7 +825,7 @@ export default function BuchenPage() {
                           <div className="space-y-4">
                             <div className="relative">
                               <AddressAutocomplete
-                                label={s === "MOVING" ? "Startadresse" : "Leistungsadresse"}
+                                label={s === "MOVING" || s === "EXPRESS_MOVING" ? "Startadresse" : "Leistungsadresse"}
                                 placeholder="Straße, Hausnummer, PLZ..."
                                 value={c.addressFrom}
                                 onChange={(a) => setCfg(s, { addressFrom: a })}
@@ -806,7 +834,7 @@ export default function BuchenPage() {
                               />
                             </div>
 
-                            {s === "MOVING" && (
+                            {(s === "MOVING" || s === "EXPRESS_MOVING") && (
                               <div className="relative">
                                 <AddressAutocomplete
                                   label="Zieladresse"
@@ -827,7 +855,7 @@ export default function BuchenPage() {
                                 <select
                                   value={c.express24h ? "24" : c.express48h ? "48" : "0"}
                                   onChange={(e) => setCfg(s, { express24h: e.target.value === "24", express48h: e.target.value === "48" })}
-                                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-teal-500 outline-none appearance-none"
+                                  className="input-glass"
                                 >
                                   <option value="0">Standard Planung</option>
                                   <option value="48">Express 48h (Aufpreis)</option>
@@ -836,7 +864,27 @@ export default function BuchenPage() {
                               </div>
 
                               {c.addressFrom && c.addressTo && (
-                                <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-navy-700">
+                                <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10">
+                                  <RouteMap
+                                    fromLat={c.addressFrom?.lat ?? null}
+                                    fromLon={c.addressFrom?.lon ?? null}
+                                    toLat={c.addressTo?.lat ?? null}
+                                    toLon={c.addressTo?.lon ?? null}
+                                    onRouteCalculated={(km, min) => setCfg(s, { distanceKm: km, durationMin: min })}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {s === "EXPRESS_MOVING" && (
+                            <div className="space-y-4 pt-2">
+                              <div className="rounded-2xl border border-amber-200/60 bg-amber-50/80 p-4 text-sm text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
+                                Expressumzug ist als priorisierte Disposition hinterlegt. Der Expresspreis wird automatisch aus den aktuellen Preiseinstellungen übernommen.
+                              </div>
+
+                              {c.addressFrom && c.addressTo && (
+                                <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10">
                                   <RouteMap
                                     fromLat={c.addressFrom?.lat ?? null}
                                     fromLon={c.addressFrom?.lon ?? null}
@@ -856,14 +904,14 @@ export default function BuchenPage() {
                   <div className="pt-8 flex justify-between items-center">
                     <button
                       onClick={handlePrevStep}
-                      className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-navy-700 transition-colors font-medium shadow-sm hover:shadow-md"
+                      className="btn-ghost-premium gap-2 px-6 py-3.5"
                     >
                       <ArrowLeft size={18} /> Zurück
                     </button>
                     <button
                       disabled={!isStep2Valid}
                       onClick={handleNextStep}
-                      className="btn-shine flex items-center gap-3 px-8 py-4 rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-navy-900 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1 transition-all duration-300 font-bold text-lg shadow-xl"
+                      className="btn-primary-glass gap-3 px-8 py-4 text-lg font-bold disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       Weiter <ArrowRight size={20} />
                     </button>
@@ -887,14 +935,14 @@ export default function BuchenPage() {
                     <p className="text-sm text-slate-500 dark:text-slate-400">Wählen Sie Ihren Wunschtermin und hinterlegen Sie Ihre Kontaktdaten.</p>
                   </div>
 
-                  <div className="bg-white/50 dark:bg-navy-800/40 border border-white/60 dark:border-navy-700 p-5 rounded-2xl shadow-sm space-y-5">
-                    <h3 className="font-semibold text-lg flex items-center gap-2 border-b border-slate-200/50 dark:border-navy-700/50 pb-3">
+                  <div className="premium-panel space-y-5 rounded-[28px] p-5">
+                    <h3 className="flex items-center gap-2 border-b border-slate-200/60 pb-3 text-lg font-semibold dark:border-white/10">
                       <Calendar size={18} className="text-teal-500" /> Wunschtermin
                     </h3>
 
                     <div className="space-y-3">
                       <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kalender (DE)</label>
-                      <div className="rounded-2xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 p-3 sm:p-4">
+                      <div className="rounded-[24px] border border-slate-200 bg-white/80 p-3 sm:p-4 dark:border-white/10 dark:bg-white/5">
                         <DayPicker
                           mode="single"
                           locale={de}
@@ -918,8 +966,8 @@ export default function BuchenPage() {
                             row: "grid grid-cols-7 mt-1",
                             head_cell: "text-center text-[11px] font-semibold text-slate-500 py-1",
                             cell: "text-center",
-                            day: "h-10 w-10 rounded-xl text-sm hover:bg-slate-100 dark:hover:bg-navy-800 transition",
-                            day_selected: "bg-teal-500 text-white hover:bg-teal-600",
+                            day: "h-10 w-10 rounded-xl text-sm transition hover:bg-slate-100 dark:hover:bg-white/10",
+                            day_selected: "bg-sky-500 text-white hover:bg-sky-600",
                             day_today: "ring-2 ring-blue-400 text-blue-600 dark:text-blue-300",
                             day_disabled: "opacity-30",
                           }}
@@ -936,7 +984,7 @@ export default function BuchenPage() {
                       {slotNotice && <p className="text-xs text-amber-600">{slotNotice}</p>}
                       {slotError && <p className="text-xs text-red-500">{slotError}</p>}
                       {!hasSelectedDate ? (
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600 dark:border-navy-700 dark:bg-navy-900/40 dark:text-slate-300">
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
                           Bitte wählen Sie zuerst ein Datum aus, um verfügbare Zeitfenster zu sehen.
                         </div>
                       ) : slotLoading ? (
@@ -957,8 +1005,8 @@ export default function BuchenPage() {
                               onClick={() => setTimeSlot(slot.label)}
                               className={`rounded-xl px-3 py-2 text-sm font-medium transition-all ${
                                 timeSlot === slot.label
-                                  ? "bg-blue-500 text-white shadow-md shadow-blue-500/20 scale-[1.02]"
-                                  : "bg-white/80 dark:bg-navy-900/60 border border-slate-200 dark:border-navy-700 text-slate-700 dark:text-slate-300 hover:border-blue-300"
+                                  ? "scale-[1.02] bg-sky-500 text-white shadow-md shadow-sky-500/20"
+                                  : "border border-slate-200 bg-white/80 text-slate-700 hover:border-sky-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
                               }`}
                             >
                               {slot.label}
@@ -970,8 +1018,8 @@ export default function BuchenPage() {
                     </div>
                   </div>
 
-                  <div className="bg-white/50 dark:bg-navy-800/40 border border-white/60 dark:border-navy-700 p-5 rounded-2xl shadow-sm space-y-5">
-                    <h3 className="font-semibold text-lg flex items-center gap-2 border-b border-slate-200/50 dark:border-navy-700/50 pb-3">
+                  <div className="premium-panel space-y-5 rounded-[28px] p-5">
+                    <h3 className="flex items-center gap-2 border-b border-slate-200/60 pb-3 text-lg font-semibold dark:border-white/10">
                       <User size={18} className="text-blue-500" /> Kontaktdaten & Zahlungsart
                     </h3>
 
@@ -980,21 +1028,21 @@ export default function BuchenPage() {
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                           <User size={16} className="text-slate-400" />
                         </div>
-                        <input value={customerName} onChange={(e) => { setCustomerName(e.target.value); setFieldErrors((p) => ({ ...p, customerName: "" })); }} placeholder="Vollständiger Name" className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-blue-500 outline-none transition-shadow" />
+                        <input value={customerName} onChange={(e) => { setCustomerName(e.target.value); setFieldErrors((p) => ({ ...p, customerName: "" })); }} placeholder="Vollständiger Name" className="input-glass pl-10" />
                       </div>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                           <Mail size={16} className="text-slate-400" />
                         </div>
-                        <input type="email" value={customerEmail} onChange={(e) => { setCustomerEmail(e.target.value); setFieldErrors((p) => ({ ...p, customerEmail: "" })); }} placeholder="E-Mail Adresse" className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-blue-500 outline-none transition-shadow" />
+                        <input type="email" value={customerEmail} onChange={(e) => { setCustomerEmail(e.target.value); setFieldErrors((p) => ({ ...p, customerEmail: "" })); }} placeholder="E-Mail Adresse" className="input-glass pl-10" />
                       </div>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                           <Phone size={16} className="text-slate-400" />
                         </div>
-                        <input type="tel" value={customerPhone} onChange={(e) => { setCustomerPhone(e.target.value); setFieldErrors((p) => ({ ...p, customerPhone: "" })); }} placeholder="Telefonnummer" className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-blue-500 outline-none transition-shadow" />
+                        <input type="tel" value={customerPhone} onChange={(e) => { setCustomerPhone(e.target.value); setFieldErrors((p) => ({ ...p, customerPhone: "" })); }} placeholder="Telefonnummer" className="input-glass pl-10" />
                       </div>
-                      <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-blue-500 outline-none appearance-none">
+                      <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)} className="input-glass">
                         <option value="UEBERWEISUNG">Überweisung (Rechnung)</option>
                         <option value="BAR">Barzahlung vor Ort</option>
                         <option value="PAYPAL">PayPal</option>
@@ -1009,7 +1057,7 @@ export default function BuchenPage() {
                         {fieldErrors.quote && <p>{fieldErrors.quote}</p>}
                       </div>
                     )}
-                    <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Besondere Hinweise oder Notizen für uns..." rows={3} className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-navy-700 bg-white/80 dark:bg-navy-900/50 focus:ring-2 focus:ring-blue-500 outline-none transition-shadow resize-none" />
+                    <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Besondere Hinweise oder Notizen für uns..." rows={3} className="input-glass resize-none" />
                   </div>
 
                   {submitError && (
@@ -1022,14 +1070,14 @@ export default function BuchenPage() {
                   <div className="pt-8 flex justify-between items-center">
                     <button
                       onClick={handlePrevStep}
-                      className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-navy-700 transition-colors font-medium shadow-sm hover:shadow-md"
+                      className="btn-ghost-premium gap-2 px-6 py-3.5"
                     >
                       <ArrowLeft size={18} /> Zurück
                     </button>
                     <button
                       disabled={!bookingReady || submitting || isCalculating}
                       onClick={submit}
-                      className="btn-shine flex items-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-teal-500 to-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:from-teal-600 hover:to-blue-700 shadow-xl shadow-teal-500/25 hover:shadow-teal-500/40 hover:-translate-y-1 transition-all duration-300 font-bold text-lg"
+                      className="btn-primary-glass gap-3 px-8 py-4 text-lg font-bold disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {submitting ? (
                         <span className="flex items-center gap-2">
@@ -1048,12 +1096,12 @@ export default function BuchenPage() {
 
         {/* Right Column: Sticky Live-Preis Widget */}
         <div className="lg:w-[400px] w-full shrink-0">
-          <div className="sticky top-8 glass-strong rounded-[2rem] p-8 overflow-hidden">
+          <div className="premium-panel sticky top-8 overflow-hidden rounded-[34px] p-8">
             <div className="absolute top-0 right-0 w-40 h-40 bg-teal-400/10 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
 
             <h3 className="text-xl font-bold flex items-center justify-between mb-6">
-              Zusammenfassung
+              Live-Preis
               <span className="relative flex h-3 w-3">
                 {quote ? (
                   <>
@@ -1067,9 +1115,9 @@ export default function BuchenPage() {
             </h3>
 
             {services.length === 0 ? (
-              <div className="py-8 text-center bg-slate-50/50 dark:bg-navy-800/30 rounded-2xl border border-slate-200/50 dark:border-navy-700/50 border-dashed">
+              <div className="rounded-2xl border border-dashed border-slate-200/50 bg-slate-50/50 py-8 text-center dark:border-white/10 dark:bg-white/5">
                 <Sparkles className="mx-auto text-slate-300 dark:text-slate-600 mb-3" size={32} />
-                <p className="text-sm text-slate-500 dark:text-slate-400">Wählen Sie Services aus, um den Preis zu sehen.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Services konfigurieren, um Preis zu sehen.</p>
               </div>
             ) : (
               <div className="space-y-4 relative z-10">
@@ -1081,18 +1129,18 @@ export default function BuchenPage() {
                         {cfgs[s] && (
                           <div className="text-xs text-slate-500 font-normal mt-0.5">
                             {cfgs[s].hours} Std.
-                            {s === "MOVING" && cfgs[s].distanceKm > 0 && ` • ${cfgs[s].distanceKm.toFixed(1)} km`}
+                            {(s === "MOVING" || s === "EXPRESS_MOVING") && cfgs[s].distanceKm > 0 && ` • ${cfgs[s].distanceKm.toFixed(1)} km`}
                           </div>
                         )}
                       </div>
-                      <div className="p-1 rounded bg-slate-100 dark:bg-navy-800">
+                        <div className="rounded bg-slate-100 p-1 dark:bg-slate-950/40">
                         <CheckCircle2 size={12} className="text-teal-500" />
                       </div>
                     </li>
                   ))}
                 </ul>
 
-                <div className="rounded-xl border border-slate-200/70 dark:border-navy-700/70 bg-white/50 dark:bg-navy-900/30 p-3 text-xs space-y-1 mb-4">
+                <div className="mb-4 space-y-1 rounded-xl border border-slate-200/70 bg-white/50 p-3 text-xs dark:border-white/10 dark:bg-white/5">
                   <p><span className="text-slate-500">Termin:</span> {selectedDate ? new Date(`${selectedDate}T00:00:00`).toLocaleDateString("de-DE") : "Nicht gewählt"}</p>
                   <p><span className="text-slate-500">Zeitfenster:</span> {timeSlot || "Nicht gewählt"}</p>
                   <p><span className="text-slate-500">Dauer:</span> {Math.round(computedDurationMin / 60 * 10) / 10} Std.</p>
@@ -1101,13 +1149,13 @@ export default function BuchenPage() {
                 {services.length > 0 && (
                   <a
                     href={`/kontakt?subject=${encodeURIComponent(`Festpreisanfrage - ${LABELS[services[0]]}`)}`}
-                    className="inline-flex w-full items-center justify-center rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm font-semibold text-teal-700 transition hover:bg-teal-100 dark:border-teal-500/20 dark:bg-teal-500/10 dark:text-teal-300 dark:hover:bg-teal-500/20"
+                    className="inline-flex w-full items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-semibold text-sky-700 transition hover:bg-sky-100 dark:border-cyan-500/20 dark:bg-cyan-500/10 dark:text-cyan-300 dark:hover:bg-cyan-500/20"
                   >
                     Festpreis anfragen
                   </a>
                 )}
 
-                <div className="pt-4 border-t border-slate-200 dark:border-navy-700">
+                <div className="border-t border-slate-200 pt-4 dark:border-white/10">
                   {quote ? (
                     <div className="space-y-3">
                       <div className="flex justify-between text-sm text-slate-500">
@@ -1125,26 +1173,26 @@ export default function BuchenPage() {
                         <span>{formatCurrency(quote.mwst)}</span>
                       </div>
 
-                      <div className="pt-3 mt-3 border-t border-slate-200 dark:border-navy-700 flex justify-between items-end">
+                      <div className="mt-3 flex items-end justify-between border-t border-slate-200 pt-3 dark:border-white/10">
                         <div>
                           <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Gesamtbetrag</p>
                         </div>
-                        <div className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-600 to-blue-600 dark:from-teal-400 dark:to-blue-400">
+                        <div className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-cyan-600 dark:from-sky-400 dark:to-cyan-400">
                           {formatCurrency(quote.total)}
                         </div>
                       </div>
-                      {services.includes("MOVING") && (
+                      {(services.includes("MOVING") || services.includes("EXPRESS_MOVING")) && (
                         <p className="text-[11px] text-amber-600 mt-2">
                           Distanzkosten sind als Richtwert/Schätzung ausgewiesen bis zur finalen Einsatzplanung.
                         </p>
                       )}
 
-                      <div className="mt-4 pt-4 border-t border-slate-200 dark:border-navy-700">
+                      <div className="mt-4 border-t border-slate-200 pt-4 dark:border-white/10">
                         <input
                           value={discountCode}
                           onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
                           placeholder="Gutscheincode"
-                          className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-navy-700 bg-white/50 dark:bg-navy-900/30 focus:border-teal-500 outline-none text-center uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal"
+                          className="input-glass rounded-lg px-3 py-2 text-center text-sm uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal"
                         />
                       </div>
                     </div>
@@ -1163,11 +1211,11 @@ export default function BuchenPage() {
                         <span>MwSt. (19%)</span>
                         <span>{formatCurrency(estimatedTotal.mwst)}</span>
                       </div>
-                      <div className="pt-3 mt-3 border-t border-slate-200 dark:border-navy-700 flex justify-between items-end">
+                      <div className="mt-3 flex items-end justify-between border-t border-slate-200 pt-3 dark:border-white/10">
                         <div>
                           <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Geschätzt</p>
                         </div>
-                        <div className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-600 to-blue-600 dark:from-teal-400 dark:to-blue-400">
+                        <div className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-cyan-600 dark:from-sky-400 dark:to-cyan-400">
                           {formatCurrency(estimatedTotal.total)}
                         </div>
                       </div>
@@ -1182,7 +1230,7 @@ export default function BuchenPage() {
                   ) : null}
                 </div>
 
-                <div className="pt-4 border-t border-slate-200 dark:border-navy-700 space-y-2">
+                <div className="space-y-2 border-t border-slate-200 pt-4 dark:border-white/10">
                   <p className="flex items-center gap-2 text-xs text-slate-500">
                     <CheckCircle2 size={14} className="text-teal-500" /> {contact.availability}
                   </p>

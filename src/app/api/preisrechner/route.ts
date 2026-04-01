@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
         heavyItems: svc?.heavyItems ? Number(svc.heavyItems) : undefined,
         express24h: Boolean(svc?.express24h),
         express48h: Boolean(svc?.express48h),
+        businessMove: Boolean(svc?.businessMove),
         evening: Boolean(svc?.evening),
         weekend: Boolean(body.isWeekend),
         extras,
@@ -91,4 +92,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Fehler bei der Preisberechnung", requestId }, { status: 500 });
   }
 }
-

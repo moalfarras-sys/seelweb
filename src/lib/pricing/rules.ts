@@ -1,7 +1,11 @@
 ﻿import crypto from "crypto";
 import { prisma } from "@/lib/db";
 import type { Discount, ServiceCategory, UnitType } from "@prisma/client";
-import { getPricingSettingsSnapshot, getServiceBasePrice } from "@/lib/pricing/settings";
+import {
+  getPricingSettingsSnapshot,
+  getPublicHourlyRate,
+  getServiceBasePrice,
+} from "@/lib/pricing/settings";
 
 export type PricingInputParams = {
   hours?: number;
@@ -17,6 +21,7 @@ export type PricingInputParams = {
   weekend?: boolean;
   express24h?: boolean;
   express48h?: boolean;
+  businessMove?: boolean;
   evening?: boolean;
   extras?: Array<{ code: string; quantity?: number; selected?: boolean }>;
 };
@@ -227,15 +232,38 @@ export async function calculatePricingFromDbRules(
   let appliedKmPriceEur: number | null = null;
 
   const serviceBasePrice = Number(getServiceBasePrice(pricingSettings, effectiveCategory).toFixed(2));
-  if (serviceBasePrice > 0) {
-    subtotal += serviceBasePrice;
-    lines.push({ label: "Basispreis Service", amount: serviceBasePrice, detail: "Admin Preisregel" });
+  const publicHourlyRate = getPublicHourlyRate(pricingSettings, effectiveCategory, {
+    businessMove: input.businessMove,
+    express24h: input.express24h,
+    express48h: input.express48h,
+  });
+  const usesHourlyAdminRate =
+    effectiveCategory === "MOVING" ||
+    effectiveCategory === "HOME_CLEANING" ||
+    effectiveCategory === "OFFICE_CLEANING";
+  const publicBaseAmount =
+    !usesHourlyAdminRate && publicHourlyRate > 0
+      ? Number((publicHourlyRate * Math.max(input.hours ?? 0, 1)).toFixed(2))
+      : 0;
+  const effectiveBasePrice = Number((serviceBasePrice + publicBaseAmount).toFixed(2));
+
+  if (effectiveBasePrice > 0) {
+    subtotal += effectiveBasePrice;
+    lines.push({
+      label: "Basispreis Service",
+      amount: effectiveBasePrice,
+      detail: serviceBasePrice > 0 ? "Admin Preisregel" : "Admin Stundensatz",
+    });
   }
 
   for (const rule of rules) {
     const rawUnits = getUnitsByType(rule.unitType, input);
     const units = Math.max(rawUnits, rule.minUnits);
     let unitPrice = rule.unitPrice;
+
+    if (rule.unitType === "hourly" && publicHourlyRate > 0) {
+      unitPrice = publicHourlyRate;
+    }
 
     if (effectiveCategory === "MOVING" && rule.unitType === "km") {
       unitPrice = Number((pricingSettings.kmPriceEur * pricingSettings.roundTripMultiplier).toFixed(4));
@@ -290,7 +318,27 @@ export async function calculatePricingFromDbRules(
     const trigger = (surcharge.triggerJson ?? {}) as Record<string, unknown>;
     if (!triggerMatches(trigger, input)) continue;
     const formula = (surcharge.formulaJson ?? {}) as Record<string, unknown>;
-    const amount = evalFormula(formula, input);
+    let amount = evalFormula(formula, input);
+    const triggerKey = String(trigger.key ?? "");
+
+    if (
+      effectiveCategory === "MOVING" &&
+      publicHourlyRate > 0 &&
+      pricingSettings.publicMovingExpressSurchargePct > 0 &&
+      ((triggerKey === "express24h" && input.express24h) || (triggerKey === "express48h" && input.express48h))
+    ) {
+      const hours = Math.max(input.hours ?? 0, 1);
+      const workers = input.workers && input.workers > 0 ? input.workers : 1;
+      amount = Number(
+        (
+          getPublicHourlyRate(pricingSettings, "MOVING") *
+          hours *
+          workers *
+          (pricingSettings.publicMovingExpressSurchargePct / 100)
+        ).toFixed(2)
+      );
+    }
+
     if (amount <= 0) continue;
     surchargesTotal += amount;
     lines.push({ label: surcharge.nameDe, amount });

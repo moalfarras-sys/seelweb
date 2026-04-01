@@ -18,6 +18,7 @@ export default function WhatsAppButton() {
   const [openPrompt, setOpenPrompt] = useState(false);
 
   useEffect(() => {
+    if (window.innerWidth < 640) return;
     const dismissed = localStorage.getItem("wa-mini-dismissed-v2");
     if (dismissed) return;
     const timer = setTimeout(() => setOpenPrompt(true), 7000);
@@ -30,7 +31,7 @@ export default function WhatsAppButton() {
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex items-end gap-3">
+    <div className="fixed bottom-4 right-4 z-50 flex items-end gap-3 sm:bottom-5 sm:right-5">
       <AnimatePresence>
         {openPrompt && (
           <motion.div

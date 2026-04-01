@@ -20,8 +20,8 @@ import { getPublicSiteSettings } from "@/lib/site-content";
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f5f1ea" },
-    { media: "(prefers-color-scheme: dark)", color: "#0c1722" },
+    { media: "(prefers-color-scheme: light)", color: "#eef2f8" },
+    { media: "(prefers-color-scheme: dark)", color: "#050b14" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -100,7 +100,7 @@ export default async function RootLayout({
         </Script>
       </head>
       <body className={`antialiased ${displayFont.variable}`}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <SiteContentProvider value={siteContent}>
             {!isAdmin && <div className="bg-blob-1" />}
             {!isAdmin && <div className="bg-blob-2" />}

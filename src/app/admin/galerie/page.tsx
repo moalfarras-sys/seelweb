@@ -28,6 +28,24 @@ const categoryOptions: Array<{ value: GalleryCategory; label: string }> = [
   { value: "express", label: "Express" },
 ];
 
+type UploadFormState = {
+  title: string;
+  alt: string;
+  category: GalleryCategory;
+  isVisible: boolean;
+  showOnHomepage: boolean;
+  isFeatured: boolean;
+};
+
+const emptyUploadForm: UploadFormState = {
+  title: "",
+  alt: "",
+  category: "umzug",
+  isVisible: true,
+  showOnHomepage: true,
+  isFeatured: false,
+};
+
 export default function GaleriePage() {
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,26 +54,36 @@ export default function GaleriePage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState("");
-  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
-  const [file, setFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [renderErrors, setRenderErrors] = useState<Record<string, boolean>>({});
-  const [uploadForm, setUploadForm] = useState({
-    title: "",
-    alt: "",
-    category: "umzug" as GalleryCategory,
-    isVisible: true,
-    showOnHomepage: true,
-    isFeatured: false,
-  });
+  const [uploadForm, setUploadForm] = useState<UploadFormState>(emptyUploadForm);
+
+  const orderedItems = useMemo(
+    () => [...items].sort((a, b) => a.sortOrder - b.sortOrder),
+    [items],
+  );
+
+  const stats = useMemo(
+    () => ({
+      total: orderedItems.length,
+      visible: orderedItems.filter((item) => item.isVisible).length,
+      hidden: orderedItems.filter((item) => !item.isVisible).length,
+      homepage: orderedItems.filter((item) => item.isVisible && item.showOnHomepage).length,
+    }),
+    [orderedItems],
+  );
 
   async function load() {
     setLoading(true);
-    const response = await fetch("/api/admin/gallery", { cache: "no-store" });
-    if (response.ok) {
+    try {
+      const response = await fetch("/api/admin/gallery", { cache: "no-store" });
+      if (!response.ok) throw new Error("Galerie konnte nicht geladen werden");
       const data = (await response.json()) as GalleryItem[];
       setItems(data);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   useEffect(() => {
@@ -64,14 +92,9 @@ export default function GaleriePage() {
 
   useEffect(() => {
     return () => {
-      if (filePreviewUrl) URL.revokeObjectURL(filePreviewUrl);
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
     };
-  }, [filePreviewUrl]);
-
-  const orderedItems = useMemo(
-    () => [...items].sort((a, b) => a.sortOrder - b.sortOrder),
-    [items],
-  );
+  }, [previewUrls]);
 
   function updateItem(id: string, patch: Partial<GalleryItem>) {
     setItems((current) =>
@@ -91,18 +114,13 @@ export default function GaleriePage() {
     });
   }
 
-  function setSelectedFile(nextFile: File | null) {
+  function selectFiles(nextFiles: File[]) {
     setUploadError("");
     setUploadSuccess("");
-    setFile(nextFile);
     setUploadProgress(0);
-    if (filePreviewUrl) {
-      URL.revokeObjectURL(filePreviewUrl);
-      setFilePreviewUrl(null);
-    }
-    if (nextFile) {
-      setFilePreviewUrl(URL.createObjectURL(nextFile));
-    }
+    previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    setSelectedFiles(nextFiles);
+    setPreviewUrls(nextFiles.map((file) => URL.createObjectURL(file)));
   }
 
   function uploadGalleryFormData(formData: FormData) {
@@ -165,52 +183,56 @@ export default function GaleriePage() {
   }
 
   async function deleteItem(id: string) {
-    const confirmed = window.confirm("Bild wirklich löschen?");
+    const confirmed = window.confirm("Bild wirklich dauerhaft löschen?");
     if (!confirmed) return;
     await fetch(`/api/admin/gallery/${id}`, { method: "DELETE" });
     await load();
   }
 
-  async function uploadItem() {
-    if (!file) return;
+  async function uploadItems() {
+    if (selectedFiles.length === 0) return;
     setUploading(true);
     setUploadError("");
     setUploadSuccess("");
-    setUploadProgress(15);
+    setUploadProgress(10);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("title", uploadForm.title);
-      formData.append("alt", uploadForm.alt);
-      formData.append("category", uploadForm.category);
-      formData.append("isVisible", String(uploadForm.isVisible));
-      formData.append("showOnHomepage", String(uploadForm.showOnHomepage));
-      formData.append("isFeatured", String(uploadForm.isFeatured));
+      let completed = 0;
 
-      const payload = await uploadGalleryFormData(formData);
-      setUploadProgress(90);
-      const uploadedItem = payload.item;
-      if (!uploadedItem?.imageUrl) {
-        throw new Error("Bilddatensatz wurde ohne gültige Bild-URL gespeichert");
+      for (let index = 0; index < selectedFiles.length; index += 1) {
+        const file = selectedFiles[index];
+        const fallbackName = file.name.replace(/\.[^.]+$/, "");
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("title", uploadForm.title || fallbackName);
+        formData.append("alt", uploadForm.alt || fallbackName);
+        formData.append("category", uploadForm.category);
+        formData.append("isVisible", String(uploadForm.isVisible));
+        formData.append("showOnHomepage", String(uploadForm.showOnHomepage));
+        formData.append("isFeatured", String(index === 0 ? uploadForm.isFeatured : false));
+
+        const payload = await uploadGalleryFormData(formData);
+        const uploadedItem = payload.item;
+        if (!uploadedItem?.imageUrl) {
+          throw new Error("Bilddatensatz wurde ohne gültige Bild-URL gespeichert");
+        }
+
+        const imageCheck = await fetch(uploadedItem.imageUrl, { method: "HEAD", cache: "no-store" });
+        if (!imageCheck.ok) {
+          throw new Error(`Bild ist nach dem Upload nicht erreichbar (${imageCheck.status})`);
+        }
+
+        completed += 1;
+        setUploadProgress(Math.max(15, Math.min(100, Math.round((completed / selectedFiles.length) * 100))));
       }
 
-      const imageCheck = await fetch(uploadedItem.imageUrl, { method: "HEAD", cache: "no-store" });
-      if (!imageCheck.ok) {
-        throw new Error(`Bild ist nach dem Upload nicht erreichbar (${imageCheck.status})`);
-      }
-
-      setUploadProgress(100);
-      setUploadSuccess("Bild erfolgreich hochgeladen und geprüft.");
-      setSelectedFile(null);
-      setUploadForm({
-        title: "",
-        alt: "",
-        category: "umzug",
-        isVisible: true,
-        showOnHomepage: true,
-        isFeatured: false,
-      });
+      setUploadSuccess(
+        selectedFiles.length === 1
+          ? "Bild erfolgreich hochgeladen und gespeichert."
+          : `${selectedFiles.length} Bilder erfolgreich hochgeladen und gespeichert.`,
+      );
+      selectFiles([]);
+      setUploadForm(emptyUploadForm);
       await load();
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : "Upload fehlgeschlagen");
@@ -235,7 +257,7 @@ export default function GaleriePage() {
         <div>
           <h1 className="text-2xl font-bold text-navy-800 dark:text-white">Galerie</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Bilder hochladen, bearbeiten, für die Homepage auswählen und sortieren.
+            Bilder hochladen, sichtbar oder verborgen schalten, für die Website sortieren und vollständig verwalten.
           </p>
         </div>
         <button
@@ -248,15 +270,34 @@ export default function GaleriePage() {
         </button>
       </div>
 
+      <section className="grid gap-4 md:grid-cols-4">
+        <div className="glass-card rounded-[24px] p-5">
+          <p className="text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-white/45">Gesamt</p>
+          <p className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">{stats.total}</p>
+        </div>
+        <div className="glass-card rounded-[24px] p-5">
+          <p className="text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-white/45">Sichtbar</p>
+          <p className="mt-3 text-3xl font-bold text-emerald-700 dark:text-emerald-300">{stats.visible}</p>
+        </div>
+        <div className="glass-card rounded-[24px] p-5">
+          <p className="text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-white/45">Verborgen</p>
+          <p className="mt-3 text-3xl font-bold text-amber-700 dark:text-amber-300">{stats.hidden}</p>
+        </div>
+        <div className="glass-card rounded-[24px] p-5">
+          <p className="text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-white/45">Homepage-Cover</p>
+          <p className="mt-3 text-3xl font-bold text-sky-700 dark:text-sky-300">{stats.homepage}</p>
+        </div>
+      </section>
+
       <section className="glass-card rounded-[28px] p-6">
         <div className="mb-5 flex items-center gap-3">
           <div className="rounded-2xl bg-emerald-500/10 p-3 text-emerald-700 dark:text-emerald-300">
             <Upload size={18} />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Neues Bild hochladen</h2>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Neue Bilder hochladen</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              Uploads werden gespeichert und nach dem Upload direkt auf Erreichbarkeit geprüft.
+              Einzelne Bilder oder mehrere Dateien gleichzeitig hochladen, sofort speichern und anschließend steuern.
             </p>
           </div>
         </div>
@@ -271,35 +312,44 @@ export default function GaleriePage() {
           </select>
           <label className={`${inputClass} flex cursor-pointer items-center justify-center gap-2`}>
             <Plus size={16} />
-            <span>{file ? file.name : "Datei auswählen"}</span>
-            <input type="file" accept="image/*" className="hidden" onChange={(event) => setSelectedFile(event.target.files?.[0] || null)} />
+            <span>{selectedFiles.length > 0 ? `${selectedFiles.length} Datei(en) ausgewählt` : "Datei(en) auswählen"}</span>
+            <input type="file" accept="image/*" multiple className="hidden" onChange={(event) => selectFiles(Array.from(event.target.files || []))} />
           </label>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-600 dark:text-slate-300">
           <label className="inline-flex items-center gap-2">
             <input type="checkbox" checked={uploadForm.isVisible} onChange={(event) => setUploadForm((current) => ({ ...current, isVisible: event.target.checked }))} />
-            Sichtbar
+            Sichtbar auf Website
           </label>
           <label className="inline-flex items-center gap-2">
             <input type="checkbox" checked={uploadForm.showOnHomepage} onChange={(event) => setUploadForm((current) => ({ ...current, showOnHomepage: event.target.checked }))} />
-            Auf Homepage zeigen
+            Als Startseiten-Cover verwendbar
           </label>
           <label className="inline-flex items-center gap-2">
             <input type="checkbox" checked={uploadForm.isFeatured} onChange={(event) => setUploadForm((current) => ({ ...current, isFeatured: event.target.checked }))} />
-            Als hervorgehobenes Bild markieren
+            Erstes Bild hervorheben
           </label>
         </div>
 
-        {filePreviewUrl && (
-          <div className="mt-5 flex flex-wrap items-start gap-4 rounded-[24px] border border-slate-200 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
-            <div className="relative h-28 w-36 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 dark:border-white/10 dark:bg-white/5">
-              <Image src={filePreviewUrl} alt="Lokale Vorschau" fill unoptimized className="object-cover" />
-            </div>
-            <div className="space-y-2 text-sm text-slate-600 dark:text-white/60">
+        {previewUrls.length > 0 && (
+          <div className="mt-5 rounded-[24px] border border-slate-200 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
+            <div className="mb-4 space-y-1 text-sm text-slate-600 dark:text-white/60">
               <p className="font-semibold text-slate-900 dark:text-white">Lokale Vorschau vor dem Upload</p>
-              <p>{file?.name}</p>
-              <p>{file ? `${Math.round(file.size / 1024)} KB` : ""}</p>
+              <p>{selectedFiles.length} Datei(en) werden nach dem Speichern direkt in die Galerie übernommen.</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {previewUrls.map((url, index) => (
+                <div key={url} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 dark:border-white/10 dark:bg-white/5">
+                  <div className="relative aspect-[4/3]">
+                    <Image src={url} alt={`Lokale Vorschau ${index + 1}`} fill unoptimized className="object-cover" />
+                  </div>
+                  <div className="px-3 py-2 text-xs text-slate-600 dark:text-white/60">
+                    <p className="truncate font-medium text-slate-900 dark:text-white">{selectedFiles[index]?.name}</p>
+                    <p>{selectedFiles[index] ? `${Math.round(selectedFiles[index].size / 1024)} KB` : ""}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -329,9 +379,9 @@ export default function GaleriePage() {
         )}
 
         <div className="mt-5">
-          <button onClick={uploadItem} disabled={uploading || !file} className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 disabled:opacity-60 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+          <button onClick={uploadItems} disabled={uploading || selectedFiles.length === 0} className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 disabled:opacity-60 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
             {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-            Bild hochladen
+            {selectedFiles.length > 1 ? `${selectedFiles.length} Bilder hochladen` : "Bild hochladen"}
           </button>
         </div>
       </section>
@@ -360,6 +410,21 @@ export default function GaleriePage() {
               </div>
 
               <div className="space-y-3">
+                <div className="flex flex-wrap gap-2 text-xs font-semibold">
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700 dark:bg-white/10 dark:text-white/80">
+                    Position {index + 1}
+                  </span>
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700 dark:bg-white/10 dark:text-white/80">
+                    {categoryOptions.find((option) => option.value === item.category)?.label || item.category}
+                  </span>
+                  <span className={`rounded-full px-3 py-1 ${item.isVisible ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300" : "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300"}`}>
+                    {item.isVisible ? "Sichtbar auf Website" : "Nur im Admin"}
+                  </span>
+                  <span className={`rounded-full px-3 py-1 ${item.showOnHomepage ? "bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300" : "bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-white/70"}`}>
+                    {item.showOnHomepage ? "Homepage-Cover" : "Nicht auf Startseite"}
+                  </span>
+                </div>
+
                 <div className="flex flex-wrap gap-2">
                   <button type="button" onClick={() => moveItem(item.id, -1)} className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:text-white">
                     <ArrowUp size={14} /> Hoch
@@ -401,11 +466,11 @@ export default function GaleriePage() {
                   </label>
                   <label className="inline-flex items-center gap-2">
                     <input type="checkbox" checked={item.showOnHomepage} onChange={(event) => updateItem(item.id, { showOnHomepage: event.target.checked })} />
-                    Auf Homepage
+                    Für Homepage erlauben
                   </label>
                   <label className="inline-flex items-center gap-2">
                     <input type="checkbox" checked={item.isFeatured} onChange={(event) => updateItem(item.id, { isFeatured: event.target.checked })} />
-                    Featured
+                    Hervorgehoben
                   </label>
                 </div>
 

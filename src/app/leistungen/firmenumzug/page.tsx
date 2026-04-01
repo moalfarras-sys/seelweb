@@ -94,7 +94,7 @@ export default async function FirmenumzugPage() {
           </p>
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
             <Link
-              href="/buchen?service=MOVING"
+              href="/buchen?service=MOVING&variant=business"
               className="btn-primary-glass inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold"
             >
               Firmenumzug anfragen
@@ -156,14 +156,14 @@ export default async function FirmenumzugPage() {
         <div className="mx-auto max-w-3xl px-4 text-center md:px-8">
           <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Preise</h2>
           <p className="mt-4 text-4xl font-bold text-emerald-700 dark:text-teal-300">
-            {formatPricePerHour(prices.umzugStandard)}
+            {formatPricePerHour(prices.gewerbeUmzug)}
           </p>
           <p className="mt-2 text-sm text-slate-500">
             Mindestabnahme 2 Stunden · Je nach Projektumfang kalkulieren wir Anfahrtswege, Trageaufwand und Sonderleistungen
           </p>
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
-              href="/buchen?service=MOVING"
+              href="/buchen?service=MOVING&variant=business"
               className="btn-primary-glass inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold"
             >
               Firmenumzug buchen <ArrowRight size={16} />

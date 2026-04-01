@@ -85,48 +85,53 @@ export default function UnternehmenPage() {
     }
   };
 
-  const inputClasses =
-    "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 dark:border-white/10 dark:bg-white/5 dark:text-white";
+  const inputClasses = "input-glass";
 
   return (
     <>
-      <section className="gradient-navy py-18 relative overflow-hidden md:py-24">
-        <div className="mx-auto max-w-7xl px-4 md:px-8">
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
+      <section className="gradient-navy relative overflow-hidden py-28 md:py-36">
+        <div className="absolute inset-0 opacity-[0.10]">
+          <div className="absolute inset-0 bg-[url('/images/corporate-hallway-cleaning.png')] bg-cover bg-center" />
+        </div>
+        <div className="relative mx-auto max-w-7xl px-4 md:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-end"
+          >
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-teal-200">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/5 px-5 py-2.5 text-sm text-cyan-200">
                 <Building2 size={16} />
                 Für Unternehmen & Institutionen
               </span>
-              <h1 className="mt-6 text-4xl font-semibold text-white md:text-6xl">
+              <h1 className="font-display mt-6 text-4xl font-semibold text-white md:text-6xl">
                 Gewerbliche Einsätze mit ruhiger Planung und sauberer Angebotsstruktur.
               </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-white/72">
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-white/82">
                 {company.name} begleitet Firmen, Schulen und öffentliche Einrichtungen mit strukturierten Angeboten für Umzug, Reinigung und Entsorgung in {contact.serviceRegion}.
               </p>
-              <div className="mt-8">
-                <a href="#ausschreibung" className="inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 font-semibold text-slate-900 transition hover:bg-slate-100">
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a href="#ausschreibung" className="btn-primary-glass gap-2">
                   Ausschreibung einreichen <ArrowRight size={18} />
                 </a>
-              </div>
-              <div className="mt-6 flex flex-wrap gap-3 text-sm text-white/70">
-                <a href={`tel:${contact.primaryPhone}`} className="rounded-full border border-white/15 bg-white/5 px-4 py-2 transition hover:bg-white/10">
+                <a href={`tel:${contact.primaryPhone}`} className="btn-secondary-glass">
                   {contact.primaryPhoneDisplay}
                 </a>
-                <a href={`mailto:${contact.email}`} className="rounded-full border border-white/15 bg-white/5 px-4 py-2 transition hover:bg-white/10">
+                <a href={`mailto:${contact.email}`} className="btn-ghost-premium">
                   {contact.email}
                 </a>
               </div>
             </div>
-            <div className="glass rounded-[30px] p-6 text-white">
-              <p className="text-xs uppercase tracking-[0.3em] text-white/55">Für glaubwürdige Vergabeprozesse</p>
+            <div className="glass-dark rounded-[32px] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.30)]">
+              <p className="text-xs uppercase tracking-[0.3em] text-cyan-200/60">Für glaubwürdige Vergabeprozesse</p>
               <div className="mt-4 grid gap-3">
                 {[
                   "Klare Leistungsbeschreibung für Einkauf und Verwaltung",
                   "Saubere Kommunikation mit festen Rückmeldungen",
                   "Geeignet für laufende Betreuung oder einzelne Projekte",
                 ].map((item) => (
-                  <div key={item} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm text-white/78">
+                  <div key={item} className="rounded-[22px] border border-white/[0.08] bg-white/5 px-4 py-4 text-sm text-white/78">
                     {item}
                   </div>
                 ))}
@@ -137,27 +142,28 @@ export default function UnternehmenPage() {
       </section>
 
       <section className="section-padding">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <ScrollReveal className="text-center mb-16">
-            <span className="text-emerald-700 dark:text-teal-300 text-sm font-semibold uppercase tracking-wider">Vorteile</span>
-            <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 dark:text-white mt-3 mb-4">Was Unternehmen wirklich brauchen</h2>
-            <p className="text-slate-600 dark:text-white/60 max-w-2xl mx-auto">
+        <div className="mx-auto max-w-7xl px-4 md:px-8">
+          <ScrollReveal className="mb-16 text-center">
+            <div className="accent-line mx-auto" />
+            <span className="section-eyebrow">Vorteile</span>
+            <h2 className="font-display mt-4 text-3xl font-semibold text-slate-900 dark:text-white md:text-5xl">Was Unternehmen wirklich brauchen</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-slate-600 dark:text-white/55">
               Kein Sales-Sprech, sondern saubere Zusammenarbeit mit nachvollziehbaren Abläufen.
             </p>
           </ScrollReveal>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {benefits.map((benefit, index) => {
               const Icon = benefit.icon;
               return (
                 <ScrollReveal key={benefit.title} delay={index * 0.08}>
                   <TiltCard className="h-full">
-                    <div className="glass-card h-full rounded-[28px] p-8">
-                      <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                    <div className="premium-panel h-full rounded-[30px] p-8">
+                      <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-[18px] bg-sky-500/10 text-sky-700 dark:text-cyan-300">
                         <Icon size={26} />
                       </div>
                       <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{benefit.title}</h3>
-                      <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-white/60">{benefit.desc}</p>
+                      <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-white/55">{benefit.desc}</p>
                     </div>
                   </TiltCard>
                 </ScrollReveal>
@@ -167,30 +173,31 @@ export default function UnternehmenPage() {
         </div>
       </section>
 
-      <section className="bg-slate-950 py-20">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <ScrollReveal className="text-center mb-16">
-            <span className="text-teal-300 text-sm font-semibold uppercase tracking-wider">Branchen</span>
-            <h2 className="text-3xl md:text-4xl font-semibold text-white mt-3 mb-4">Bereiche, die wir betreuen</h2>
-            <p className="text-white/65 max-w-2xl mx-auto">
+      <section className="gradient-navy py-28">
+        <div className="mx-auto max-w-7xl px-4 md:px-8">
+          <ScrollReveal className="mb-16 text-center">
+            <div className="accent-line mx-auto" />
+            <span className="section-eyebrow text-cyan-200">Branchen</span>
+            <h2 className="font-display mt-4 text-3xl font-semibold text-white md:text-5xl">Bereiche, die wir betreuen</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-white/65">
               Von kleinen Büros bis zu Institutionen mit abgestimmter Einsatzplanung.
             </p>
           </ScrollReveal>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid gap-8 md:grid-cols-3">
             {sectors.map((sector, index) => {
               const Icon = sector.icon;
               return (
                 <ScrollReveal key={sector.title} delay={index * 0.1}>
-                  <div className="rounded-[30px] border border-white/10 bg-white/5 p-8">
-                    <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10">
+                  <div className="glass-dark rounded-[32px] p-8">
+                    <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-[22px] bg-white/10">
                       <Icon className="text-white" size={30} />
                     </div>
                     <h3 className="text-xl font-semibold text-white">{sector.title}</h3>
                     <ul className="mt-5 space-y-3">
                       {sector.items.map((item) => (
                         <li key={item} className="flex items-start gap-2 text-sm text-white/75">
-                          <Check size={16} className="mt-0.5 shrink-0 text-teal-300" />
+                          <Check size={16} className="mt-0.5 shrink-0 text-cyan-300" />
                           {item}
                         </li>
                       ))}
@@ -204,36 +211,37 @@ export default function UnternehmenPage() {
       </section>
 
       <section className="section-padding" id="ausschreibung">
-        <div className="max-w-6xl mx-auto px-4 md:px-8">
+        <div className="mx-auto max-w-6xl px-4 md:px-8">
           <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-700 dark:text-teal-300">Ausschreibung</p>
-              <h2 className="mt-4 text-3xl font-semibold text-slate-900 dark:text-white md:text-4xl">Projekt anfragen</h2>
-              <p className="mt-5 text-base leading-8 text-slate-600 dark:text-white/60">
+              <div className="accent-line" />
+              <p className="section-eyebrow">Ausschreibung</p>
+              <h2 className="font-display mt-4 text-3xl font-semibold text-slate-900 dark:text-white md:text-5xl">Projekt anfragen</h2>
+              <p className="mt-5 text-base leading-8 text-slate-600 dark:text-white/55">
                 Beschreiben Sie Projekt, Kategorie, Umfang und Zeitrahmen. Wir nutzen Ihre Angaben für eine belastbare erste Rückmeldung.
               </p>
             </div>
 
             <div aria-live="polite">
               {submitted ? (
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="glass-card rounded-[30px] p-10 text-center">
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="premium-panel rounded-[32px] p-10 text-center">
                   <h3 className="text-2xl font-semibold text-slate-900 dark:text-white">Anfrage erhalten</h3>
-                  <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-white/60">
+                  <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-white/55">
                     Vielen Dank. Wir prüfen die Angaben und melden uns mit einer strukturierten Rückmeldung.
                   </p>
-                  <Link href="/" className="mt-5 inline-flex text-sm font-semibold text-emerald-700 dark:text-teal-300">
+                  <Link href="/" className="mt-5 inline-flex text-sm font-semibold text-sky-700 dark:text-cyan-300">
                     Zurück zur Startseite
                   </Link>
                 </motion.div>
               ) : (
-                <form onSubmit={handleSubmit} className="glass-strong rounded-[30px] p-8 md:p-10 space-y-6">
+                <form onSubmit={handleSubmit} className="premium-panel rounded-[34px] p-8 md:p-10 space-y-6">
                   {error && (
                     <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
                       Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie uns direkt.
                     </div>
                   )}
 
-                  <div className="grid sm:grid-cols-2 gap-6">
+                  <div className="grid gap-6 sm:grid-cols-2">
                     <div>
                       <label className="mb-2 block text-sm font-medium text-slate-800 dark:text-white/80">Unternehmen *</label>
                       <input required type="text" value={form.company} onChange={(event) => setForm({ ...form, company: event.target.value })} className={inputClasses} placeholder="Firmenname" />
@@ -244,7 +252,7 @@ export default function UnternehmenPage() {
                     </div>
                   </div>
 
-                  <div className="grid sm:grid-cols-2 gap-6">
+                  <div className="grid gap-6 sm:grid-cols-2">
                     <div>
                       <label className="mb-2 block text-sm font-medium text-slate-800 dark:text-white/80">E-Mail *</label>
                       <input required type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} className={inputClasses} placeholder="email@unternehmen.de" />
@@ -286,16 +294,16 @@ export default function UnternehmenPage() {
 
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input type="checkbox" checked={gdpr} onChange={(event) => setGdpr(event.target.checked)} className="mt-1 h-4 w-4" required />
-                    <span className="text-sm text-slate-600 dark:text-white/60">
+                    <span className="text-sm text-slate-600 dark:text-white/55">
                       Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
-                      <Link href="/datenschutz" className="text-emerald-700 dark:text-teal-300 underline">
+                      <Link href="/datenschutz" className="text-sky-700 dark:text-cyan-300 underline">
                         Datenschutzerklärung
                       </Link>{" "}
                       zu.
                     </span>
                   </label>
 
-                  <button type="submit" disabled={loading || !gdpr} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-4 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60">
+                  <button type="submit" disabled={loading || !gdpr} className="btn-primary-glass w-full gap-2 disabled:opacity-60">
                     {loading ? "Wird gesendet..." : "Ausschreibung absenden"}
                     {!loading && <ArrowRight size={18} />}
                   </button>
@@ -306,18 +314,18 @@ export default function UnternehmenPage() {
         </div>
       </section>
 
-      <section className="gradient-navy section-padding relative overflow-hidden">
-        <div className="max-w-4xl mx-auto text-center px-4 md:px-8 relative z-10">
+      <section className="gradient-navy relative overflow-hidden py-28">
+        <div className="mx-auto max-w-4xl px-4 text-center md:px-8 relative z-10">
           <ScrollReveal>
-            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-6">Persönliche Rückfrage lieber direkt?</h2>
-            <p className="text-white/70 mb-8 max-w-2xl mx-auto">
+            <h2 className="font-display text-3xl font-semibold text-white md:text-5xl">Persönliche Rückfrage lieber direkt?</h2>
+            <p className="mx-auto mb-8 mt-6 max-w-2xl text-white/60">
               Sprechen Sie direkt mit {company.name} über Ihr Projekt, Zeitfenster und Ablauf.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href={`tel:${contact.primaryPhone}`} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-8 py-4 font-semibold text-slate-900 transition hover:bg-slate-100">
+            <div className="flex flex-col justify-center gap-4 sm:flex-row">
+              <a href={`tel:${contact.primaryPhone}`} className="btn-secondary-glass gap-2 bg-white text-slate-900">
                 <Phone size={20} /> {contact.primaryPhoneDisplay}
               </a>
-              <a href={`mailto:${contact.email}`} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-8 py-4 text-white transition hover:bg-white/15">
+              <a href={`mailto:${contact.email}`} className="btn-ghost-premium gap-2 border-white/15 bg-white/10 text-white">
                 <Mail size={20} /> {contact.email}
               </a>
             </div>

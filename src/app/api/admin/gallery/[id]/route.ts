@@ -25,22 +25,27 @@ export async function PATCH(
   try {
     const body = await request.json();
     const items = await getGalleryItems();
-    const updated = items.map((item) =>
-      item.id === params.id
-        ? {
-            ...item,
-            title: typeof body.title === "string" ? body.title.trim() : item.title,
-            alt: typeof body.alt === "string" ? body.alt.trim() : item.alt,
-            category: typeof body.category === "string" ? sanitizeCategory(body.category) : item.category,
-            isVisible: typeof body.isVisible === "boolean" ? body.isVisible : item.isVisible,
-            showOnHomepage:
-              typeof body.showOnHomepage === "boolean" ? body.showOnHomepage : item.showOnHomepage,
-            isFeatured: typeof body.isFeatured === "boolean" ? body.isFeatured : item.isFeatured,
-            sortOrder: typeof body.sortOrder === "number" ? body.sortOrder : item.sortOrder,
-            updatedAt: new Date().toISOString(),
-          }
-        : item,
-    );
+    const shouldFeature = typeof body.isFeatured === "boolean" ? body.isFeatured : false;
+    const updated = items.map((item) => {
+      if (item.id !== params.id) {
+        return shouldFeature ? { ...item, isFeatured: false } : item;
+      }
+
+      const nextShowOnHomepage =
+        typeof body.showOnHomepage === "boolean" ? body.showOnHomepage : item.showOnHomepage;
+
+      return {
+        ...item,
+        title: typeof body.title === "string" ? body.title.trim() : item.title,
+        alt: typeof body.alt === "string" ? body.alt.trim() : item.alt,
+        category: typeof body.category === "string" ? sanitizeCategory(body.category) : item.category,
+        isVisible: typeof body.isVisible === "boolean" ? body.isVisible : item.isVisible,
+        showOnHomepage: shouldFeature ? true : nextShowOnHomepage,
+        isFeatured: typeof body.isFeatured === "boolean" ? body.isFeatured : item.isFeatured,
+        sortOrder: typeof body.sortOrder === "number" ? body.sortOrder : item.sortOrder,
+        updatedAt: new Date().toISOString(),
+      };
+    });
 
     await saveGalleryItems(updated);
     return NextResponse.json({ success: true });

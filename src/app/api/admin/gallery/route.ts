@@ -70,6 +70,7 @@ export async function POST(request: Request) {
     const uploadResult = await persistGalleryUpload(fileName, buffer);
 
     const items = await getGalleryItems();
+    const shouldFeature = toBoolean(formData.get("isFeatured"), false);
     const nextItem: GalleryItem = {
       id: randomUUID(),
       title: String(formData.get("title") || "Neues Bild").trim(),
@@ -79,13 +80,17 @@ export async function POST(request: Request) {
       category: sanitizeCategory(String(formData.get("category") || "umzug")),
       sortOrder: items.length,
       isVisible: toBoolean(formData.get("isVisible"), true),
-      showOnHomepage: toBoolean(formData.get("showOnHomepage"), true),
-      isFeatured: toBoolean(formData.get("isFeatured"), false),
+      showOnHomepage: shouldFeature ? true : toBoolean(formData.get("showOnHomepage"), true),
+      isFeatured: shouldFeature,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    await saveGalleryItems([...items, nextItem]);
+    const nextItems = shouldFeature
+      ? [...items.map((item) => ({ ...item, isFeatured: false })), nextItem]
+      : [...items, nextItem];
+
+    await saveGalleryItems(nextItems);
     return NextResponse.json({ success: true, item: nextItem, writtenFiles: uploadResult.writtenFiles });
   } catch (error) {
     console.error("POST /api/admin/gallery error:", error);
