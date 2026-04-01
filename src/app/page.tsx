@@ -45,7 +45,7 @@ export default async function HomePage() {
     getHomepageGalleryItems(),
     getPublicGalleryItems(),
   ]);
-  const heroTitle = "Umüge, Reinigung und Entrümpelung mit klarer Organisation.";
+  const heroTitle = "Umzüge, Reinigung und Entrümpelung mit klarer Organisation.";
   const heroDescription =
     "SEEL Transport & Reinigung begleitet private und gewerbliche Einsätze mit festen Ansprechpartnern, transparenten Preisen und einem ruhigen, professionellen Ablauf.";
   const primaryCtaLabel = "Jetzt Angebot anfragen";
