@@ -25,7 +25,7 @@ export default function Footer() {
 
       <div className="relative mx-auto max-w-7xl px-4 py-20 md:px-8">
         <div className="mb-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="premium-panel rounded-[34px] border-white/[0.06] bg-white/[0.04] p-8 text-white shadow-[0_28px_84px_rgba(0,0,0,0.40)]">
+          <div className="rounded-[34px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(15,23,42,0.86)_0%,rgba(15,23,42,0.72)_100%)] p-8 text-white shadow-[0_28px_84px_rgba(0,0,0,0.40)] backdrop-blur-xl">
             <div className="flex items-center gap-4">
               <Image
                 src="/images/logo.jpeg"
@@ -36,22 +36,22 @@ export default function Footer() {
               />
               <div>
                 <p className="font-display text-xl font-bold tracking-[0.12em]">SEEL</p>
-                <p className="text-[0.68rem] uppercase tracking-[0.4em] text-white/40">Transport & Reinigung</p>
+                <p className="text-[0.68rem] uppercase tracking-[0.4em] text-white/60">Transport & Reinigung</p>
               </div>
             </div>
-            <p className="mt-6 max-w-2xl text-sm leading-8 text-white/60">
+            <p className="mt-6 max-w-2xl text-sm leading-8 text-white/78">
               Strukturierte Einsätze für Umzug, Reinigung und Entrümpelung in {contact.serviceRegion}. Ruhig geplant,
               transparent kalkuliert und professionell umgesetzt.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <a href={`tel:${contact.primaryPhone}`} className="btn-secondary-glass bg-white/[0.06] text-white border border-white/[0.08]">
+              <a href={`tel:${contact.primaryPhone}`} className="btn-secondary-glass border border-white/15 bg-white/10 text-white hover:bg-white/14">
                 {contact.primaryPhoneDisplay}
               </a>
               <a
                 href={buildWhatsappUrl(contact.whatsappNumber)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-ghost-premium gap-2 border-white/[0.08] bg-white/[0.04] text-white/80"
+                className="btn-ghost-premium gap-2 border-white/15 bg-white/8 text-white hover:bg-white/12"
               >
                 <WhatsAppIcon className="h-4 w-4 fill-current" />
                 WhatsApp
