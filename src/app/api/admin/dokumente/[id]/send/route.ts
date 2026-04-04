@@ -114,7 +114,9 @@ export async function POST(req: NextRequest, { params }: Params) {
       });
     }
 
-    await sendEmail({
+    const recipientEmail = explicitEmail || document.customerEmail;
+    const subject = getManualDocumentEmailSubject(document.type, document.documentNumber, document.title);
+    const emailResult = await sendEmail({
       to: explicitEmail || document.customerEmail,
       subject: getManualDocumentEmailSubject(document.type, document.documentNumber, document.title),
       html: buildManualDocumentEmail({
@@ -134,6 +136,24 @@ export async function POST(req: NextRequest, { params }: Params) {
       ],
     });
 
+    await prisma.communication.create({
+      data: {
+        customerId: document.customerId,
+        channel: "EMAIL",
+        direction: "OUTBOUND",
+        subject,
+        message: `${document.type} ${document.documentNumber} wurde per E-Mail versendet.`,
+        metaJson: {
+          to: recipientEmail,
+          manualDocumentId: document.id,
+          manualDocumentType: document.type,
+          documentNumber: document.documentNumber,
+          messageId: emailResult.messageId,
+        },
+        sentBy: session.email || "admin",
+      },
+    });
+
     const nextStatus =
       document.status === ManualDocumentStatus.PAID || document.status === ManualDocumentStatus.SIGNED
         ? document.status
@@ -147,7 +167,11 @@ export async function POST(req: NextRequest, { params }: Params) {
       },
     });
 
-    return NextResponse.json({ success: true, document: updated });
+    return NextResponse.json({
+      success: true,
+      document: updated,
+      message: `E-Mail an ${recipientEmail} wurde versendet.`,
+    });
   } catch (error) {
     console.error("POST /api/admin/dokumente/[id]/send error:", error);
     return NextResponse.json({ error: "Interner Serverfehler" }, { status: 500 });
