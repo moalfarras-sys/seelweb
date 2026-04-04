@@ -383,7 +383,15 @@ export async function updateSiteSettings(settings: Partial<PublicSiteContent>) {
 
 export async function getPublicSiteSettings() {
   const content = await getSiteContent();
-  return content.settings;
+  return {
+    ...content.settings,
+    bank: {
+      name: "",
+      iban: "",
+      bic: "",
+      accountHolder: "",
+    },
+  };
 }
 
 export async function getGalleryItems() {

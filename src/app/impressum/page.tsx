@@ -135,18 +135,6 @@ export default async function ImpressumPage() {
 
                 <section>
                   <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
-                    Bankverbindung
-                  </h2>
-                  <div className="mt-4 space-y-1">
-                    <p>Bank: {settings.bank.name}</p>
-                    <p>IBAN: {settings.bank.iban}</p>
-                    <p>BIC: {settings.bank.bic}</p>
-                    <p>Kontoinhaber: {settings.bank.accountHolder}</p>
-                  </div>
-                </section>
-
-                <section>
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
                     Hinweis zur Streitbeilegung
                   </h2>
                   <p className="mt-4">

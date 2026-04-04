@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { getPublicSiteSettings, updateSiteSettings } from "@/lib/site-content";
+import { getSiteContent, updateSiteSettings } from "@/lib/site-content";
 
 export const dynamic = "force-dynamic";
 
@@ -10,8 +10,8 @@ export async function GET() {
     return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
   }
 
-  const settings = await getPublicSiteSettings();
-  return NextResponse.json(settings);
+  const content = await getSiteContent();
+  return NextResponse.json(content.settings);
 }
 
 export async function POST(request: Request) {
