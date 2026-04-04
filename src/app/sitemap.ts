@@ -26,6 +26,7 @@ const ROUTES = [
   "/leistungen/gewerbereinigung",
   "/leistungen/gastronomiereinigung",
   "/buchen",
+  "/galerie",
   "/unternehmen",
   "/kontakt",
   "/impressum",

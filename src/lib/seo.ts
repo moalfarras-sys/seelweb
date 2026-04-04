@@ -13,12 +13,18 @@ export function buildMetadata({
   path: string;
 }): Metadata {
   const url = `${BASE_URL}${path}`;
+  const normalizedTitle = title.includes("SEEL Transport Berlin")
+    ? title
+    : `${title} | SEEL Transport Berlin`;
+  const openGraphTitle = title.includes(SITE_NAME)
+    ? title
+    : `${title} | ${SITE_NAME}`;
 
   return {
-    title: `${title} | SEEL Transport Berlin`,
+    title: normalizedTitle,
     description,
     openGraph: {
-      title: `${title} | ${SITE_NAME}`,
+      title: openGraphTitle,
       description,
       url,
       siteName: SITE_NAME,

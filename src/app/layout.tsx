@@ -128,7 +128,7 @@ export default async function RootLayout({
                       }
                       return;
                     }
-                    await navigator.serviceWorker.register('/sw.js?v=20260305-2');
+                    await navigator.serviceWorker.register('/sw.js?v=20260404-1');
                   } catch (e) {}
                 })();
               `}</Script>

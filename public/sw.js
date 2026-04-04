@@ -1,4 +1,4 @@
-const CACHE_NAME = 'seel-v2';
+const CACHE_NAME = 'seel-v3';
 const STATIC_ASSETS = [
     '/',
     '/images/logo.jpeg',

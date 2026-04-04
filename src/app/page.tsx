@@ -166,15 +166,15 @@ export default async function HomePage() {
             </span>
 
             <h1 className="font-display mt-8 max-w-[12ch] text-[2.35rem] font-bold leading-[1.02] tracking-[-0.035em] text-white drop-shadow-[0_8px_24px_rgba(0,0,0,0.38)] sm:max-w-[12.5ch] sm:text-[3.1rem] md:max-w-[13ch] md:text-[3.7rem] md:leading-[1.03] lg:text-[3.95rem]">
-              {heroTitle}
+              {settings.homepage.heroTitle || heroTitle}
             </h1>
             <p className="mt-5 max-w-2xl text-base font-medium leading-7 text-white drop-shadow-[0_6px_20px_rgba(0,0,0,0.48)] sm:text-lg md:mt-6 md:text-[1.05rem] md:leading-8">
-              {heroDescription}
+              {settings.homepage.heroDescription || heroDescription}
             </p>
 
             <div className="mt-7 flex flex-col items-center gap-4 sm:mt-8 sm:flex-row md:items-start">
               <Link href="/buchen" className="btn-primary-glass gap-2 text-sm font-semibold">
-                {primaryCtaLabel} <ArrowRight size={16} />
+                {(settings.homepage.primaryCtaLabel || primaryCtaLabel)} <ArrowRight size={16} />
               </Link>
               <a
                 href={whatsappHref}
@@ -183,7 +183,7 @@ export default async function HomePage() {
                 className="btn-secondary-glass gap-2 border border-white/10 bg-white/10 text-sm font-semibold text-white"
               >
                 <PhoneCall size={16} />
-                {secondaryCtaLabel}
+                {settings.homepage.secondaryCtaLabel || secondaryCtaLabel}
               </a>
             </div>
           </div>
