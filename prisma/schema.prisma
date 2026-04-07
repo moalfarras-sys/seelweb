@@ -532,12 +532,30 @@ model AdminUser {
 }
 
 model ManualExpense {
-  id          String   @id @default(cuid())
-  category    String
-  description String
-  amount      Float
-  date        DateTime
-  createdAt   DateTime @default(now()) @map("created_at")
+  id                 String   @id @default(cuid())
+  category           String
+  documentType       String   @default("RECHNUNG") @map("document_type")
+  description        String
+  supplierName       String?  @map("supplier_name")
+  documentNumber     String?  @map("document_number")
+  accountCode        String?  @map("account_code")
+  amount             Float
+  netAmount          Float    @default(0) @map("net_amount")
+  taxAmount          Float    @default(0) @map("tax_amount")
+  taxRate            Float    @default(19) @map("tax_rate")
+  currency           String   @default("EUR")
+  date               DateTime
+  issueDate          DateTime? @map("issue_date")
+  serviceDate        DateTime? @map("service_date")
+  paymentMethod      String?  @map("payment_method")
+  paymentStatus      String   @default("PAID") @map("payment_status")
+  attachmentUrl      String?  @map("attachment_url")
+  attachmentName     String?  @map("attachment_name")
+  attachmentMimeType String?  @map("attachment_mime_type")
+  storagePath        String?  @map("storage_path")
+  notes              String?
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
   @@map("manual_expenses")
 }

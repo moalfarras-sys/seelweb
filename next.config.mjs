@@ -16,6 +16,16 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: "/preise",
+        destination: "/buchen",
+        permanent: true,
+      },
+      {
+        source: "/leistungen/reinigung-buero",
+        destination: "/leistungen/bueroreinigung",
+        permanent: true,
+      },
+      {
         source: "/leistungen-mobeltransporte",
         destination: "/leistungen",
         permanent: true,

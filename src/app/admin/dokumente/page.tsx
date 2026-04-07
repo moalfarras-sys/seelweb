@@ -197,7 +197,11 @@ export default function DokumentePage() {
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [docsRes, customersRes, ordersRes] = await Promise.all([fetch("/api/admin/dokumente"), fetch("/api/admin/kunden"), fetch("/api/admin/buchungen")]);
+      const [docsRes, customersRes, ordersRes] = await Promise.all([
+        fetch("/api/admin/dokumente"),
+        fetch("/api/admin/kunden"),
+        fetch("/api/admin/buchungen?view=documents"),
+      ]);
       if (!docsRes.ok || !customersRes.ok || !ordersRes.ok) throw new Error();
       const [docsData, customersData, ordersData] = await Promise.all([docsRes.json(), customersRes.json(), ordersRes.json()]);
       setDocuments(docsData);

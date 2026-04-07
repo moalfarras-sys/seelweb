@@ -102,18 +102,34 @@ export default function KontaktPage() {
 
   return (
     <>
-      <section className="gradient-navy relative overflow-hidden py-28 md:py-36">
+      <section className="hero-led-section kinetic-hero gradient-navy relative overflow-hidden py-28 md:py-36">
+        <div className="hero-light-sweep" />
+        <div className="cine-grid absolute inset-0 opacity-35" />
         <div className="absolute inset-0 opacity-[0.10]">
           <div className="absolute inset-0 bg-[url('/images/cleaning-team-office.png')] bg-cover bg-center" />
         </div>
-        <div className="relative mx-auto max-w-6xl px-4 md:px-8">
+        <div className="hero-film absolute inset-0 z-0" />
+        <div className="relative z-10 mx-auto max-w-6xl px-4 md:px-8">
           <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
-            <div>
-              <p className="section-eyebrow text-cyan-200/80">Kontakt</p>
-              <h1 className="font-display mt-4 text-4xl font-semibold text-white md:text-6xl">Direkte Anfrage statt unnötiger Umwege.</h1>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-white/82">
+            <div className="hero-copy-flow hero-subtle-parallax">
+              <p className="section-eyebrow text-cyan-200/90">Kontakt</p>
+              <h1
+                className="headline-prism hero-title-strong font-display mt-4 text-4xl font-semibold md:text-6xl"
+                style={{ color: "#f8fdff", WebkitTextFillColor: "#f8fdff" }}
+              >
+                Direkte Anfrage statt unnötiger Umwege.
+              </h1>
+              <p
+                className="hero-body mt-5 max-w-2xl text-white/90 dark:text-white/90"
+                style={{ color: "rgba(248, 253, 255, 0.92)" }}
+              >
                 Schreiben Sie uns für Umzug, Reinigung, Entrümpelung oder Ihre Festpreisanfrage. Wir melden uns strukturiert und zeitnah zurück.
               </p>
+              <div className="hero-metrics">
+                <span className="hero-metric">24/7 erreichbar</span>
+                <span className="hero-metric">WhatsApp direkt</span>
+                <span className="hero-metric">Klare Ruckmeldung</span>
+              </div>
             </div>
             <div className="glass-dark rounded-[32px] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.30)]">
               <div className="grid gap-4 md:grid-cols-3">

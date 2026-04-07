@@ -146,29 +146,32 @@ export default async function HomePage() {
         {JSON.stringify(buildFaqSchema(faqItems))}
       </Script>
 
-      <section className="relative isolate min-h-screen overflow-hidden">
+      <section className="hero-led-section kinetic-hero relative isolate min-h-screen overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
             src="/images/moving-truck-hero.png"
             alt="SEEL Transport Umzugswagen bereit für den Einsatz in Berlin"
             fill
             priority
-            className="object-cover object-center"
+            unoptimized
+            className="image-cinematic object-cover object-center"
             sizes="100vw"
           />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,8,18,0.54)_0%,rgba(2,8,18,0.66)_38%,rgba(2,8,18,0.78)_100%)]" />
+          <div className="hero-light-sweep" />
+          <div className="cine-grid absolute inset-0 opacity-40" />
         </div>
 
         <div className="relative z-20 mx-auto flex min-h-screen w-full max-w-7xl items-center justify-center px-4 pb-16 pt-28 md:justify-start md:px-8 md:pb-20 md:pt-32">
-          <div className="mx-auto max-w-[700px] text-center md:mx-0 md:max-w-3xl md:text-left">
-            <span className="inline-flex items-center rounded-full border border-white/12 bg-white/[0.07] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-cyan-100/90 backdrop-blur-xl">
+          <div className="hero-copy-flow hero-subtle-parallax mx-auto max-w-[700px] text-center md:mx-0 md:max-w-3xl md:text-left">
+            <span className="hero-badge-glow inline-flex items-center rounded-full border border-white/12 bg-white/[0.07] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-cyan-100/90 backdrop-blur-xl">
               {settings.homepage.heroBadge}
             </span>
 
-            <h1 className="font-display mt-8 max-w-[12ch] text-[2.35rem] font-bold leading-[1.02] tracking-[-0.035em] text-white drop-shadow-[0_8px_24px_rgba(0,0,0,0.38)] sm:max-w-[12.5ch] sm:text-[3.1rem] md:max-w-[13ch] md:text-[3.7rem] md:leading-[1.03] lg:text-[3.95rem]">
+            <h1 className="headline-prism hero-kicker hero-title-strong font-display mt-8 max-w-[12ch] text-[2.35rem] font-bold leading-[1.02] tracking-[-0.035em] drop-shadow-[0_8px_24px_rgba(0,0,0,0.38)] sm:max-w-[12.5ch] sm:text-[3.1rem] md:max-w-[13ch] md:text-[3.7rem] md:leading-[1.03] lg:text-[3.95rem]">
               {settings.homepage.heroTitle || heroTitle}
             </h1>
-            <p className="mt-5 max-w-2xl text-base font-medium leading-7 text-white drop-shadow-[0_6px_20px_rgba(0,0,0,0.48)] sm:text-lg md:mt-6 md:text-[1.05rem] md:leading-8">
+            <p className="hero-body mt-5 max-w-2xl md:mt-6">
               {settings.homepage.heroDescription || heroDescription}
             </p>
 
@@ -186,15 +189,21 @@ export default async function HomePage() {
                 {settings.homepage.secondaryCtaLabel || secondaryCtaLabel}
               </a>
             </div>
+
+            <div className="hero-metrics items-center justify-center md:justify-start">
+              <span className="hero-metric">Express verfugbar</span>
+              <span className="hero-metric">Premium Ablauf</span>
+              <span className="hero-metric">Berlin bis bundesweit</span>
+            </div>
           </div>
         </div>
       </section>
 
       <section className="relative z-10 pb-8 pt-8">
         <div className="mx-auto max-w-7xl px-4 md:px-8">
-          <div className="grid gap-3 rounded-[28px] border border-white/40 bg-white/65 p-3 backdrop-blur-2xl dark:border-white/[0.08] dark:bg-white/[0.03] md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 rounded-[32px] border border-white/50 bg-white/72 p-3 shadow-[0_24px_70px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-white/[0.08] dark:bg-white/[0.04] md:grid-cols-2 lg:grid-cols-4">
             {settings.trustBar.map((item) => (
-              <div key={item.id} className="trust-pill justify-center border-transparent bg-transparent shadow-none">
+              <div key={item.id} className="trust-pill justify-center border-white/20 bg-white/35 shadow-none dark:border-white/[0.08] dark:bg-white/[0.03]">
                 <ShieldCheck size={16} className="shrink-0 text-sky-600 dark:text-cyan-300" />
                 {item.label}
               </div>
@@ -203,15 +212,15 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section-padding">
+      <section className="section-spotlight section-padding">
         <div className="mx-auto max-w-7xl px-4 md:px-8">
           <div className="mb-14 max-w-2xl scroll-reveal">
             <div className="accent-line" />
             <p className="section-eyebrow">Leistungen</p>
-            <h2 className="font-display mt-4 text-3xl font-bold text-slate-900 dark:text-white md:text-5xl">
+            <h2 className="section-title mt-4">
               Klare Leistungsfelder in einer präzisen visuellen Struktur.
             </h2>
-            <p className="mt-4 text-base leading-8 text-slate-600 dark:text-white/58">
+            <p className="section-copy mt-4">
               Jede Leistung ist klar beschrieben, mit transparentem Einstiegspreis und direktem Weg zu Anfrage oder Buchung.
             </p>
           </div>
@@ -229,7 +238,8 @@ export default async function HomePage() {
                     src={service.image}
                     alt={service.alt}
                     fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-[1.06]"
+                    unoptimized
+                    className="image-cinematic object-cover"
                     sizes="(max-width: 1280px) 100vw, 25vw"
                   />
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,8,18,0.04)_0%,rgba(2,8,18,0.14)_35%,rgba(2,8,18,0.84)_100%)]" />
@@ -251,10 +261,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden py-24 text-white">
+      <section className="section-spotlight relative overflow-hidden py-24 text-white">
         <div className="absolute inset-0 bg-[linear-gradient(135deg,#020810_0%,#061320_34%,#0a1a2e_65%,#071e30_100%)]" />
         <div className="absolute inset-0 opacity-[0.12]">
-          <Image src="/images/cleaning-team-government.png" alt="" fill className="object-cover object-center" />
+          <Image src="/images/cleaning-team-government.png" alt="" fill unoptimized className="image-cinematic object-cover object-center" />
         </div>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,rgba(34,211,238,0.14),transparent_28%),radial-gradient(ellipse_at_10%_85%,rgba(56,189,248,0.08),transparent_30%)]" />
 
@@ -262,10 +272,10 @@ export default async function HomePage() {
           <div className="scroll-reveal">
             <div className="accent-line" />
             <p className="section-eyebrow text-cyan-200">Warum SEEL</p>
-            <h2 className="font-display mt-4 text-3xl font-bold md:text-5xl">
+            <h2 className="section-title mt-4 text-white">
               Vertrauen entsteht durch Struktur, nicht durch laute Versprechen.
             </h2>
-            <p className="mt-5 max-w-lg text-base leading-8 text-white/65">
+            <p className="hero-body mt-5 max-w-lg text-white/80 dark:text-white/80">
               Deshalb setzen wir auf realistische Kommunikation, saubere Abläufe und nachvollziehbare Preise.
             </p>
             <Link href="/unternehmen" className="btn-secondary-glass mt-8 gap-2 border border-white/10 bg-white/10 text-white">
@@ -299,8 +309,8 @@ export default async function HomePage() {
           <div className="scroll-reveal lg:sticky lg:top-28">
             <div className="accent-line" />
             <p className="section-eyebrow">FAQ</p>
-            <h2 className="font-display mt-4 text-3xl font-bold text-slate-900 dark:text-white md:text-5xl">Häufige Fragen</h2>
-            <p className="mt-4 text-base leading-8 text-slate-600 dark:text-white/58">
+            <h2 className="section-title mt-4">Häufige Fragen</h2>
+            <p className="section-copy mt-4">
               Antworten auf typische Fragen zu Ablauf, Region, Versicherung und Kombinationsleistungen.
             </p>
             <Link href="/kontakt" className="btn-ghost-premium mt-6 gap-2">
@@ -318,9 +328,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="pb-28 pt-10">
+      <section className="section-spotlight pb-28 pt-10">
         <div className="mx-auto max-w-6xl px-4 md:px-8">
-          <div className="relative overflow-hidden rounded-[40px] border border-white/[0.06] px-8 py-16 text-white shadow-[0_30px_90px_rgba(2,8,18,0.30)] md:px-14">
+          <div className="relative overflow-hidden rounded-[42px] border border-white/[0.08] px-8 py-16 text-white shadow-[0_34px_110px_rgba(2,8,18,0.34)] md:px-14">
             <div className="absolute inset-0 bg-[linear-gradient(135deg,#04111d_0%,#082035_36%,#0a2a3f_72%,#0b3445_100%)]" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.16),transparent_26%),radial-gradient(circle_at_bottom_left,rgba(20,184,166,0.14),transparent_30%)]" />
             <div className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:28px_28px]" />
@@ -328,8 +338,8 @@ export default async function HomePage() {
             <div className="relative z-10 md:flex md:items-center md:justify-between md:gap-12">
               <div className="mb-8 md:mb-0">
                 <p className="text-[11px] uppercase tracking-[0.34em] text-cyan-200/70">Finale Anfrage</p>
-                <h2 className="font-display mt-4 text-3xl font-bold md:text-5xl">{settings.homepage.finalCtaTitle}</h2>
-                <p className="mt-4 max-w-xl text-base leading-8 text-white/68">{settings.homepage.finalCtaDescription}</p>
+                <h2 className="section-title mt-4 text-white">{settings.homepage.finalCtaTitle}</h2>
+                <p className="hero-body mt-4 max-w-xl text-white/80 dark:text-white/80">{settings.homepage.finalCtaDescription}</p>
               </div>
               <div className="flex shrink-0 flex-col gap-3 sm:flex-row md:flex-col">
                 <Link href="/buchen" className="btn-primary-glass gap-2">

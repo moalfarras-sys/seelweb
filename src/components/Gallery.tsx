@@ -74,7 +74,8 @@ export default function Gallery({ images, title, subtitle, description, mode = "
     [visibleImages],
   );
 
-  const mosaicImages = visibleImages.filter((image) => image.id !== featured?.id);
+  const totalImages = visibleImages.length;
+  const totalCollections = Math.max(categories.length - 1, 1);
 
   const closeLightbox = useCallback(() => {
     setLightboxIndex(null);
@@ -123,17 +124,17 @@ export default function Gallery({ images, title, subtitle, description, mode = "
   if (mode === "compact") {
     return (
       <>
-        <section className="py-20">
+        <section className="py-16 sm:py-20">
           <div className="mx-auto max-w-7xl px-4 md:px-8">
-            <div className="premium-panel rounded-[32px] p-6 md:p-8">
-              <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+            <div className="premium-panel rounded-[28px] p-5 sm:rounded-[32px] sm:p-6 md:p-8">
+              <div className="grid gap-6 sm:gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
                 <div className="max-w-xl">
                   <div className="accent-line" />
                   <p className="section-eyebrow">{subtitle || "Galerie"}</p>
-                  <h2 className="font-display mt-4 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-5xl">
+                  <h2 className="headline-prism section-title mt-4">
                     {title || "Unsere Galerie"}
                   </h2>
-                  <p className="mt-5 text-base leading-8 text-slate-600 dark:text-white/58">
+                  <p className="section-copy mt-5">
                     {description ||
                       "Ausgewählte Eindrücke aus Umzug, Reinigung und Objektbetreuung. Die komplette Galerie öffnen Sie direkt im Viewer."}
                   </p>
@@ -155,29 +156,26 @@ export default function Gallery({ images, title, subtitle, description, mode = "
                 {entryHref ? (
                   <Link
                     href={entryHref}
-                    className="group relative overflow-hidden rounded-[30px] border border-white/[0.08] bg-[#040a14] text-left text-white shadow-[0_18px_48px_rgba(0,0,0,0.28)] transition-all duration-300 hover:shadow-[0_24px_60px_rgba(0,0,0,0.34)]"
+                    className="group relative overflow-hidden rounded-[24px] border border-white/[0.08] bg-[#040a14] text-left text-white shadow-[0_18px_48px_rgba(0,0,0,0.28)] transition-all duration-300 hover:shadow-[0_24px_60px_rgba(0,0,0,0.34)] sm:rounded-[30px]"
                   >
-                    <div className="relative aspect-[16/10]">
+                    <div className="relative aspect-[16/11] sm:aspect-[16/10]">
                       <Image
                         src={featured.src}
                         alt={featured.alt}
                         fill
+                        unoptimized
                         sizes="(max-width: 1024px) 100vw, 48vw"
                         className="object-cover transition duration-700 group-hover:scale-[1.04]"
                       />
                       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,8,18,0.06)_0%,rgba(2,8,18,0.26)_46%,rgba(2,8,18,0.84)_100%)]" />
-                      <div className="absolute left-0 right-0 top-0 flex items-start justify-between p-5">
-                        <span className="rounded-full border border-white/12 bg-black/30 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/85 backdrop-blur-xl">
-                          {subtitle || "Galerie"}
-                        </span>
+                      <div className="absolute right-4 top-4 sm:right-5 sm:top-5">
                         <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/[0.08] text-white backdrop-blur-xl transition-all duration-300 group-hover:bg-white/[0.16]">
                           <ZoomIn size={16} />
                         </span>
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 p-6">
-                        <p className="text-[11px] uppercase tracking-[0.3em] text-cyan-200/70">Unsere Galerie</p>
-                        <p className="mt-2 text-2xl font-semibold text-white">Galerie ansehen</p>
-                        <p className="mt-3 max-w-lg text-sm leading-7 text-white/70">
+                      <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">
+                        <p className="text-xl font-semibold text-white sm:text-2xl">Galerie ansehen</p>
+                        <p className="mt-2 max-w-lg text-sm leading-6 text-white/70 sm:leading-7">
                           Alle Bilder bleiben erhalten und öffnen sich gesammelt in einer vollständigen Galerieansicht.
                         </p>
                       </div>
@@ -187,29 +185,26 @@ export default function Gallery({ images, title, subtitle, description, mode = "
                 <button
                   type="button"
                   onClick={() => openLightbox(0)}
-                  className="group relative overflow-hidden rounded-[30px] border border-white/[0.08] bg-[#040a14] text-left text-white shadow-[0_18px_48px_rgba(0,0,0,0.28)] transition-all duration-300 hover:shadow-[0_24px_60px_rgba(0,0,0,0.34)]"
+                  className="group relative overflow-hidden rounded-[24px] border border-white/[0.08] bg-[#040a14] text-left text-white shadow-[0_18px_48px_rgba(0,0,0,0.28)] transition-all duration-300 hover:shadow-[0_24px_60px_rgba(0,0,0,0.34)] sm:rounded-[30px]"
                 >
-                  <div className="relative aspect-[16/10]">
+                  <div className="relative aspect-[16/11] sm:aspect-[16/10]">
                     <Image
                       src={featured.src}
                       alt={featured.alt}
                       fill
+                      unoptimized
                       sizes="(max-width: 1024px) 100vw, 48vw"
                       className="object-cover transition duration-700 group-hover:scale-[1.04]"
                     />
                     <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,8,18,0.06)_0%,rgba(2,8,18,0.26)_46%,rgba(2,8,18,0.84)_100%)]" />
-                    <div className="absolute left-0 right-0 top-0 flex items-start justify-between p-5">
-                      <span className="rounded-full border border-white/12 bg-black/30 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/85 backdrop-blur-xl">
-                        {subtitle || "Galerie"}
-                      </span>
+                    <div className="absolute right-4 top-4 sm:right-5 sm:top-5">
                       <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/[0.08] text-white backdrop-blur-xl transition-all duration-300 group-hover:bg-white/[0.16]">
                         <ZoomIn size={16} />
                       </span>
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <p className="text-[11px] uppercase tracking-[0.3em] text-cyan-200/70">Unsere Galerie</p>
-                      <p className="mt-2 text-2xl font-semibold text-white">Galerie ansehen</p>
-                      <p className="mt-3 max-w-lg text-sm leading-7 text-white/70">
+                    <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">
+                      <p className="text-xl font-semibold text-white sm:text-2xl">Galerie ansehen</p>
+                      <p className="mt-2 max-w-lg text-sm leading-6 text-white/70 sm:leading-7">
                         Alle Bilder bleiben erhalten und öffnen sich gesammelt in einer vollständigen Galerieansicht.
                       </p>
                     </div>
@@ -268,6 +263,7 @@ export default function Gallery({ images, title, subtitle, description, mode = "
                 alt={visibleImages[lightboxIndex].alt}
                 width={1600}
                 height={1100}
+                unoptimized
                 className="max-h-[76vh] w-auto rounded-[24px] object-contain"
                 priority
               />
@@ -287,7 +283,7 @@ export default function Gallery({ images, title, subtitle, description, mode = "
 
   return (
     <>
-      <section className="relative overflow-hidden py-28">
+      <section className="showcase-shell relative overflow-hidden py-20 sm:py-24 lg:py-28">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute left-[8%] top-20 h-56 w-56 rounded-full bg-sky-300/15 blur-[130px] dark:bg-sky-500/8" />
           <div className="absolute right-[8%] top-1/3 h-60 w-60 rounded-full bg-cyan-300/15 blur-[140px] dark:bg-cyan-500/8" />
@@ -295,27 +291,27 @@ export default function Gallery({ images, title, subtitle, description, mode = "
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 md:px-8">
-          <div className="mb-14 grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+          <div className="mb-10 grid gap-6 sm:mb-12 sm:gap-8 lg:mb-14 lg:gap-10 lg:grid-cols-[0.88fr_1.12fr] lg:items-end">
             <div className="max-w-xl scroll-reveal">
               <div className="accent-line" />
               <p className="section-eyebrow">{subtitle || "Galerie"}</p>
-              <h2 className="font-display mt-4 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-5xl">
+              <h2 className="headline-prism section-title mt-4">
                 {title || "Unsere Arbeit in Bildern"}
               </h2>
-              <p className="mt-5 text-base leading-8 text-slate-600 dark:text-white/58">
+              <p className="section-copy mt-5">
                 {description ||
                   "Eine kuratierte Auswahl realer Einsätze mit Fokus auf Sorgfalt, Organisation und sichtbar gepflegte Ergebnisse."}
               </p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 scroll-reveal">
-              <div className="premium-panel rounded-[28px] p-5">
+            <div className="grid gap-3 sm:gap-4 md:grid-cols-3 scroll-reveal">
+              <div className="premium-panel rounded-[28px] p-5 md:col-span-1">
                 <div className="flex items-center gap-3 text-slate-900 dark:text-white">
                   <Layers3 size={18} className="text-sky-700 dark:text-cyan-300" />
-                  <p className="text-sm font-semibold">Kuratiert statt angehängt</p>
+                  <p className="text-sm font-semibold">Cinematic Grid</p>
                 </div>
                 <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-white/55">
-                  Jede Aufnahme wird thematisch eingeordnet und bewusst in die Präsentation eingebettet.
+                  Eine filmische Wand aus echten Einsätzen statt einer statischen Standardgalerie.
                 </p>
               </div>
               <div className="rounded-[28px] border border-white/[0.08] bg-[#040a14] p-5 text-white shadow-[0_24px_70px_rgba(0,0,0,0.30)]">
@@ -327,16 +323,30 @@ export default function Gallery({ images, title, subtitle, description, mode = "
                   Großzügige Bildflächen, ruhige Kontraste und ein dunkler Viewer erzeugen Portfolio-Gefühl statt Standardraster.
                 </p>
               </div>
+              <div className="rounded-[28px] border border-slate-200/70 bg-white/75 p-5 text-slate-900 shadow-[0_22px_60px_rgba(15,23,42,0.08)] dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-white">
+                <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500 dark:text-white/45">Archiv</p>
+                <div className="mt-4 flex items-end gap-4">
+                  <div>
+                    <p className="text-3xl font-semibold">{totalImages}</p>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-white/55">Bilder aktuell sichtbar</p>
+                  </div>
+                  <div className="h-12 w-px bg-slate-200 dark:bg-white/10" />
+                  <div>
+                    <p className="text-3xl font-semibold">{totalCollections}</p>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-white/55">Leistungswelten</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="mb-8 flex flex-wrap gap-2 scroll-reveal">
+          <div className="mb-6 flex flex-wrap gap-2 scroll-reveal sm:mb-8">
             {categories.map((category) => (
               <button
                 key={category}
                 type="button"
                 onClick={() => setActiveCategory(category)}
-                className={`rounded-full px-4 py-2.5 text-sm font-semibold transition-all duration-300 ${
+                className={`rounded-full px-3.5 py-2 text-xs font-semibold transition-all duration-300 sm:px-4 sm:py-2.5 sm:text-sm ${
                   activeCategory === category
                     ? "bg-[#040a14] text-white shadow-[0_14px_36px_rgba(0,0,0,0.14)] dark:bg-white dark:text-slate-950"
                     : "border border-slate-200/70 bg-white/80 text-slate-700 hover:border-sky-300 hover:bg-white dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-white/65 dark:hover:bg-white/[0.08]"
@@ -347,71 +357,66 @@ export default function Gallery({ images, title, subtitle, description, mode = "
             ))}
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
-            <button
-              type="button"
-              onClick={() => openLightbox(visibleImages.findIndex((image) => image.id === featured.id))}
-              className="group relative min-h-[520px] overflow-hidden rounded-[36px] border border-white/[0.08] bg-[#040a14] text-left text-white shadow-[0_30px_90px_rgba(0,0,0,0.35)] transition-all duration-500 hover:shadow-[0_36px_100px_rgba(0,0,0,0.45)]"
-            >
-              <Image
-                src={featured.src}
-                alt={featured.alt}
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 56vw"
-                className="object-cover transition duration-700 group-hover:scale-[1.04]"
-              />
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,8,18,0.10)_0%,rgba(2,8,18,0.22)_32%,rgba(2,8,18,0.88)_100%)]" />
-              <div className="absolute left-0 right-0 top-0 flex items-start justify-between p-5">
-                <span className="rounded-full border border-white/12 bg-black/30 px-3 py-1 text-xs font-semibold uppercase tracking-[0.26em] text-white/85 backdrop-blur-xl">
-                  {categoryLabels[featured.category]}
-                </span>
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-white/[0.08] text-white backdrop-blur-xl transition-all duration-300 group-hover:bg-white/[0.16] group-hover:scale-110">
-                  <ZoomIn size={18} />
-                </span>
+          <div className="space-y-6">
+            <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+              <div className="gallery-floating-panel">
+                <p className="text-[11px] uppercase tracking-[0.32em] text-sky-700 dark:text-cyan-300">Cinematic Collection</p>
+                <h3 className="section-title mt-4 text-2xl md:text-3xl">
+                  Einheitliche Bildkarten mit stärkerem Fokus auf Eleganz, Rhythmus und Klarheit.
+                </h3>
+                <p className="section-copy mt-4 text-sm md:text-base">
+                  Alle Bilder erscheinen jetzt in derselben Größe. Das Ergebnis wirkt ruhiger, hochwertiger und näher an einem kuratierten Marken-Portfolio als an einer technischen Standardgalerie.
+                </p>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-                <div className="max-w-xl rounded-[28px] border border-white/[0.08] bg-black/28 p-5 text-white backdrop-blur-xl">
-                  <p className="text-[11px] uppercase tracking-[0.3em] text-cyan-200/60">
-                    {activeCategory === "all" ? "SEEL Einblicke" : categoryLabels[activeCategory]}
-                  </p>
-                  <h3 className="mt-3 text-2xl font-semibold md:text-3xl">{featured.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-white/65">
-                    {categoryDescriptions[activeCategory]}
-                  </p>
+              <div className="rounded-[30px] border border-white/[0.08] bg-[#06111d] p-6 text-white shadow-[0_28px_90px_rgba(2,8,18,0.30)]">
+                <p className="text-[11px] uppercase tracking-[0.32em] text-cyan-200/65">Aktive Auswahl</p>
+                <p className="mt-4 text-3xl font-semibold">{categoryLabels[activeCategory]}</p>
+                <p className="mt-3 text-sm leading-7 text-white/68">{categoryDescriptions[activeCategory]}</p>
+                <div className="mt-6 grid grid-cols-2 gap-3">
+                  <div className="rounded-[22px] border border-white/10 bg-white/[0.06] px-4 py-4">
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-white/45">Frames</p>
+                    <p className="mt-2 text-2xl font-semibold">{totalImages}</p>
+                  </div>
+                  <div className="rounded-[22px] border border-white/10 bg-white/[0.06] px-4 py-4">
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-white/45">Collections</p>
+                    <p className="mt-2 text-2xl font-semibold">{totalCollections}</p>
+                  </div>
                 </div>
               </div>
-            </button>
+            </div>
 
-            <div className="grid auto-rows-[180px] gap-4 md:grid-cols-2">
-              {mosaicImages.slice(0, 6).map((image, index) => {
-                const targetIndex = visibleImages.findIndex((entry) => entry.id === image.id);
-                const tall = index === 1 || index === 4;
-                const wide = index === 0 || index === 5;
-                return (
-                  <button
-                    key={image.id}
-                    type="button"
-                    onClick={() => openLightbox(targetIndex)}
-                    className={`group relative overflow-hidden rounded-[28px] border border-white/[0.08] bg-[#040a14] text-left text-white transition-all duration-500 hover:shadow-[0_24px_60px_rgba(0,0,0,0.35)] ${
-                      tall ? "row-span-2" : wide ? "md:col-span-2" : ""
-                    }`}
-                  >
-                    <Image
-                      src={image.src}
-                      alt={image.alt}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 26vw"
-                      className="object-cover transition duration-700 group-hover:scale-[1.05]"
-                    />
-                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,8,18,0.04)_0%,rgba(2,8,18,0.12)_42%,rgba(2,8,18,0.80)_100%)] transition-opacity duration-500 group-hover:opacity-90" />
-                    <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-                      <p className="text-[10px] uppercase tracking-[0.24em] text-white/50">{categoryLabels[image.category]}</p>
-                      <p className="mt-2 text-sm font-semibold leading-6">{image.title}</p>
-                    </div>
-                  </button>
-                );
-              })}
+            <div className="gallery-showcase-grid">
+              {visibleImages.map((image, index) => (
+                <button
+                  key={image.id}
+                  type="button"
+                  onClick={() => openLightbox(index)}
+                  className="group gallery-uniform-card"
+                >
+                  <Image
+                    src={image.src}
+                    alt={image.alt}
+                    fill
+                    priority={index < 6}
+                    loading={index < 6 ? "eager" : "lazy"}
+                    unoptimized
+                    sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                    className="image-cinematic object-cover"
+                  />
+                  <div className="absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgba(2,8,18,0.02)_0%,rgba(2,8,18,0.18)_54%,rgba(2,8,18,0.9)_100%)] transition-opacity duration-500 group-hover:opacity-95" />
+                  <div className="absolute right-3 top-3 z-[2] sm:right-4 sm:top-4">
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.08] text-white/90 opacity-0 backdrop-blur-xl transition-all duration-300 group-hover:opacity-100">
+                      <ZoomIn size={15} />
+                    </span>
+                  </div>
+                  <div className="absolute inset-x-0 bottom-0 z-[2] p-4">
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-white/45">
+                      {categoryLabels[image.category]}
+                    </p>
+                    <p className="mt-2 line-clamp-2 text-sm font-semibold leading-6 text-white">{image.title}</p>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -464,6 +469,7 @@ export default function Gallery({ images, title, subtitle, description, mode = "
               alt={visibleImages[lightboxIndex].alt}
               width={1600}
               height={1100}
+              unoptimized
               className="max-h-[76vh] w-auto rounded-[24px] object-contain"
               priority
             />

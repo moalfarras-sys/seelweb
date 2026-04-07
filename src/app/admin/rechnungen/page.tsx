@@ -94,7 +94,7 @@ export default function RechnungenPage() {
   async function openCreateModal() {
     setShowModal(true);
     try {
-      const res = await fetch("/api/admin/buchungen");
+      const res = await fetch("/api/admin/buchungen?view=invoice-create");
       if (!res.ok) throw new Error();
       const data: Order[] = await res.json();
       const invoicedOrderIds = new Set(invoices.map((inv) => inv.orderId));

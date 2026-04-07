@@ -49,7 +49,14 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <Image src="/images/logo.jpeg" alt="Seel Transport" width={64} height={64} className="h-16 w-16 rounded-xl" />
+            <Image
+              src="/images/logo.jpeg"
+              alt="Seel Transport"
+              width={64}
+              height={64}
+              className="h-16 w-16 rounded-xl"
+              style={{ height: "4rem", width: "4rem" }}
+            />
           </div>
           <h1 className="text-2xl font-bold text-navy-900 dark:text-white">SEEL Admin</h1>
           <p className="text-slate-500 dark:text-silver-400 text-sm mt-1">Melden Sie sich an, um fortzufahren</p>
@@ -69,6 +76,7 @@ export default function AdminLoginPage() {
               <input
                 type="email"
                 required
+                autoComplete="username"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 bg-white dark:bg-navy-800/60 border border-sky-200 dark:border-navy-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-silver-500 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all"
@@ -83,6 +91,7 @@ export default function AdminLoginPage() {
               <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-silver-400" />
               <input type={showPassword ? "text" : "password"}
                 required
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full pl-10 pr-12 py-3 bg-white dark:bg-navy-800/60 border border-sky-200 dark:border-navy-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-silver-500 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all"

@@ -10,7 +10,56 @@ export async function GET() {
     }
 
     const invoices = await prisma.invoice.findMany({
-      include: { order: { include: { customer: true } }, contract: true, payments: true },
+      select: {
+        id: true,
+        orderId: true,
+        contractId: true,
+        invoiceNumber: true,
+        amount: true,
+        tax: true,
+        totalAmount: true,
+        pdfUrl: true,
+        paidAt: true,
+        dueDate: true,
+        createdAt: true,
+        order: {
+          select: {
+            id: true,
+            orderNumber: true,
+            customer: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+              },
+            },
+            service: {
+              select: {
+                nameDe: true,
+              },
+            },
+          },
+        },
+        contract: {
+          select: {
+            id: true,
+            contractNumber: true,
+            status: true,
+            signedAt: true,
+          },
+        },
+        payments: {
+          select: {
+            id: true,
+            amount: true,
+            method: true,
+            status: true,
+            paidAt: true,
+            reference: true,
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
     });
 

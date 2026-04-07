@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
       }),
       prisma.manualExpense.findMany({
         where: { date: { gte: from, lte: to } },
-        select: { amount: true, date: true },
+        select: { amount: true, netAmount: true, taxAmount: true, date: true },
       }),
       prisma.order.findMany({
         where: { createdAt: { gte: from, lte: to } },
@@ -67,13 +67,14 @@ export async function GET(req: NextRequest) {
 
     const totalRevenue = paidInvoices.reduce((s, i) => s + i.totalAmount, 0);
     const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
+    const totalInputVat = expenses.reduce((s, e) => s + (e.taxAmount || 0), 0);
     const totalVat = paidInvoices.reduce((s, i) => s + i.tax, 0);
 
-    const quarterlyMap = new Map<string, { revenue: number; vat: number; expenses: number }>();
+    const quarterlyMap = new Map<string, { revenue: number; vat: number; inputVat: number; expenses: number }>();
     const ensureQuarter = (d: Date) => {
       const quarter = Math.floor(d.getMonth() / 3) + 1;
       const key = `${d.getFullYear()}-Q${quarter}`;
-      if (!quarterlyMap.has(key)) quarterlyMap.set(key, { revenue: 0, vat: 0, expenses: 0 });
+      if (!quarterlyMap.has(key)) quarterlyMap.set(key, { revenue: 0, vat: 0, inputVat: 0, expenses: 0 });
       return key;
     };
 
@@ -86,7 +87,9 @@ export async function GET(req: NextRequest) {
     }
     for (const exp of expenses) {
       const key = ensureQuarter(exp.date);
-      quarterlyMap.get(key)!.expenses += exp.amount;
+      const row = quarterlyMap.get(key)!;
+      row.expenses += exp.amount;
+      row.inputVat += exp.taxAmount || 0;
     }
 
     const monthly = Array.from(monthlyMap.entries())
@@ -99,6 +102,7 @@ export async function GET(req: NextRequest) {
         quarter,
         ...data,
         profit: data.revenue - data.expenses,
+        vatPayable: data.vat - data.inputVat,
       }));
 
     return NextResponse.json({
@@ -106,6 +110,7 @@ export async function GET(req: NextRequest) {
       to: toStr,
       totalRevenue,
       totalVat,
+      totalInputVat,
       totalExpenses,
       profit: totalRevenue - totalExpenses,
       totalOrders: orders.length,

@@ -172,9 +172,9 @@ const SMART_PRESETS: Record<
     { label: "Familie", hint: "8h · 40m³", patch: { hours: 8, volumeM3: 40 } },
   ],
   EXPRESS_MOVING: [
-    { label: "Schnell", hint: "4h ? 15m?", patch: { hours: 4, volumeM3: 15, express24h: true } },
-    { label: "Direkt", hint: "6h ? 25m?", patch: { hours: 6, volumeM3: 25, express24h: true } },
-    { label: "Komplett", hint: "8h ? 40m?", patch: { hours: 8, volumeM3: 40, express24h: true } },
+    { label: "Schnell", hint: "4h · 15m³", patch: { hours: 4, volumeM3: 15, express24h: true } },
+    { label: "Direkt", hint: "6h · 25m³", patch: { hours: 6, volumeM3: 25, express24h: true } },
+    { label: "Komplett", hint: "8h · 40m³", patch: { hours: 8, volumeM3: 40, express24h: true } },
   ],
   DISPOSAL: [
     { label: "Klein", hint: "2h · 4m³", patch: { hours: 2, volumeM3: 4 } },
@@ -616,12 +616,18 @@ export default function BuchenPage() {
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-sky-700 dark:text-cyan-300">
               Preise, Planung und Anfrage in einem Ablauf
             </p>
-            <h1 className="font-display mb-3 text-4xl font-bold tracking-tight text-slate-900 dark:text-white md:text-6xl">
+            <h1 className="headline-prism font-display mb-3 text-4xl font-bold tracking-tight md:text-6xl">
               Online buchen und strukturiert konfigurieren
             </h1>
             <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl">
               Stellen Sie Ihre Leistungen zusammen, wählen Sie Termin und Kontaktdaten und erhalten Sie eine saubere Preisorientierung für {contact.serviceRegion}.
             </p>
+
+            <div className="hero-metrics">
+              <span className="hero-metric">Live Preisorientierung</span>
+              <span className="hero-metric">Express oder Standard</span>
+              <span className="hero-metric">Direkt online anfragen</span>
+            </div>
 
             <div className="mt-8">
               <div className="flex items-center justify-between relative">

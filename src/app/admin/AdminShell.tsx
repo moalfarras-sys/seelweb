@@ -82,7 +82,14 @@ export default function AdminShell({
         <div className="flex items-center justify-between px-5 py-5 border-b border-sky-200/60 dark:border-white/5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl overflow-hidden ring-2 ring-teal-500/30 shadow-lg">
-              <Image src="/images/logo.jpeg" alt="Seel" width={40} height={40} className="object-cover w-full h-full" />
+              <Image
+                src="/images/logo.jpeg"
+                alt="Seel"
+                width={40}
+                height={40}
+                className="h-full w-full object-cover"
+                style={{ height: "100%", width: "100%" }}
+              />
             </div>
             <div>
               <p className="text-navy-900 dark:text-white font-bold text-sm tracking-wide">SEEL Admin</p>

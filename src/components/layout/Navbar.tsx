@@ -64,18 +64,19 @@ export default function Navbar() {
       <nav className="nav-glass sticky top-0 z-50">
         <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-4 md:px-8">
           <Link href="/" className="group flex items-center gap-4">
-            <div className="relative overflow-hidden rounded-[22px] border border-white/15 bg-white/[0.08] p-1 shadow-[0_14px_40px_rgba(0,0,0,0.12)] backdrop-blur-xl">
+            <div className="relative overflow-hidden rounded-[24px] border border-white/20 bg-white/[0.14] p-1 shadow-[0_18px_44px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:bg-white/[0.05]">
               <Image
                 src="/images/logo.jpeg"
                 alt="SEEL Transport & Reinigung Logo"
                 width={52}
                 height={52}
                 className="rounded-[18px] transition-transform duration-500 group-hover:scale-[1.04]"
+                style={{ height: "auto" }}
               />
             </div>
             <div>
-              <p className="font-display text-xl font-bold tracking-[0.08em] text-slate-900 dark:text-white">SEEL</p>
-              <p className="text-[0.65rem] uppercase tracking-[0.4em] text-slate-500 dark:text-white/40">
+              <p className="font-display text-xl font-bold tracking-[0.12em] text-slate-900 dark:text-white">SEEL</p>
+              <p className="text-[0.65rem] uppercase tracking-[0.42em] text-slate-500 dark:text-white/40">
                 Transport & Reinigung
               </p>
             </div>
@@ -110,7 +111,7 @@ export default function Navbar() {
                       <div className="mb-4 flex items-end justify-between gap-6 border-b border-slate-200/60 pb-4 dark:border-white/[0.08]">
                         <div>
                           <p className="section-eyebrow">Leistungswelten</p>
-                          <p className="mt-2 max-w-sm text-sm leading-6 text-slate-600 dark:text-white/55">
+                          <p className="section-copy mt-2 max-w-sm text-sm">
                             Klar strukturierte Einsatzfelder für private, gewerbliche und kurzfristige Anfragen.
                           </p>
                         </div>
@@ -124,7 +125,7 @@ export default function Navbar() {
                             key={serviceLink.href}
                             href={serviceLink.href}
                             onClick={() => setDropdownOpen(false)}
-                            className="group rounded-[24px] border border-slate-200/60 bg-white/72 p-4 transition-all duration-300 hover:-translate-y-1 hover:border-sky-300 hover:bg-white dark:border-white/[0.08] dark:bg-white/[0.03] dark:hover:bg-white/[0.06]"
+                            className="group rounded-[24px] border border-slate-200/60 bg-white/78 p-4 transition-all duration-300 hover:-translate-y-1 hover:border-sky-300 hover:bg-white dark:border-white/[0.08] dark:bg-white/[0.03] dark:hover:bg-white/[0.06]"
                           >
                             <p className="text-sm font-semibold text-slate-900 transition group-hover:text-sky-800 dark:text-white dark:group-hover:text-cyan-200">
                               {serviceLink.label}

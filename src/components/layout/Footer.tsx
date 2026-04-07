@@ -33,6 +33,7 @@ export default function Footer() {
                 width={56}
                 height={56}
                 className="rounded-[20px] border border-white/[0.08]"
+                style={{ height: "auto" }}
               />
               <div>
                 <p className="font-display text-xl font-bold tracking-[0.12em]">SEEL</p>
