@@ -28,6 +28,13 @@ const GALLERY_SCAN_DIRS = [
   "uploads/gallery",
 ];
 const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".avif"]);
+const GALLERY_EXCLUDE_PATTERNS = [
+  "logo.jpeg",
+  "admin_bg_premium",
+  "bg_cleaning_premium",
+  "bg_corporate_premium",
+  "/images/sing/",
+];
 
 const cleanTitles = [
   "Treppenhausreinigung",
@@ -47,6 +54,30 @@ const cleanTitles = [
   "Intensive Reinigung im Bestand",
   "Professionelle Abschlussreinigung",
 ];
+const galleryImageMeta: Record<
+  string,
+  { title: string; category: GalleryCategory; featured?: boolean }
+> = {
+  "/images/moving-workers-furniture.png": {
+    title: "Wohnungsumzug mit Möbelhandling",
+    category: "umzug",
+    featured: true,
+  },
+  "/images/umzug-1.jpeg": { title: "Privatumzug im Einsatz", category: "umzug" },
+  "/images/moving-truck-hero.png": { title: "Beladung und Tourenstart", category: "umzug" },
+  "/images/Express.jpeg": { title: "Expressumzug mit Priorität", category: "express" },
+  "/images/cleaning-team-office.png": { title: "Büroreinigung im Tagesbetrieb", category: "gewerbe" },
+  "/images/cleaning-team-government.png": { title: "Objektpflege für öffentliche Bereiche", category: "gewerbe" },
+  "/images/cleaning-team-staircase.png": { title: "Treppenhauspflege im Einsatz", category: "gewerbe" },
+  "/images/corporate-glass-cleaning.png": { title: "Glas- und Flächenpflege im Objekt", category: "gewerbe" },
+  "/images/corporate-hallway-cleaning.png": { title: "Pflege von Verkehrsflächen", category: "gewerbe" },
+  "/images/corporate-school-cleaning.png": { title: "Reinigung in Bildungsobjekten", category: "gewerbe" },
+  "/images/waste-disposal-van.png": { title: "Entrümpelung mit Transportlogistik", category: "entruempelung" },
+  "/images/waste-disposal-recycling.png": { title: "Sortierte Entsorgung und Recycling", category: "entruempelung" },
+  "/images/waste-disposal-apartment.png": { title: "Wohnungsräumung mit System", category: "entruempelung" },
+  "/images/sing/WhatsApp Image 2026-03-05 at 17.06.22.jpeg": { title: "Team im Einsatz vor Ort", category: "umzug" },
+  "/images/sing/WhatsApp Image 2026-03-05 at 17.06.24.jpeg": { title: "Umzugsteam bei der Durchführung", category: "umzug" },
+};
 
 function nowIso() {
   return new Date().toISOString();
@@ -211,6 +242,12 @@ function inferCategory(filePath: string): GalleryCategory {
   return "umzug";
 }
 
+function isDisplayableGalleryImage(imageUrl: string | null | undefined) {
+  const lower = (imageUrl || "").toLowerCase();
+  if (!lower) return false;
+  return !GALLERY_EXCLUDE_PATTERNS.some((pattern) => lower.includes(pattern.toLowerCase()));
+}
+
 async function scanLikelyGalleryImages() {
   const items: string[] = [];
   for (const dir of GALLERY_SCAN_DIRS) {
@@ -221,7 +258,11 @@ async function scanLikelyGalleryImages() {
         if (!entry.isFile()) continue;
         const ext = path.extname(entry.name).toLowerCase();
         if (!IMAGE_EXTENSIONS.has(ext)) continue;
-        items.push(`/${dir}/${entry.name}`.replace(/\\/g, "/"));
+        const relativePath = `/${dir}/${entry.name}`.replace(/\\/g, "/");
+        if (GALLERY_EXCLUDE_PATTERNS.some((pattern) => relativePath.toLowerCase().includes(pattern.toLowerCase()))) {
+          continue;
+        }
+        items.push(relativePath);
       }
     } catch {
       // Ignore missing folders.
@@ -235,24 +276,25 @@ async function scanLikelyGalleryImages() {
 
 async function createDefaultGalleryItems(): Promise<GalleryItem[]> {
   const images = await scanLikelyGalleryImages();
-  const preferredClean = images
-    .filter((image) => image.includes("/images/clean/"))
-    .slice(0, 16);
-  const chosen = preferredClean.length === 16 ? preferredClean : images.slice(0, 16);
   const timestamp = nowIso();
 
-  return chosen.map((imageUrl, index) => {
-    const category = inferCategory(imageUrl);
+  return images.map((imageUrl, index) => {
+    const meta = galleryImageMeta[imageUrl];
+    const category = meta?.category ?? inferCategory(imageUrl);
+    const cleanIndex = imageUrl.includes("/images/clean/")
+      ? Number((imageUrl.match(/clean \((\d+)\)/)?.[1] ?? "0")) - 1
+      : -1;
     const title =
-      category === "reinigung"
-        ? cleanTitles[index] || `Reinigung ${index + 1}`
+      meta?.title ??
+      (category === "reinigung"
+        ? cleanTitles[cleanIndex >= 0 ? cleanIndex : index] || `Reinigung ${index + 1}`
         : category === "umzug"
           ? "Umzug im Einsatz"
           : category === "entruempelung"
             ? "Entrümpelung im Einsatz"
             : category === "express"
               ? "Expressumzug"
-              : "Gewerblicher Einsatz";
+              : "Gewerblicher Einsatz");
 
     return {
       id: randomUUID(),
@@ -264,7 +306,7 @@ async function createDefaultGalleryItems(): Promise<GalleryItem[]> {
       sortOrder: index,
       isVisible: true,
       showOnHomepage: true,
-      isFeatured: index === 0,
+      isFeatured: meta?.featured ?? index === 0,
       createdAt: timestamp,
       updatedAt: timestamp,
     };
@@ -290,8 +332,6 @@ function normalizeGalleryItems(items: GalleryItem[]) {
 }
 
 async function ensureFileContent(): Promise<SiteContentData> {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-
   try {
     const raw = await fs.readFile(SITE_CONTENT_FILE, "utf-8");
     const parsed = JSON.parse(raw) as Partial<SiteContentData>;
@@ -325,7 +365,15 @@ async function ensureFileContent(): Promise<SiteContentData> {
       settings: normalizeSettings(createDefaultSettings()),
       galleryItems: await createDefaultGalleryItems(),
     };
-    await fs.writeFile(SITE_CONTENT_FILE, JSON.stringify(seeded, null, 2), "utf-8");
+
+    try {
+      await fs.mkdir(DATA_DIR, { recursive: true });
+      await fs.writeFile(SITE_CONTENT_FILE, JSON.stringify(seeded, null, 2), "utf-8");
+    } catch {
+      // Serverless production environments may not allow writing to the app filesystem.
+      // Falling back to in-memory seeded defaults keeps public pages renderable.
+    }
+
     return seeded;
   }
 }
@@ -414,12 +462,12 @@ export async function saveGalleryItems(items: GalleryItem[]) {
 
 export async function getHomepageGalleryItems() {
   const items = await getGalleryItems();
-  return items.filter((item) => item.isVisible && item.showOnHomepage);
+  return items.filter((item) => item.isVisible && item.showOnHomepage && isDisplayableGalleryImage(item.imageUrl));
 }
 
 export async function getPublicGalleryItems() {
   const items = await getGalleryItems();
-  return items.filter((item) => item.isVisible);
+  return items.filter((item) => item.isVisible && isDisplayableGalleryImage(item.imageUrl));
 }
 
 export async function upsertGalleryItem(
