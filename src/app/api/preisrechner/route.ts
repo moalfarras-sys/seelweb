@@ -5,17 +5,74 @@ import {
   type PricingServiceInput,
 } from "@/lib/pricing/rules";
 
+const PRICING_SETUP_ERRORS = new Set([
+  "NO_PRICE_RULES",
+  "SERVICE_NOT_FOUND",
+]);
+
+function summarizeServices(services: PricingServiceInput[]) {
+  return services.map((service) => ({
+    serviceType: service.serviceType,
+    zip: service.zip,
+    hours: service.params.hours ?? null,
+    distanceKm: service.params.distanceKm ?? null,
+    volumeM3: service.params.volumeM3 ?? null,
+    areaM2: service.params.areaM2 ?? null,
+    businessMove: Boolean(service.params.businessMove),
+    express24h: Boolean(service.params.express24h),
+    express48h: Boolean(service.params.express48h),
+  }));
+}
+
+function mapPricingError(message: string, requestId: string) {
+  if (message === "SERVICE_AREA_NOT_SUPPORTED") {
+    return NextResponse.json(
+      { code: message, error: "Service in dieser Region derzeit nicht verfuegbar.", requestId },
+      { status: 422 }
+    );
+  }
+
+  if (message.startsWith("DISCOUNT_")) {
+    return NextResponse.json(
+      { code: message, error: "Rabattcode ist ungueltig oder nicht anwendbar.", requestId },
+      { status: 422 }
+    );
+  }
+
+  if (PRICING_SETUP_ERRORS.has(message)) {
+    return NextResponse.json(
+      {
+        code: "PRICING_CONFIGURATION_ERROR",
+        error: "Preisregeln sind fuer diese Leistung derzeit nicht vollstaendig eingerichtet. Bitte kontaktieren Sie uns kurz direkt.",
+        requestId,
+      },
+      { status: 503 }
+    );
+  }
+
+  return null;
+}
+
+function optionalString(value: unknown) {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
 export async function POST(req: NextRequest) {
   const requestId = req.headers.get("x-request-id") || crypto.randomUUID();
+  let services: PricingServiceInput[] = [];
+  let body: Record<string, unknown> = {};
+
   try {
-    const body = await req.json();
+    body = (await req.json()) as Record<string, unknown>;
     const incomingServices = Array.isArray(body.services) ? body.services : [];
 
     if (incomingServices.length === 0) {
       return NextResponse.json({ error: "Pflichtfeld: services[]", requestId }, { status: 400 });
     }
 
-    const services: PricingServiceInput[] = incomingServices.map((svc: Record<string, unknown>) => {
+    services = incomingServices.map((svc: Record<string, unknown>) => {
       const extras = Array.isArray(svc?.extras)
         ? svc.extras
             .map((entry) => {
@@ -67,26 +124,27 @@ export async function POST(req: NextRequest) {
 
     const pricing = await calculateAggregatePricing({
       services,
-      discountCode: body.discountCode,
-      customerEmail: body.customerEmail,
-      customerPhone: body.customerPhone,
+      discountCode: optionalString(body.discountCode),
+      customerEmail: optionalString(body.customerEmail),
+      customerPhone: optionalString(body.customerPhone),
     });
 
     return NextResponse.json({ success: true, pricing, requestId });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Fehler bei der Preisberechnung";
-    console.error(`[pricing:${requestId}] failed`, error);
-    if (message === "SERVICE_AREA_NOT_SUPPORTED") {
-      return NextResponse.json(
-        { code: message, error: "Service in dieser Region derzeit nicht verfuegbar.", requestId },
-        { status: 422 }
-      );
-    }
-    if (message.startsWith("DISCOUNT_")) {
-      return NextResponse.json(
-        { code: message, error: "Rabattcode ist ungueltig oder nicht anwendbar.", requestId },
-        { status: 422 }
-      );
+    console.error(`[pricing:${requestId}] failed`, {
+      message,
+      stack: error instanceof Error ? error.stack : undefined,
+      services: summarizeServices(services),
+      isWeekend: Boolean(body.isWeekend),
+      hasDiscountCode: Boolean(body.discountCode),
+      hasCustomerEmail: Boolean(body.customerEmail),
+      hasCustomerPhone: Boolean(body.customerPhone),
+    });
+
+    const mappedResponse = mapPricingError(message, requestId);
+    if (mappedResponse) {
+      return mappedResponse;
     }
 
     return NextResponse.json({ error: "Fehler bei der Preisberechnung", requestId }, { status: 500 });

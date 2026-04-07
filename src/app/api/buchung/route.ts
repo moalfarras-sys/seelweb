@@ -11,6 +11,11 @@ const JSON_UTF8_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
 };
 
+const PRICING_SETUP_ERRORS = new Set([
+  "NO_PRICE_RULES",
+  "SERVICE_NOT_FOUND",
+]);
+
 const SERVICE_LABELS: Record<string, string> = {
   MOVING: "Umzug",
   EXPRESS_MOVING: "Expressumzug",
@@ -89,6 +94,25 @@ function errorResponse(status: number, code: string, message: string, requestId:
     },
     { status, headers: JSON_UTF8_HEADERS }
   );
+}
+
+function summarizeBookingServices(services: IncomingServicePayload[]) {
+  return services.map((service) => {
+    const from = normalizeAddressPayload(service.addressFrom);
+    const to = normalizeAddressPayload(service.addressTo);
+    return {
+      serviceType: service.serviceType ?? null,
+      hours: service.hours ?? null,
+      zipFrom: from?.zip || null,
+      zipTo: to?.zip || null,
+      distanceKm: service.distanceKm ?? null,
+      volumeM3: service.volumeM3 ?? null,
+      areaM2: service.areaM2 ?? null,
+      businessMove: Boolean(service.businessMove),
+      express24h: Boolean(service.express24h),
+      express48h: Boolean(service.express48h),
+    };
+  });
 }
 
 function splitStreetAndHouseNumber(input: string) {
@@ -210,6 +234,7 @@ function formatCustomerSummary(data: {
 
 export async function POST(req: NextRequest) {
   const requestId = req.headers.get("x-request-id") || crypto.randomUUID();
+  let incomingServices: IncomingServicePayload[] = [];
 
   try {
     const body = await req.json();
@@ -238,7 +263,7 @@ export async function POST(req: NextRequest) {
       return errorResponse(400, "VALIDATION_ERROR", "Ungültiges Datum", requestId);
     }
 
-    const incomingServices: IncomingServicePayload[] = Array.isArray(services) ? services : [];
+    incomingServices = Array.isArray(services) ? services : [];
     if (incomingServices.length === 0) {
       return errorResponse(400, "VALIDATION_ERROR", "Mindestens ein Service ist erforderlich", requestId);
     }
@@ -639,6 +664,18 @@ export async function POST(req: NextRequest) {
     const message = error instanceof Error ? error.message : "BOOKING_CREATE_FAILED";
     if (message === "SERVICE_AREA_NOT_SUPPORTED") {
       return errorResponse(422, message, "Service in dieser Region derzeit nicht verfügbar.", requestId);
+    }
+    if (PRICING_SETUP_ERRORS.has(message)) {
+      console.error(`[booking:${requestId}] pricing_configuration_error`, {
+        message,
+        services: summarizeBookingServices(incomingServices),
+      });
+      return errorResponse(
+        503,
+        "PRICING_CONFIGURATION_ERROR",
+        "Preisregeln sind fuer diese Leistung derzeit nicht vollstaendig eingerichtet. Bitte kontaktieren Sie uns kurz direkt.",
+        requestId
+      );
     }
     if (message.startsWith("DISCOUNT_")) {
       return errorResponse(422, message, "Rabattcode ist ungültig oder nicht anwendbar.", requestId);
