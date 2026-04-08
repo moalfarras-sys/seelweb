@@ -6,10 +6,11 @@ import { getPrices, formatPricePerHour } from "@/lib/getPrices";
 import { buildFaqSchema, buildMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Umzugsfirma Berlin – Schnell, Sicher, Zuverlässig",
+  title: "Umzugsfirma Berlin | Professionell ab 79 €/Std.",
   description:
     "Ihre Umzugsfirma in Berlin: Mitte, Neukölln, Charlottenburg, Spandau, Friedrichshain, Kreuzberg, Tempelhof, Pankow und weitere Bezirke. Transparente Preise und zuverlässige Teams.",
   path: "/leistungen/umzug-berlin",
+  keywords: ["umzugsfirma berlin", "umzug berlin", "umzugsunternehmen berlin", "möbeltransport berlin"],
 });
 
 const districts = [

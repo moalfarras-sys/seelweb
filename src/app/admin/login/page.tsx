@@ -50,7 +50,7 @@ export default function AdminLoginPage() {
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <Image
-              src="/images/logo.jpeg"
+              src="/images/logo.png"
               alt="Seel Transport"
               width={64}
               height={64}

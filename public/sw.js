@@ -1,7 +1,7 @@
 const CACHE_NAME = 'seel-v3';
 const STATIC_ASSETS = [
     '/',
-    '/images/logo.jpeg',
+    '/images/logo.png',
     '/manifest.json',
 ];
 

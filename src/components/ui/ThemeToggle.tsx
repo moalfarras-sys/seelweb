@@ -17,11 +17,17 @@ export function ThemeToggle() {
         if (!mounted) return;
         setTheme(isDark ? "light" : "dark");
       }}
-      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200/60 bg-white/72 text-slate-700 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-white dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-white/75 dark:hover:bg-white/[0.08]"
+      className="relative inline-flex h-8 w-[60px] items-center rounded-pill border border-border bg-surface p-0.5 transition-colors duration-300 dark:border-border-dark dark:bg-surface-dark-card"
       aria-label={isDark ? "Zum hellen Modus wechseln" : "Zum dunklen Modus wechseln"}
       disabled={!mounted}
     >
-      {isDark ? <Sun size={18} /> : <Moon size={18} />}
+      <span
+        className={`flex h-6 w-6 items-center justify-center rounded-full bg-brand-teal text-white shadow-sm transition-transform duration-300 ${
+          isDark ? "translate-x-[30px]" : "translate-x-0"
+        }`}
+      >
+        {isDark ? <Moon size={13} /> : <Sun size={13} />}
+      </span>
     </button>
   );
 }

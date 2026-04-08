@@ -124,7 +124,7 @@ const LIGHT = [248, 250, 252] as const;
 const BORDER = [226, 232, 240] as const;
 const SUCCESS = [16, 185, 129] as const;
 
-const logoPath = path.join(process.cwd(), "public", "images", "logo.jpeg");
+const logoPath = path.join(process.cwd(), "public", "images", "logo.png");
 const signaturePath = path.join(process.cwd(), "public", "images", "sing", "WhatsApp Image 2026-03-05 at 17.06.22.jpeg");
 const sealPath = path.join(process.cwd(), "public", "images", "sing", "WhatsApp Image 2026-03-05 at 17.06.24.jpeg");
 
@@ -168,7 +168,7 @@ function getLogoDataUrl() {
   if (logoDataUrl) return logoDataUrl;
   const logoB64 = safeReadBase64(logoPath);
   if (!logoB64) return null;
-  logoDataUrl = `data:image/jpeg;base64,${logoB64}`;
+  logoDataUrl = `data:image/png;base64,${logoB64}`;
   return logoDataUrl;
 }
 

@@ -31,8 +31,8 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: "payment",
-      success_url: `${req.nextUrl.origin}/buchen/erfolgsession_id={CHECKOUT_SESSION_ID}&order=${orderNumber}`,
-      cancel_url: `${req.nextUrl.origin}/buchencancelled=true`,
+      success_url: `${req.nextUrl.origin}/buchen?erfolg=true&session_id={CHECKOUT_SESSION_ID}&order=${orderNumber}`,
+      cancel_url: `${req.nextUrl.origin}/buchen?cancelled=true`,
       customer_email: customerEmail,
       metadata: { orderNumber },
     });

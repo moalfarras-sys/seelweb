@@ -44,7 +44,7 @@ export default async function LeistungenPage() {
       title: "Privat- und Regionalumzüge",
       description: "Privatumzüge, Berlin-Umzüge und Brandenburg-Routen mit klarer Taktung und transparenter Preisstruktur.",
       href: "/leistungen/umzug-berlin",
-      image: "/images/moving-workers-furniture.png",
+      image: "/images/umzug-1.jpeg",
       alt: "SEEL Transport Privatumzug Berlin – Möbeltransport und Umzugsteam",
       price: getPublicServicePriceLabel(prices, "umzug-berlin"),
       bullets: ["Privatumzug Berlin", "Umzug Berlin-Brandenburg", "Montage und Tragehilfe", "Halteverbotszonen auf Wunsch"],
@@ -54,7 +54,7 @@ export default async function LeistungenPage() {
       title: "Büro- und Gewerbeumzug",
       description: "Projektorientierte Umzüge für Kanzleien, Praxen, Agenturen und gewerbliche Flächen mit minimaler Unterbrechung.",
       href: "/leistungen/gewerbe",
-      image: "/images/corporate-glass-cleaning.png",
+      image: "/images/corporate-hallway-cleaning.png",
       alt: "Professionelle Gewerbeleistung von SEEL in Berlin",
       price: getPublicServicePriceLabel(prices, "gewerbe"),
       bullets: ["Projektplanung", "IT-Equipment", "Möbellogistik", "Optionale Nachreinigung"],
@@ -74,7 +74,7 @@ export default async function LeistungenPage() {
       title: "Reinigung und Endreinigung",
       description: "Wohnungsreinigung, Endreinigung und gewerbliche Reinigung mit abgestimmten Checklisten und fester Kommunikation.",
       href: "/leistungen/reinigung",
-      image: "/images/cleaning-team-office.png",
+      image: "/images/cleaning-team-staircase.png",
       alt: "SEEL Reinigungsteam bei der professionellen Büroreinigung in Berlin",
       price: getPublicServicePriceLabel(prices, "reinigung"),
       bullets: ["Wohnungsreinigung", "Endreinigung", "Büroreinigung", "Feste Leistungslisten"],
@@ -95,7 +95,7 @@ export default async function LeistungenPage() {
     <>
       <section className="hero-led-section kinetic-hero gradient-navy relative overflow-hidden py-28 md:py-36">
         <div className="absolute inset-0 opacity-[0.10]">
-          <Image src="/images/moving-truck-hero.png" alt="" fill className="image-cinematic object-cover object-center" />
+          <Image src="/images/umzug-1.jpeg" alt="" fill className="image-cinematic object-cover object-center" />
         </div>
         <div className="hero-light-sweep" />
         <div className="cine-grid absolute inset-0 opacity-35" />

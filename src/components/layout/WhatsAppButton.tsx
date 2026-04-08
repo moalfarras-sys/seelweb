@@ -70,9 +70,9 @@ export default function WhatsAppButton() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="WhatsApp Chat öffnen"
-        className="group relative inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/30 transition duration-300 hover:-translate-y-0.5 hover:scale-105 hover:bg-emerald-600"
+        className="group relative inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] shadow-lg shadow-[#25D366]/30 transition duration-300 hover:-translate-y-0.5 hover:scale-105 hover:brightness-110"
       >
-        <span className="absolute inset-0 rounded-full bg-emerald-400/40 blur-md transition group-hover:bg-emerald-300/60" />
+        <span className="absolute inset-0 animate-ping rounded-full bg-[#25D366]/30" style={{ animationDuration: "3s" }} />
         <span className="relative">
           <WhatsAppIcon />
         </span>

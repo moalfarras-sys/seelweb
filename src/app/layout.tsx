@@ -1,13 +1,26 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { headers } from "next/headers";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Inter, Outfit } from "next/font/google";
 import "./globals.css";
 
 const displayFont = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-display",
   weight: ["500", "600", "700", "800"],
+  display: "swap",
+});
+
+const interFont = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const uiFont = Outfit({
+  subsets: ["latin"],
+  variable: "--font-ui",
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 import Navbar from "@/components/layout/Navbar";
@@ -29,9 +42,9 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://seeltransport.de"),
-  title: "SEEL Transport - Umzüge, Reinigung und Entrümpelung in Berlin",
+  title: "Umzug Berlin | SEEL Transport & Reinigung",
   description:
-    "Professionelle Umzüge, Transporte, Reinigung und Entrümpelung in Berlin, Brandenburg und bei geplanten deutschlandweiten Einsätzen.",
+    "Professionelle Umzüge, Reinigung und Entrümpelung in Berlin und Brandenburg. Transparent, versichert, kurzfristig buchbar. Ab 34 €/Std.",
   keywords: [
     "Umzug Berlin",
     "Umzugsfirma Berlin",
@@ -52,7 +65,7 @@ export const metadata: Metadata = {
     siteName: "SEEL Transport",
     locale: "de_DE",
     type: "website",
-    images: [{ url: "/images/logo.jpeg", width: 512, height: 512, alt: "SEEL Transport Logo" }],
+    images: [{ url: "/images/logo.png", width: 512, height: 512, alt: "SEEL Transport Logo" }],
   },
 };
 
@@ -70,7 +83,7 @@ export default async function RootLayout({
     "@type": ["LocalBusiness", "MovingCompany"],
     name: siteContent.company.name,
     url: siteContent.contact.websiteUrl,
-    logo: `${siteContent.contact.websiteUrl}/images/logo.jpeg`,
+    logo: `${siteContent.contact.websiteUrl}/images/logo.png`,
     telephone: siteContent.contact.primaryPhoneDisplay,
     email: siteContent.contact.email,
     address: {
@@ -93,13 +106,13 @@ export default async function RootLayout({
     <html lang="de" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
-        <link rel="apple-touch-icon" href="/images/logo.jpeg" />
+        <link rel="apple-touch-icon" href="/images/logo.png" />
         <meta name="mobile-web-app-capable" content="yes" />
         <Script id="local-business-schema" type="application/ld+json" strategy="beforeInteractive">
           {JSON.stringify(localBusinessSchema)}
         </Script>
       </head>
-      <body className={`antialiased ${displayFont.variable} ${isAdmin ? "admin-site" : "public-site"}`}>
+      <body className={`antialiased ${displayFont.variable} ${interFont.variable} ${uiFont.variable} ${isAdmin ? "admin-site" : "public-site"}`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <SiteContentProvider value={siteContent}>
             {!isAdmin && <div className="site-aurora" />}

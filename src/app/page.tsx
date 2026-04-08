@@ -12,10 +12,19 @@ import { getHomepageGalleryItems, getPublicGalleryItems, getPublicSiteSettings }
 import { CONTACT } from "@/config/contact";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Umzüge, Reinigung und Entrümpelung",
+  title: "Umzug Berlin | SEEL Transport & Reinigung",
   description:
-    "SEEL Transport & Reinigung begleitet Umzug, Reinigung und Entrümpelung in Berlin, Brandenburg und bei geplanten deutschlandweiten Einsätzen.",
+    "Professionelle Umzüge, Reinigung und Entrümpelung in Berlin und Brandenburg. Transparent, versichert, kurzfristig buchbar. Ab 34 €/Std.",
   path: "/",
+  keywords: [
+    "umzug berlin",
+    "umzugsfirma berlin",
+    "reinigung berlin",
+    "entrümpelung berlin",
+    "umzugsunternehmen berlin",
+    "transport berlin",
+    "express umzug berlin",
+  ],
 });
 
 const faqItems = [
@@ -108,7 +117,7 @@ export default async function HomePage() {
       description: "Projektplanung für Unternehmen, Kanzleien, Praxen und Agenturen mit minimaler Ausfallzeit.",
       href: "/leistungen/gewerbe",
       price: getPublicServicePriceLabel(prices, "gewerbe"),
-      image: "/images/corporate-hallway-cleaning.png",
+      image: "/images/clean/clean (5).jpeg",
     },
     {
       title: "Reinigung & Endreinigung",
@@ -116,7 +125,7 @@ export default async function HomePage() {
       description: "Wohnung, Büro und Übergabe aus einer Hand mit klaren Leistungslisten und sauberer Dokumentation.",
       href: "/leistungen/reinigung",
       price: getPublicServicePriceLabel(prices, "reinigung"),
-      image: "/images/cleaning-team-office.png",
+      image: "/images/clean/clean (3).jpeg",
     },
     {
       title: "Entrümpelung",
@@ -124,7 +133,7 @@ export default async function HomePage() {
       description: "Schnelle Räumung, saubere Trennung und fachgerechte Entsorgung mit klarer Abstimmung.",
       href: "/leistungen/entruempelung",
       price: getPublicServicePriceLabel(prices, "entruempelung"),
-      image: "/images/waste-disposal-van.png",
+      image: "/images/clean/clean (7).jpeg",
     },
   ];
 
@@ -261,10 +270,28 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="relative z-10 py-16 sm:py-20">
+        <div className="mx-auto max-w-7xl px-4 md:px-8">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { value: "500+", label: "Einsätze" },
+              { value: "10", label: "Teammitglieder" },
+              { value: "48h", label: "Reaktionszeit" },
+              { value: "4.9★", label: "Bewertung" },
+            ].map((stat) => (
+              <div key={stat.label} className="premium-stat text-center scroll-reveal">
+                <p className="font-display text-3xl font-bold text-brand-teal md:text-4xl">{stat.value}</p>
+                <p className="mt-1 text-sm font-medium text-text-body dark:text-text-on-dark-muted">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="section-spotlight relative overflow-hidden py-24 text-white">
         <div className="absolute inset-0 bg-[linear-gradient(135deg,#020810_0%,#061320_34%,#0a1a2e_65%,#071e30_100%)]" />
         <div className="absolute inset-0 opacity-[0.12]">
-          <Image src="/images/cleaning-team-government.png" alt="" fill unoptimized className="image-cinematic object-cover object-center" />
+          <Image src="/images/clean/clean (8).jpeg" alt="" fill unoptimized className="image-cinematic object-cover object-center" />
         </div>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,rgba(34,211,238,0.14),transparent_28%),radial-gradient(ellipse_at_10%_85%,rgba(56,189,248,0.08),transparent_30%)]" />
 
@@ -303,6 +330,50 @@ export default async function HomePage() {
         mode="compact"
         entryHref="/galerie"
       />
+
+      <section className="section-padding">
+        <div className="mx-auto max-w-7xl px-4 md:px-8">
+          <div className="mb-12 max-w-2xl scroll-reveal">
+            <div className="accent-line" />
+            <p className="section-eyebrow">Kundenstimmen</p>
+            <h2 className="section-title mt-4">Was unsere Kunden sagen</h2>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              {
+                text: "Pünktlich, freundlich und professionell. Unser Umzug lief absolut reibungslos.",
+                name: "Thomas K.",
+                detail: "Privatumzug Berlin-Mitte · Mai 2025",
+              },
+              {
+                text: "Tolle Organisation, transparente Preise. Buchen wir definitiv wieder.",
+                name: "Sandra M.",
+                detail: "Endreinigung Berlin-Prenzlauer Berg · März 2025",
+              },
+              {
+                text: "Express-Entrümpelung in 4 Stunden erledigt. Sehr empfehlenswert.",
+                name: "Bau GmbH Berlin",
+                detail: "Gewerbekunde · Februar 2025",
+              },
+            ].map((review) => (
+              <div key={review.name} className="premium-panel rounded-[24px] p-6 scroll-reveal">
+                <div className="flex gap-1 text-brand-gold">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <span key={i} className="text-lg">★</span>
+                  ))}
+                </div>
+                <p className="mt-4 text-sm leading-7 text-text-body dark:text-text-on-dark-muted">
+                  &ldquo;{review.text}&rdquo;
+                </p>
+                <div className="mt-4 border-t border-border/40 pt-3 dark:border-border-dark/40">
+                  <p className="text-sm font-semibold text-text-primary dark:text-text-on-dark">{review.name}</p>
+                  <p className="text-xs text-text-muted dark:text-text-on-dark-muted">{review.detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="pb-8">
         <div className="mx-auto grid max-w-6xl gap-12 px-4 md:px-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">

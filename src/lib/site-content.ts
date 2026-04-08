@@ -29,11 +29,11 @@ const GALLERY_SCAN_DIRS = [
 ];
 const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".avif"]);
 const GALLERY_EXCLUDE_PATTERNS = [
-  "logo.jpeg",
+  "logo.png",
+  "favicon",
   "admin_bg_premium",
   "bg_cleaning_premium",
   "bg_corporate_premium",
-  "/images/sing/",
 ];
 
 const cleanTitles = [
@@ -58,23 +58,32 @@ const galleryImageMeta: Record<
   string,
   { title: string; category: GalleryCategory; featured?: boolean }
 > = {
-  "/images/moving-workers-furniture.png": {
-    title: "Wohnungsumzug mit Möbelhandling",
+  "/images/moving-truck-hero.png": {
+    title: "SEEL Umzugswagen im Einsatz",
     category: "umzug",
     featured: true,
   },
   "/images/umzug-1.jpeg": { title: "Privatumzug im Einsatz", category: "umzug" },
-  "/images/moving-truck-hero.png": { title: "Beladung und Tourenstart", category: "umzug" },
   "/images/Express.jpeg": { title: "Expressumzug mit Priorität", category: "express" },
-  "/images/cleaning-team-office.png": { title: "Büroreinigung im Tagesbetrieb", category: "gewerbe" },
-  "/images/cleaning-team-government.png": { title: "Objektpflege für öffentliche Bereiche", category: "gewerbe" },
-  "/images/cleaning-team-staircase.png": { title: "Treppenhauspflege im Einsatz", category: "gewerbe" },
-  "/images/corporate-glass-cleaning.png": { title: "Glas- und Flächenpflege im Objekt", category: "gewerbe" },
-  "/images/corporate-hallway-cleaning.png": { title: "Pflege von Verkehrsflächen", category: "gewerbe" },
-  "/images/corporate-school-cleaning.png": { title: "Reinigung in Bildungsobjekten", category: "gewerbe" },
-  "/images/waste-disposal-van.png": { title: "Entrümpelung mit Transportlogistik", category: "entruempelung" },
+  "/images/cleaning-team-office.png": { title: "Büroreinigung mit professionellem Team", category: "gewerbe" },
+  "/images/cleaning-team-government.png": { title: "Reinigung für öffentliche Einrichtungen", category: "gewerbe" },
+  "/images/cleaning-team-staircase.png": { title: "Treppenhausreinigung im Detail", category: "reinigung" },
+  "/images/corporate-glass-cleaning.png": { title: "Glasreinigung im Gewerbeobjekt", category: "gewerbe" },
+  "/images/corporate-hallway-cleaning.png": { title: "Flurreinigung in Bürogebäuden", category: "gewerbe" },
+  "/images/corporate-school-cleaning.png": { title: "Reinigung in Bildungseinrichtungen", category: "gewerbe" },
   "/images/waste-disposal-recycling.png": { title: "Sortierte Entsorgung und Recycling", category: "entruempelung" },
   "/images/waste-disposal-apartment.png": { title: "Wohnungsräumung mit System", category: "entruempelung" },
+  "/images/waste-disposal-van.png": { title: "Entsorgungsfahrzeug im Einsatz", category: "entruempelung" },
+  "/images/clean/clean (16).jpeg": { title: "Wohnungsumzug mit Möbelhandling", category: "umzug" },
+  "/images/clean/clean (3).jpeg": { title: "Büroreinigung im Tagesbetrieb", category: "reinigung" },
+  "/images/clean/clean (8).jpeg": { title: "Objektpflege für öffentliche Bereiche", category: "reinigung" },
+  "/images/clean/clean (9).jpeg": { title: "Treppenhauspflege im Einsatz", category: "reinigung" },
+  "/images/clean/clean (10).jpeg": { title: "Glas- und Flächenpflege im Objekt", category: "reinigung" },
+  "/images/clean/clean (5).jpeg": { title: "Pflege von Verkehrsflächen", category: "reinigung" },
+  "/images/clean/clean (12).jpeg": { title: "Reinigung in Bildungsobjekten", category: "reinigung" },
+  "/images/clean/clean (7).jpeg": { title: "Entrümpelung mit Transportlogistik", category: "entruempelung" },
+  "/images/clean/clean (13).jpeg": { title: "Fachgerechte Entsorgung vor Ort", category: "entruempelung" },
+  "/images/clean/clean (15).jpeg": { title: "Grundreinigung nach Räumung", category: "reinigung" },
   "/images/sing/WhatsApp Image 2026-03-05 at 17.06.22.jpeg": { title: "Team im Einsatz vor Ort", category: "umzug" },
   "/images/sing/WhatsApp Image 2026-03-05 at 17.06.24.jpeg": { title: "Umzugsteam bei der Durchführung", category: "umzug" },
 };

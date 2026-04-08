@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 
 const SLOT_MINUTES = 30;
 const BUFFER_MINUTES = 30;
+const DEFAULT_SLOTS = ["08:00", "10:00", "13:00", "16:00"];
 
 type Interval = { start: number; end: number };
 
@@ -61,10 +62,23 @@ function buildSlots(work: Interval, durationMin: number) {
   return slots;
 }
 
+function buildDefaultSlots(work: Interval) {
+  return DEFAULT_SLOTS
+    .filter((time) => {
+      const mins = toMinutes(time);
+      return mins >= work.start && mins < work.end;
+    })
+    .map((time) => ({
+      start: time,
+      end: formatMinutes(Math.min(toMinutes(time) + 120, work.end)),
+      label: time,
+    }));
+}
+
 export async function GET(req: NextRequest) {
   try {
     const dateStr = req.nextUrl.searchParams.get("date");
-    const durationMin = parseDuration(req.nextUrl.searchParams.get("duration"));
+    const rawDuration = parseDuration(req.nextUrl.searchParams.get("duration"));
     if (!dateStr) {
       return NextResponse.json({ success: false, error: "date ist erforderlich" }, { status: 400 });
     }
@@ -76,8 +90,11 @@ export async function GET(req: NextRequest) {
 
     const work = getWorkHours(selectedDate);
     if (!work) {
-      return NextResponse.json({ success: true, date: dateStr, durationMin, slots: [], fullyBooked: true });
+      return NextResponse.json({ success: true, date: dateStr, durationMin: rawDuration, slots: [], fullyBooked: true });
     }
+
+    const workWindowMin = work.end - work.start;
+    const durationMin = Math.min(rawDuration, workWindowMin);
 
     const startDay = new Date(selectedDate);
     startDay.setHours(0, 0, 0, 0);
@@ -111,7 +128,6 @@ export async function GET(req: NextRequest) {
         const parsed = parseSlot(o.timeSlot);
         if (parsed) return parsed;
         if (!o.bookedHours || o.bookedHours <= 0) return null;
-        // fallback for legacy records without explicit slot
         return {
           start: work.start,
           end: Math.min(work.end, work.start + Math.floor(o.bookedHours * 60)),
@@ -123,12 +139,24 @@ export async function GET(req: NextRequest) {
         end: Math.min(work.end, x.end + BUFFER_MINUTES),
       }));
 
-    const slots = fallback
+    let slots = fallback
       ? buildSlots(work, durationMin)
       : buildSlots(work, durationMin).filter((slot) => {
           const candidate = parseSlot(slot.label);
           return candidate ? !blocked.some((b) => intervalsOverlap(candidate, b)) : false;
         });
+
+    if (slots.length === 0) {
+      const defaultSlots = buildDefaultSlots(work);
+      slots = fallback
+        ? defaultSlots
+        : defaultSlots.filter((slot) => {
+            const slotStart = toMinutes(slot.start);
+            const slotEnd = toMinutes(slot.end);
+            const candidate: Interval = { start: slotStart, end: slotEnd };
+            return !blocked.some((b) => intervalsOverlap(candidate, b));
+          });
+    }
 
     return NextResponse.json(
       {
