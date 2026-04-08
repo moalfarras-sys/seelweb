@@ -22,8 +22,9 @@ export function buildMetadata({
   image?: string;
 }): Metadata {
   const url = absoluteUrl(path);
-  const normalizedTitle = title.includes("SEEL") ? title : `${title} | ${SITE_NAME}`;
-  const openGraphTitle = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
+  const titleBase = title.includes("|") ? title.split("|")[0].trim() : title.trim();
+  const normalizedTitle = titleBase === SITE_NAME ? SITE_NAME : `${titleBase} | ${SITE_NAME}`;
+  const openGraphTitle = normalizedTitle;
   const imageUrl = image ? absoluteUrl(image) : DEFAULT_OG_IMAGE;
 
   return {

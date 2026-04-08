@@ -4,8 +4,8 @@ import { formatPricePerHour, type PublicPrices } from "@/lib/public-prices-share
 
 const FALLBACK_PRICES: PublicPrices = {
   umzugStandard: 59,
-  umzugExpress: 75,
-  umzugExpressSurchargePct: 40,
+  umzugExpress: 79,
+  umzugExpressSurchargePct: 0,
   reinigungWohnung: 34,
   reinigungBuero: 34,
   gewerbeUmzug: 59,

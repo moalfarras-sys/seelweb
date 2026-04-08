@@ -188,7 +188,7 @@ export default function KontaktPage() {
 
             <div className="overflow-hidden rounded-[30px] border border-border bg-white shadow-[var(--shadow-card)] dark:border-border-dark dark:bg-surface-dark-card">
               <iframe
-                title="SEEL Transport Berlin Karte"
+                title="SEEL Transport & Reinigung Karte"
                 src="https://www.google.com/maps?q=Forster%20Stra%C3%9Fe%205%2C%2012627%20Berlin&z=13&output=embed"
                 className="h-[340px] w-full border-0"
                 loading="lazy"

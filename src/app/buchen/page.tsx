@@ -35,8 +35,8 @@ type Config = { on: boolean; hours: number; value: number; from: string; zipFrom
 
 const steps = ["Service", "Details", "Termin"];
 const meta: Record<ServiceType, { label: string; desc: string; badge: string; min: number; icon: typeof Home }> = {
-  MOVING: { label: "Privat- & Firmenumzug", desc: "Strukturiert, versichert und sauber koordiniert.", badge: "ab 79 €/Std.", min: 2, icon: Truck },
-  EXPRESS_MOVING: { label: "Expressumzug", desc: "Kurzfristige Einsätze mit priorisierter Disposition.", badge: "ab 99 €/Std.", min: 2, icon: Sparkles },
+  MOVING: { label: "Privat- & Firmenumzug", desc: "Strukturiert, versichert und sauber koordiniert.", badge: "ab 59 €/Std.", min: 2, icon: Truck },
+  EXPRESS_MOVING: { label: "Expressumzug", desc: "Kurzfristige Einsätze mit priorisierter Disposition.", badge: "ab 79 €/Std.", min: 2, icon: Sparkles },
   OFFICE_CLEANING: { label: "Büro- & Gewerbereinigung", desc: "Regelmäßige und einmalige Reinigung für Unternehmen.", badge: "ab 34 €/Std.", min: 2, icon: Building2 },
   HOME_CLEANING: { label: "Wohnungsreinigung", desc: "Flexible Reinigung nach Stunden für private Objekte.", badge: "ab 34 €/Std.", min: 2, icon: Home },
   MOVE_OUT_CLEANING: { label: "Endreinigung", desc: "Abnahmebereit beim Auszug und für Übergaben.", badge: "ab 34 €/Std.", min: 3, icon: WandSparkles },

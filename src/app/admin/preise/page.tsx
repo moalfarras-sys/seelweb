@@ -17,8 +17,8 @@ type PricingSettings = {
 
 const emptyState: PricingSettings = {
   publicMovingStandardEur: 59,
-  publicMovingExpressEur: 75,
-  publicMovingExpressSurchargePct: 40,
+  publicMovingExpressEur: 79,
+  publicMovingExpressSurchargePct: 0,
   publicHomeCleaningEur: 34,
   publicOfficeMovingEur: 59,
   publicOfficeCleaningEur: 34,

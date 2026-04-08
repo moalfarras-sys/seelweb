@@ -6,7 +6,7 @@ import { getPrices, formatPricePerHour } from "@/lib/getPrices";
 import { buildFaqSchema, buildMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Umzugsfirma Berlin | Professionell ab 79 €/Std.",
+  title: "Umzugsfirma Berlin | Professionell ab 59 €/Std.",
   description:
     "Ihre Umzugsfirma in Berlin: Mitte, Neukölln, Charlottenburg, Spandau, Friedrichshain, Kreuzberg, Tempelhof, Pankow und weitere Bezirke. Transparente Preise und zuverlässige Teams.",
   path: "/leistungen/umzug-berlin",
@@ -96,8 +96,8 @@ export default async function UmzugBerlinPage() {
             Umzugsfirma Berlin – Schnell, Sicher, Zuverlässig
           </h1>
           <p className="hero-body mx-auto mt-5 max-w-3xl text-white/85 dark:text-white/85">
-            Seit über 10 Jahren begleiten wir Umzüge in Berlin mit eingespielten Prozessen, Ortskenntnis
-            und verlässlicher Kommunikation. Mehr als 500 Einsätze haben unsere Abläufe für die Hauptstadt geschärft.
+            Mit strukturiertem Ablauf begleiten wir Umzüge in Berlin mit klarer Planung, Ortskenntnis
+            und verlässlicher Kommunikation. Einsätze in Berlin und Brandenburg haben unsere Abläufe für die Hauptstadtregion geschärft.
           </p>
           <div className="hero-metrics justify-center">
             <span className="hero-metric">Berlin Experten</span>

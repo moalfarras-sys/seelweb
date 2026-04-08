@@ -9,7 +9,7 @@ import { buildFaqSchema, buildMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildMetadata({
   title: "Expressumzug Berlin – Kurzfristig und zuverlässig",
   description:
-    "Expressumzug in Berlin mit schneller Disposition, klaren Prioritätszuschlägen und verlässlicher Durchführung innerhalb kurzer Vorlaufzeiten.",
+    "Expressumzug in Berlin mit schneller Disposition, klarer Preisstruktur und verlässlicher Durchführung innerhalb kurzer Vorlaufzeiten.",
   path: "/leistungen/expressumzug",
 });
 
@@ -28,12 +28,11 @@ export default async function ExpressumzugPage() {
   const prices = await getPrices();
   const expressPrice = formatPricePerHour(prices.umzugExpress);
   const standardPrice = formatPricePerHour(prices.umzugStandard).replace("ab ", "");
-  const surchargeLabel = `+${prices.umzugExpressSurchargePct.toLocaleString("de-DE")} %`;
 
   const faqs = [
     {
       q: "Was kostet ein Expressumzug?",
-      a: `Expressumzüge starten bei ${expressPrice.replace("ab ", "")}. Der reguläre Umzugspreis liegt bei ${standardPrice}; dazu kommt ein transparenter Prioritätszuschlag von ${surchargeLabel}.`,
+      a: `Expressumzüge starten bei ${expressPrice.replace("ab ", "")}. Der reguläre Umzugspreis liegt bei ${standardPrice}. Für kurzfristige Einsätze erhalten Sie direkt einen klar ausgewiesenen Expresspreis ohne zusätzliche Zuschlagslogik.`,
     },
     {
       q: "Wie kurzfristig können Sie starten?",
@@ -133,15 +132,14 @@ export default async function ExpressumzugPage() {
                 <AlertTriangle className="text-amber-300" size={22} />
               </div>
               <div className="min-w-0">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-amber-300/80">Expresszuschlag</p>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-amber-300/80">Expresspreis</p>
                 <p className="mb-4 text-2xl font-bold text-white">Klare Preislogik ohne Überraschungen</p>
                 <ul className="space-y-3 text-base leading-8 text-white/80">
                   <li>Regulärer Umzugspreis: ab {standardPrice}</li>
-                  <li>Prioritätszuschlag: {surchargeLabel}</li>
                   <li>Expresspreis: {expressPrice}</li>
                 </ul>
                 <p className="mt-4 text-sm leading-7 text-white/70">
-                  Der Expresspreis basiert auf dem regulären Umzugstarif und enthält den priorisierten Zuschlag für kurzfristige Disposition, schnelle Rückmeldung und bevorzugte Einsatzplanung.
+                  Der Expresspreis ist ein transparenter Festwert für kurzfristige Disposition, schnelle Rückmeldung und bevorzugte Einsatzplanung.
                 </p>
               </div>
             </div>
