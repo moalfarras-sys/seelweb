@@ -1,6 +1,4 @@
 ﻿import type { PricingSettings } from "@prisma/client";
-import { prisma } from "@/lib/db";
-
 export type PricingSettingsSnapshot = {
   kmPriceEur: number;
   roundTripMultiplier: number;
@@ -43,6 +41,28 @@ export const DEFAULT_PRICING_SETTINGS: PricingSettingsSnapshot = {
   publicMoveOutCleaningEur: 34,
 };
 
+const BUILD_PHASES = new Set(["phase-production-build", "phase-export"]);
+
+function isBuildTime() {
+  if (BUILD_PHASES.has(process.env.NEXT_PHASE || "")) return true;
+  if (process.env.npm_lifecycle_event === "build") return true;
+  return process.argv.some((arg) => /next(?:\.js)?$/i.test(arg)) && process.argv.includes("build");
+}
+
+async function readPricingSettingsWithTimeout(timeoutMs = 1200) {
+  const { prisma } = await import("@/lib/db");
+
+  return await Promise.race([
+    prisma.pricingSettings.findUnique({ where: { id: "default" } }),
+    new Promise<null>((_, reject) => {
+      const timer = setTimeout(() => {
+        clearTimeout(timer);
+        reject(new Error("pricing-settings-timeout"));
+      }, timeoutMs);
+    }),
+  ]);
+}
+
 function toSnapshot(settings: PricingSettings | null): PricingSettingsSnapshot {
   if (!settings) return DEFAULT_PRICING_SETTINGS;
   return {
@@ -68,8 +88,12 @@ function toSnapshot(settings: PricingSettings | null): PricingSettingsSnapshot {
 }
 
 export async function getPricingSettingsSnapshot(): Promise<PricingSettingsSnapshot> {
+  if (isBuildTime()) {
+    return DEFAULT_PRICING_SETTINGS;
+  }
+
   try {
-    const settings = await prisma.pricingSettings.findUnique({ where: { id: "default" } });
+    const settings = await readPricingSettingsWithTimeout();
     return toSnapshot(settings);
   } catch {
     return DEFAULT_PRICING_SETTINGS;

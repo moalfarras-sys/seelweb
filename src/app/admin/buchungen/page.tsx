@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   Calendar,
@@ -83,7 +83,7 @@ export default function BuchungenPage() {
 
   const pageSize = 20;
 
-  async function loadOrders() {
+  const loadOrders = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -96,11 +96,11 @@ export default function BuchungenPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [showDeleted]);
 
   useEffect(() => {
     loadOrders();
-  }, [showDeleted]);
+  }, [loadOrders]);
 
   useEffect(() => {
     setPage(1);

@@ -1,266 +1,199 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, PhoneCall, ShieldCheck, Sparkles } from "lucide-react";
-import { buildFaqSchema, buildMetadata } from "@/lib/seo";
-import { fetchGoogleReviews } from "@/lib/google-reviews";
-import GoogleReviews from "@/components/GoogleReviews";
-import Gallery from "@/components/Gallery";
-import { getPublicServicePriceLabel, getPublicServicePrices } from "@/lib/public-service-pricing";
-import { getHomepageGalleryItems, getPublicGalleryItems, getPublicSiteSettings } from "@/lib/site-content";
+import Script from "next/script";
+import { ArrowRight, CheckCircle2, PhoneCall, Star } from "lucide-react";
 import { CONTACT } from "@/config/contact";
+import { getPublicServicePriceLabel, getPublicServicePrices } from "@/lib/public-service-pricing";
+import { buildFaqSchema, buildMetadata } from "@/lib/seo";
+import { getPublicGalleryItems, getPublicSiteSettings } from "@/lib/site-content";
 
 export const metadata: Metadata = buildMetadata({
   title: "Umzug Berlin | SEEL Transport & Reinigung",
   description:
     "Professionelle Umzüge, Reinigung und Entrümpelung in Berlin und Brandenburg. Transparent, versichert, kurzfristig buchbar. Ab 34 €/Std.",
   path: "/",
-  keywords: [
-    "umzug berlin",
-    "umzugsfirma berlin",
-    "reinigung berlin",
-    "entrümpelung berlin",
-    "umzugsunternehmen berlin",
-    "transport berlin",
-    "express umzug berlin",
-  ],
+  keywords: ["umzug berlin", "umzugsfirma berlin", "reinigung berlin", "entrümpelung berlin", "expressumzug berlin"],
 });
 
 const faqItems = [
   {
-    question: "Wie schnell können Sie einen Umzug in Berlin übernehmen?",
-    answer: "Reguläre Einsätze planen wir mit festen Zeitfenstern. Für dringende Fälle prüfen wir kurzfristige Expresskapazitäten.",
+    question: "Wie schnell kann SEEL einen Einsatz übernehmen?",
+    answer: "Je nach Leistung prüfen wir reguläre Termine und Expressfenster. In dringenden Fällen ist eine Reaktion innerhalb kurzer Zeit möglich.",
   },
   {
-    question: "Arbeiten Sie auch außerhalb von Berlin?",
-    answer: "Ja. Neben Berlin betreuen wir Brandenburg und deutschlandweite Umzüge mit klarer Einsatzplanung und transparenter Preisstruktur.",
+    question: "Ist der Umzug versichert?",
+    answer: "Ja. Umzüge werden versichert und nach den gesetzlichen Vorgaben inklusive HGB §451e organisiert.",
   },
   {
-    question: "Sind Möbel und Inventar versichert?",
-    answer: "Ja. Transporte werden nach den gesetzlichen Vorgaben durchgeführt. Bei Sonderfällen beraten wir zusätzlich zu erweiterten Absicherungen.",
-  },
-  {
-    question: "Kann ich Reinigung und Umzug kombinieren?",
-    answer: "Ja. Viele Kundinnen und Kunden kombinieren Umzug, Endreinigung und Entrümpelung in einem abgestimmten Ablauf.",
+    question: "Arbeitet SEEL nur in Berlin?",
+    answer: "Nein. Wir betreuen Berlin, Brandenburg und auf Anfrage auch deutschlandweite Einsätze.",
   },
 ];
 
 export default async function HomePage() {
-  const [{ prices }, reviewsData, settings, homepageGalleryItems, publicGalleryItems] = await Promise.all([
+  const [{ prices }, settings, gallery] = await Promise.all([
     getPublicServicePrices(),
-    fetchGoogleReviews(),
     getPublicSiteSettings(),
-    getHomepageGalleryItems(),
     getPublicGalleryItems(),
   ]);
-  const heroTitle = "Umzüge, Reinigung und Entrümpelung mit klarer Organisation.";
-  const heroDescription =
-    "SEEL Transport & Reinigung begleitet private und gewerbliche Einsätze mit festen Ansprechpartnern, transparenten Preisen und einem ruhigen, professionellen Ablauf.";
-  const primaryCtaLabel = "Jetzt Angebot anfragen";
-  const secondaryCtaLabel = "WhatsApp schreiben";
 
-  const whatsappHref = `https://wa.me/${CONTACT.WHATSAPP_NUMBER}?text=${encodeURIComponent(
-    "Hallo, ich möchte ein Angebot für SEEL Transport & Reinigung anfragen.",
-  )}`;
-  const galleryItems = homepageGalleryItems.length > 0 ? homepageGalleryItems : publicGalleryItems.slice(0, 1);
+  const services = [
+    {
+      href: "/leistungen/umzug-berlin",
+      title: "Privat- & Firmenumzug",
+      description: "Klare Einsatzplanung, feste Ansprechpartner und strukturierte Durchführung.",
+      image: "/images/umzug-1.jpeg",
+      price: getPublicServicePriceLabel(prices, "umzug-berlin"),
+    },
+    {
+      href: "/leistungen/expressumzug",
+      title: "Expressumzug",
+      description: "Priorisierte Disposition für besonders kurzfristige Einsätze.",
+      image: "/images/Express.jpeg",
+      price: getPublicServicePriceLabel(prices, "expressumzug"),
+    },
+    {
+      href: "/leistungen/firmenumzug",
+      title: "Büro- & Gewerbeumzug",
+      description: "Projektlogik für Unternehmen, Praxen und Agenturen mit minimaler Unterbrechung.",
+      image: "/images/corporate-hallway-cleaning.png",
+      price: getPublicServicePriceLabel(prices, "gewerbe"),
+    },
+    {
+      href: "/leistungen/reinigung",
+      title: "Reinigung & Endreinigung",
+      description: "Wohnung, Büro und Übergabe aus einer Hand mit sauberer Dokumentation.",
+      image: "/images/cleaning-team-office.png",
+      price: getPublicServicePriceLabel(prices, "reinigung"),
+    },
+    {
+      href: "/leistungen/entruempelung",
+      title: "Entrümpelung & Entsorgung",
+      description: "Räumung, Sortierung und fachgerechte Entsorgung in klaren Zeitfenstern.",
+      image: "/images/waste-disposal-van.png",
+      price: getPublicServicePriceLabel(prices, "entruempelung"),
+    },
+  ];
 
+  const galleryPreview = gallery.slice(0, 6);
 
-  const localBusinessSchema: Record<string, unknown> = {
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: settings.company.name,
+    url: settings.contact.websiteUrl,
+    logo: `${settings.contact.websiteUrl}/images/logo-new.png`,
+    telephone: settings.contact.primaryPhoneDisplay,
+    email: settings.contact.email,
+  };
+
+  const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": ["LocalBusiness", "MovingCompany"],
     name: settings.company.name,
     url: settings.contact.websiteUrl,
     telephone: settings.contact.primaryPhoneDisplay,
     email: settings.contact.email,
-    address: { "@type": "PostalAddress", addressLocality: settings.company.city, addressCountry: "DE" },
-    areaServed: [{ "@type": "City", name: "Berlin" }, { "@type": "State", name: "Brandenburg" }],
-    openingHoursSpecification: {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-      opens: "00:00",
-      closes: "23:59",
-    },
+    openingHours: "Mo-So 07:00-20:00",
     priceRange: "EUR",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Forster Straße 5",
+      postalCode: "12627",
+      addressLocality: "Berlin",
+      addressCountry: "DE",
+    },
   };
 
-  if (reviewsData && reviewsData.totalReviews > 0) {
-    localBusinessSchema.aggregateRating = {
-      "@type": "AggregateRating",
-      ratingValue: reviewsData.rating,
-      reviewCount: reviewsData.totalReviews,
-      bestRating: 5,
-      worstRating: 1,
-    };
-  }
-
-  const services = [
-    {
-      title: "Privat- und Firmenumzug",
-      alt: "SEEL Transport Umzugsteam beim Möbeltransport in Berlin",
-      description: "Strukturierte Umzüge mit erfahrenem Team, festen Zeitfenstern und optionaler Montage.",
-      href: "/leistungen/umzug-berlin",
-      price: getPublicServicePriceLabel(prices, "umzug-berlin"),
-      image: "/images/umzug-1.jpeg",
-    },
-    {
-      title: "Expressumzug",
-      alt: "Kurzfristiger Expressumzug von SEEL Transport in Berlin",
-      description: "Kurzfristige Umzüge mit priorisierter Disposition, klarem Expresspreis und schneller Rückmeldung.",
-      href: "/leistungen/expressumzug",
-      price: getPublicServicePriceLabel(prices, "expressumzug"),
-      image: "/images/Express.jpeg",
-    },
-    {
-      title: "Büro- und Gewerbeumzug",
-      alt: "Professioneller Büroservice von SEEL in Berlin",
-      description: "Projektplanung für Unternehmen, Kanzleien, Praxen und Agenturen mit minimaler Ausfallzeit.",
-      href: "/leistungen/gewerbe",
-      price: getPublicServicePriceLabel(prices, "gewerbe"),
-      image: "/images/clean/clean (5).jpeg",
-    },
-    {
-      title: "Reinigung & Endreinigung",
-      alt: "SEEL Reinigungsteam bei der professionellen Büroreinigung in Berlin",
-      description: "Wohnung, Büro und Übergabe aus einer Hand mit klaren Leistungslisten und sauberer Dokumentation.",
-      href: "/leistungen/reinigung",
-      price: getPublicServicePriceLabel(prices, "reinigung"),
-      image: "/images/clean/clean (3).jpeg",
-    },
-    {
-      title: "Entrümpelung",
-      alt: "SEEL Transport Entrümpelung und Entsorgung in Berlin",
-      description: "Schnelle Räumung, saubere Trennung und fachgerechte Entsorgung mit klarer Abstimmung.",
-      href: "/leistungen/entruempelung",
-      price: getPublicServicePriceLabel(prices, "entruempelung"),
-      image: "/images/clean/clean (7).jpeg",
-    },
-  ];
-
-  const galleryImages = galleryItems.map((item) => ({
-    id: item.id,
-    src: item.imageUrl,
-    alt: item.alt,
-    title: item.title,
-    category: item.category,
-    featured: item.isFeatured,
+  const serviceSchemas = services.map((service) => ({
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: service.title,
+    description: service.description,
+    provider: { "@type": "LocalBusiness", name: settings.company.name },
+    areaServed: "Berlin, Brandenburg, Deutschland",
+    url: `https://seeltransport.de${service.href}`,
   }));
 
   return (
     <>
-      <Script id="home-local-business-schema" type="application/ld+json">
-        {JSON.stringify(localBusinessSchema)}
-      </Script>
-      <Script id="home-faq-schema" type="application/ld+json">
-        {JSON.stringify(buildFaqSchema(faqItems))}
-      </Script>
+      <Script id="home-faq-schema" type="application/ld+json">{JSON.stringify(buildFaqSchema(faqItems))}</Script>
+      <Script id="home-organization-schema" type="application/ld+json">{JSON.stringify(organizationSchema)}</Script>
+      <Script id="home-local-business-schema" type="application/ld+json">{JSON.stringify(localBusinessSchema)}</Script>
+      <Script id="home-services-schema" type="application/ld+json">{JSON.stringify(serviceSchemas)}</Script>
 
-      <section className="hero-led-section kinetic-hero relative isolate min-h-screen overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="/images/moving-truck-hero.png"
-            alt="SEEL Transport Umzugswagen bereit für den Einsatz in Berlin"
-            fill
-            priority
-            unoptimized
-            className="image-cinematic object-cover object-center"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,8,18,0.54)_0%,rgba(2,8,18,0.66)_38%,rgba(2,8,18,0.78)_100%)]" />
-          <div className="hero-light-sweep" />
-          <div className="cine-grid absolute inset-0 opacity-40" />
-        </div>
-
-        <div className="relative z-20 mx-auto flex min-h-screen w-full max-w-7xl items-center justify-center px-4 pb-16 pt-28 md:justify-start md:px-8 md:pb-20 md:pt-32">
-          <div className="hero-copy-flow hero-subtle-parallax mx-auto max-w-[700px] text-center md:mx-0 md:max-w-3xl md:text-left">
-            <span className="hero-badge-glow inline-flex items-center rounded-full border border-white/12 bg-white/[0.07] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-cyan-100/90 backdrop-blur-xl">
-              {settings.homepage.heroBadge}
+      <section className="relative min-h-[100svh] overflow-hidden">
+        <Image src="/images/moving-truck-hero.png" alt="SEEL Transport Umzugswagen im Einsatz in Berlin" fill priority className="object-cover object-center" sizes="100vw" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,22,40,0.85)_0%,rgba(11,22,40,0.6)_42%,rgba(11,22,40,0.1)_100%)]" />
+        <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-[1200px] items-center px-4 py-24 md:px-8 xl:px-0">
+          <div className="hero-copy-flow max-w-3xl text-white">
+            <span className="hero-badge-glow inline-flex items-center rounded-pill border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] backdrop-blur-md">
+              📍 Berlin · Brandenburg · Deutschlandweit
             </span>
-
-            <h1 className="headline-prism hero-kicker hero-title-strong font-display mt-8 max-w-[12ch] text-[2.35rem] font-bold leading-[1.02] tracking-[-0.035em] drop-shadow-[0_8px_24px_rgba(0,0,0,0.38)] sm:max-w-[12.5ch] sm:text-[3.1rem] md:max-w-[13ch] md:text-[3.7rem] md:leading-[1.03] lg:text-[3.95rem]">
-              {settings.homepage.heroTitle || heroTitle}
+            <h1 className="mt-6 max-w-[12ch] font-display text-5xl font-bold leading-[0.98] text-white sm:text-6xl md:text-7xl">
+              Ihr Umzug. Unsere <span className="text-brand-teal">Präzision.</span>
             </h1>
-            <p className="hero-body mt-5 max-w-2xl md:mt-6">
-              {settings.homepage.heroDescription || heroDescription}
+            <p className="mt-5 max-w-xl text-lg leading-8 text-white/80">
+              SEEL organisiert Umzüge, Reinigung und Entrümpelung strukturiert, transparent und stressfrei.
             </p>
-
-            <div className="mt-7 flex flex-col items-center gap-4 sm:mt-8 sm:flex-row md:items-start">
-              <Link href="/buchen" className="btn-primary-glass gap-2 text-sm font-semibold">
-                {(settings.homepage.primaryCtaLabel || primaryCtaLabel)} <ArrowRight size={16} />
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/buchen" className="rounded-pill bg-brand-teal px-8 py-4 text-lg font-semibold text-white transition hover:brightness-110">
+                Angebot anfragen <ArrowRight size={18} className="ml-2 inline-flex" />
               </Link>
-              <a
-                href={whatsappHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-secondary-glass gap-2 border border-white/10 bg-white/10 text-sm font-semibold text-white"
-              >
-                <PhoneCall size={16} />
-                {settings.homepage.secondaryCtaLabel || secondaryCtaLabel}
+              <a href={`tel:${CONTACT.PRIMARY_PHONE}`} className="rounded-pill border border-white/30 bg-white/10 px-8 py-4 text-lg font-semibold text-white backdrop-blur">
+                Direkt anrufen
               </a>
             </div>
+          </div>
+        </div>
+        <div className="absolute inset-x-0 bottom-0 border-t border-white/10 bg-white/8 backdrop-blur-lg">
+          <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-center gap-4 px-4 py-4 text-sm font-semibold text-white md:flex-row md:gap-8 md:px-8 xl:px-0">
+            <span>⚡ Express ab 2h</span>
+            <span className="hidden h-5 w-px bg-white/20 md:block" />
+            <span>✓ Vollversichert</span>
+            <span className="hidden h-5 w-px bg-white/20 md:block" />
+            <span>★ 4.9 Bewertung</span>
+          </div>
+        </div>
+      </section>
 
-            <div className="hero-metrics items-center justify-center md:justify-start">
-              <span className="hero-metric">Express verfugbar</span>
-              <span className="hero-metric">Premium Ablauf</span>
-              <span className="hero-metric">Berlin bis bundesweit</span>
+      <section className="py-16">
+        <div className="mx-auto grid max-w-[1200px] gap-4 px-4 sm:grid-cols-2 lg:grid-cols-4 md:px-8 xl:px-0">
+          {[
+            { value: "500+", label: "Einsätze" },
+            { value: "10", label: "Teammitglieder" },
+            { value: "48h", label: "Reaktionszeit" },
+            { value: "4.9★", label: "Bewertung" },
+          ].map((item) => (
+            <div key={item.label} className="rounded-[24px] border border-border bg-white p-6 text-center shadow-[var(--shadow-card)] dark:border-border-dark dark:bg-surface-dark-card">
+              <p className="font-display text-4xl font-bold text-brand-teal">{item.value}</p>
+              <p className="mt-2 text-sm font-medium text-text-body dark:text-text-on-dark-muted">{item.label}</p>
             </div>
-          </div>
+          ))}
         </div>
       </section>
 
-      <section className="relative z-10 pb-8 pt-8">
-        <div className="mx-auto max-w-7xl px-4 md:px-8">
-          <div className="grid gap-3 rounded-[32px] border border-white/50 bg-white/72 p-3 shadow-[0_24px_70px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-white/[0.08] dark:bg-white/[0.04] md:grid-cols-2 lg:grid-cols-4">
-            {settings.trustBar.map((item) => (
-              <div key={item.id} className="trust-pill justify-center border-white/20 bg-white/35 shadow-none dark:border-white/[0.08] dark:bg-white/[0.03]">
-                <ShieldCheck size={16} className="shrink-0 text-sky-600 dark:text-cyan-300" />
-                {item.label}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section-spotlight section-padding">
-        <div className="mx-auto max-w-7xl px-4 md:px-8">
-          <div className="mb-14 max-w-2xl scroll-reveal">
-            <div className="accent-line" />
-            <p className="section-eyebrow">Leistungen</p>
-            <h2 className="section-title mt-4">
-              Klare Leistungsfelder in einer präzisen visuellen Struktur.
-            </h2>
-            <p className="section-copy mt-4">
-              Jede Leistung ist klar beschrieben, mit transparentem Einstiegspreis und direktem Weg zu Anfrage oder Buchung.
+      <section className="py-8">
+        <div className="mx-auto max-w-[1200px] px-4 md:px-8 xl:px-0">
+          <div className="max-w-2xl">
+            <p className="font-ui text-xs uppercase tracking-[0.28em] text-brand-teal">Unsere Leistungen</p>
+            <h2 className="mt-3 text-4xl font-bold text-text-primary dark:text-text-on-dark">Alles aus einer Hand.</h2>
+            <p className="mt-4 text-base leading-7 text-text-body dark:text-text-on-dark-muted">
+              Präzise geplant, professionell ausgeführt und so aufgebaut, dass Privat- und Gewerbekunden schnell Entscheidungen treffen können.
             </p>
           </div>
-
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-5">
-            {services.map((service, i) => (
-              <Link
-                key={service.href}
-                href={service.href}
-                className="premium-panel card-interactive group overflow-hidden rounded-[30px] scroll-reveal"
-                style={{ transitionDelay: `${i * 80}ms` }}
-              >
-                <div className="relative h-72 overflow-hidden">
-                  <Image
-                    src={service.image}
-                    alt={service.alt}
-                    fill
-                    unoptimized
-                    className="image-cinematic object-cover"
-                    sizes="(max-width: 1280px) 100vw, 25vw"
-                  />
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,8,18,0.04)_0%,rgba(2,8,18,0.14)_35%,rgba(2,8,18,0.84)_100%)]" />
-                  <span className="price-badge absolute left-4 top-4">{service.price}</span>
-                  <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-                    <p className="text-[11px] uppercase tracking-[0.28em] text-white/50">Premium Einsatz</p>
-                    <h3 className="font-display mt-2 text-xl font-bold">{service.title}</h3>
-                  </div>
+          <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {services.map((service) => (
+              <Link key={service.href} href={service.href} className="group overflow-hidden rounded-card border border-border bg-white shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-hover)] dark:border-border-dark dark:bg-surface-dark-card">
+                <div className="relative h-[180px] overflow-hidden">
+                  <Image src={service.image} alt={service.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="(max-width: 1280px) 100vw, 33vw" />
+                  <span className="absolute right-4 top-4 rounded-pill bg-brand-gold px-3 py-1 text-xs font-semibold text-brand-navy">{service.price}</span>
                 </div>
                 <div className="p-6">
-                  <p className="text-sm leading-7 text-slate-600 dark:text-white/58">{service.description}</p>
-                  <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-sky-700 transition-all duration-300 group-hover:gap-3 dark:text-cyan-300">
+                  <p className="text-xl font-bold text-text-primary dark:text-text-on-dark">{service.title}</p>
+                  <p className="mt-3 text-sm leading-7 text-text-body dark:text-text-on-dark-muted">{service.description}</p>
+                  <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand-teal">
                     Mehr erfahren <ArrowRight size={14} />
                   </span>
                 </div>
@@ -270,157 +203,110 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="relative z-10 py-16 sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 md:px-8">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { value: "500+", label: "Einsätze" },
-              { value: "10", label: "Teammitglieder" },
-              { value: "48h", label: "Reaktionszeit" },
-              { value: "4.9★", label: "Bewertung" },
-            ].map((stat) => (
-              <div key={stat.label} className="premium-stat text-center scroll-reveal">
-                <p className="font-display text-3xl font-bold text-brand-teal md:text-4xl">{stat.value}</p>
-                <p className="mt-1 text-sm font-medium text-text-body dark:text-text-on-dark-muted">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section-spotlight relative overflow-hidden py-24 text-white">
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,#020810_0%,#061320_34%,#0a1a2e_65%,#071e30_100%)]" />
-        <div className="absolute inset-0 opacity-[0.12]">
-          <Image src="/images/clean/clean (8).jpeg" alt="" fill unoptimized className="image-cinematic object-cover object-center" />
-        </div>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,rgba(34,211,238,0.14),transparent_28%),radial-gradient(ellipse_at_10%_85%,rgba(56,189,248,0.08),transparent_30%)]" />
-
-        <div className="relative z-10 mx-auto grid max-w-7xl gap-12 px-4 md:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-          <div className="scroll-reveal">
-            <div className="accent-line" />
-            <p className="section-eyebrow text-cyan-200">Warum SEEL</p>
-            <h2 className="section-title mt-4 text-white">
-              Vertrauen entsteht durch Struktur, nicht durch laute Versprechen.
-            </h2>
-            <p className="hero-body mt-5 max-w-lg text-white/80 dark:text-white/80">
-              Deshalb setzen wir auf realistische Kommunikation, saubere Abläufe und nachvollziehbare Preise.
-            </p>
-            <Link href="/unternehmen" className="btn-secondary-glass mt-8 gap-2 border border-white/10 bg-white/10 text-white">
-              Mehr über uns <ArrowRight size={14} />
+      <section className="py-20">
+        <div className="mx-auto grid max-w-[1200px] gap-10 px-4 lg:grid-cols-[1.15fr_0.85fr] md:px-8 xl:px-0">
+          <div>
+            <p className="font-ui text-xs uppercase tracking-[0.28em] text-brand-teal">Warum SEEL?</p>
+            <h2 className="mt-3 text-4xl font-bold text-text-primary dark:text-text-on-dark">Vertrauen entsteht durch Struktur.</h2>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              {[
+                "Feste Ansprechpartner statt anonymem Callcenter",
+                "Transparente Preise ohne versteckte Kosten",
+                "Vollversichert nach HGB §451e",
+                "Kombinierte Leistungen aus einer Hand",
+                "Express-Verfügbarkeit innerhalb kurzer Zeit",
+                "Strukturierte Einsatzplanung für Privat & Gewerbe",
+              ].map((item) => (
+                <div key={item} className="rounded-[22px] bg-white p-5 shadow-[var(--shadow-card)] dark:bg-surface-dark-card">
+                  <p className="flex items-start gap-3 text-sm leading-7 text-text-body dark:text-text-on-dark-muted">
+                    <CheckCircle2 size={18} className="mt-1 shrink-0 text-brand-teal" />
+                    {item}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <Link href="/unternehmen" className="mt-8 inline-flex items-center gap-2 rounded-pill border border-border px-6 py-3 text-sm font-semibold text-text-primary transition hover:border-brand-teal hover:text-brand-teal dark:border-border-dark dark:text-text-on-dark">
+              Mehr über uns <ArrowRight size={16} />
             </Link>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 scroll-reveal">
-            {settings.whyChooseUs.map((item, i) => (
-              <div key={item} className="feature-card" style={{ transitionDelay: `${i * 60}ms` }}>
-                <Sparkles size={17} className="text-cyan-300/80" />
-                <p className="mt-4 text-sm leading-7 text-white/78">{item}</p>
-              </div>
-            ))}
+          <div className="relative min-h-[420px] overflow-hidden rounded-[30px]">
+            <Image src="/images/cleaning-team-government.png" alt="SEEL Team bei einem professionellen Einsatz" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 40vw" />
           </div>
         </div>
       </section>
 
-      <GoogleReviews data={reviewsData} />
-
-      <Gallery
-        images={galleryImages}
-        title={settings.homepage.galleryTitle}
-        subtitle={settings.homepage.galleryEyebrow}
-        description={settings.homepage.galleryDescription}
-        mode="compact"
-        entryHref="/galerie"
-      />
-
-      <section className="section-padding">
-        <div className="mx-auto max-w-7xl px-4 md:px-8">
-          <div className="mb-12 max-w-2xl scroll-reveal">
-            <div className="accent-line" />
-            <p className="section-eyebrow">Kundenstimmen</p>
-            <h2 className="section-title mt-4">Was unsere Kunden sagen</h2>
+      <section className="py-8">
+        <div className="mx-auto max-w-[1200px] px-4 md:px-8 xl:px-0">
+          <p className="font-ui text-xs uppercase tracking-[0.28em] text-brand-teal">Echte Einsätze</p>
+          <h2 className="mt-3 text-4xl font-bold text-text-primary dark:text-text-on-dark">Keine Stockfotos.</h2>
+          <p className="mt-4 text-base leading-7 text-text-body dark:text-text-on-dark-muted">Einblicke in laufende Arbeiten und Projekte.</p>
+          <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {galleryPreview.map((item) => (
+              <Link key={item.id} href="/galerie" className="group relative overflow-hidden rounded-[26px]">
+                <Image src={item.imageUrl} alt={item.alt} width={800} height={560} className="h-[260px] w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_20%,rgba(11,22,40,0.82)_100%)]" />
+                <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+                  <span className="rounded-pill bg-brand-teal px-3 py-1 text-xs font-semibold">{item.category}</span>
+                  <p className="mt-3 text-lg font-semibold">{item.title}</p>
+                </div>
+              </Link>
+            ))}
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
+          <Link href="/galerie" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand-teal">
+            Alle ansehen <ArrowRight size={14} />
+          </Link>
+        </div>
+      </section>
+
+      <section className="py-20">
+        <div className="mx-auto max-w-[1200px] px-4 md:px-8 xl:px-0">
+          <p className="font-ui text-xs uppercase tracking-[0.28em] text-brand-teal">Was unsere Kunden sagen</p>
+          <h2 className="mt-3 text-4xl font-bold text-text-primary dark:text-text-on-dark">Erfahrungen aus echten Einsätzen.</h2>
+          <div className="mt-8 grid gap-6 md:grid-cols-3">
             {[
               {
                 text: "Pünktlich, freundlich und professionell. Unser Umzug lief absolut reibungslos.",
-                name: "Thomas K.",
-                detail: "Privatumzug Berlin-Mitte · Mai 2025",
+                author: "Thomas K., Privatumzug Berlin-Mitte · Mai 2025",
               },
               {
                 text: "Tolle Organisation, transparente Preise. Buchen wir definitiv wieder.",
-                name: "Sandra M.",
-                detail: "Endreinigung Berlin-Prenzlauer Berg · März 2025",
+                author: "Sandra M., Endreinigung Berlin-Prenzlauer Berg · März 2025",
               },
               {
                 text: "Express-Entrümpelung in 4 Stunden erledigt. Sehr empfehlenswert.",
-                name: "Bau GmbH Berlin",
-                detail: "Gewerbekunde · Februar 2025",
+                author: "Bau GmbH Berlin, Gewerbekunde · Februar 2025",
               },
             ].map((review) => (
-              <div key={review.name} className="premium-panel rounded-[24px] p-6 scroll-reveal">
+              <div key={review.author} className="rounded-[26px] border border-border bg-white p-6 shadow-[var(--shadow-card)] dark:border-border-dark dark:bg-surface-dark-card">
                 <div className="flex gap-1 text-brand-gold">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <span key={i} className="text-lg">★</span>
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Star key={index} size={16} fill="currentColor" />
                   ))}
                 </div>
-                <p className="mt-4 text-sm leading-7 text-text-body dark:text-text-on-dark-muted">
-                  &ldquo;{review.text}&rdquo;
-                </p>
-                <div className="mt-4 border-t border-border/40 pt-3 dark:border-border-dark/40">
-                  <p className="text-sm font-semibold text-text-primary dark:text-text-on-dark">{review.name}</p>
-                  <p className="text-xs text-text-muted dark:text-text-on-dark-muted">{review.detail}</p>
-                </div>
+                <p className="mt-4 text-sm leading-7 text-text-body dark:text-text-on-dark-muted">“{review.text}”</p>
+                <p className="mt-5 text-xs font-semibold uppercase tracking-[0.18em] text-text-muted dark:text-text-on-dark-muted">{review.author}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="pb-8">
-        <div className="mx-auto grid max-w-6xl gap-12 px-4 md:px-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-          <div className="scroll-reveal lg:sticky lg:top-28">
-            <div className="accent-line" />
-            <p className="section-eyebrow">FAQ</p>
-            <h2 className="section-title mt-4">Häufige Fragen</h2>
-            <p className="section-copy mt-4">
-              Antworten auf typische Fragen zu Ablauf, Region, Versicherung und Kombinationsleistungen.
+      <section className="pb-20">
+        <div className="mx-auto max-w-[1200px] px-4 md:px-8 xl:px-0">
+          <div className="overflow-hidden rounded-[36px] bg-[linear-gradient(135deg,#081220_0%,#0B1628_50%,#152238_100%)] px-8 py-14 text-white">
+            <p className="font-ui text-xs uppercase tracking-[0.28em] text-brand-teal-light">Bereit für Ihren nächsten Einsatz?</p>
+            <h2 className="mt-4 text-4xl font-bold">Angebot in unter 2 Minuten.</h2>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-white/80">
+              Transparent, verbindlich und kostenlos. Wir begleiten Ihren Einsatz von der Anfrage bis zur Ausführung.
             </p>
-            <Link href="/kontakt" className="btn-ghost-premium mt-6 gap-2">
-              Weitere Fragen? Schreiben Sie uns <ArrowRight size={14} />
-            </Link>
-          </div>
-          <div className="space-y-3 scroll-reveal">
-            {faqItems.map((faq) => (
-              <details key={faq.question} className="faq-item">
-                <summary className="faq-summary">{faq.question}</summary>
-                <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-white/60">{faq.answer}</p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section-spotlight pb-28 pt-10">
-        <div className="mx-auto max-w-6xl px-4 md:px-8">
-          <div className="relative overflow-hidden rounded-[42px] border border-white/[0.08] px-8 py-16 text-white shadow-[0_34px_110px_rgba(2,8,18,0.34)] md:px-14">
-            <div className="absolute inset-0 bg-[linear-gradient(135deg,#04111d_0%,#082035_36%,#0a2a3f_72%,#0b3445_100%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.16),transparent_26%),radial-gradient(circle_at_bottom_left,rgba(20,184,166,0.14),transparent_30%)]" />
-            <div className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:28px_28px]" />
-
-            <div className="relative z-10 md:flex md:items-center md:justify-between md:gap-12">
-              <div className="mb-8 md:mb-0">
-                <p className="text-[11px] uppercase tracking-[0.34em] text-cyan-200/70">Finale Anfrage</p>
-                <h2 className="section-title mt-4 text-white">{settings.homepage.finalCtaTitle}</h2>
-                <p className="hero-body mt-4 max-w-xl text-white/80 dark:text-white/80">{settings.homepage.finalCtaDescription}</p>
-              </div>
-              <div className="flex shrink-0 flex-col gap-3 sm:flex-row md:flex-col">
-                <Link href="/buchen" className="btn-primary-glass gap-2">
-                  Jetzt buchen <ArrowRight size={16} />
-                </Link>
-                <a href={`tel:${settings.contact.primaryPhone}`} className="btn-secondary-glass gap-2 border border-white/10 bg-white/10 text-white">
-                  <PhoneCall size={16} />
-                  {settings.contact.primaryPhoneDisplay}
-                </a>
-              </div>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/buchen" className="rounded-pill bg-brand-teal px-6 py-3 text-sm font-semibold text-white">
+                Jetzt buchen
+              </Link>
+              <a href={`tel:${CONTACT.PRIMARY_PHONE}`} className="rounded-pill border border-white/20 px-6 py-3 text-sm font-semibold text-white">
+                <PhoneCall size={16} className="mr-2 inline-flex" />
+                {CONTACT.PRIMARY_PHONE_DISPLAY}
+              </a>
             </div>
           </div>
         </div>

@@ -1,8 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import { headers } from "next/headers";
-import { Plus_Jakarta_Sans, Inter, Outfit } from "next/font/google";
+import { Inter, Outfit, Plus_Jakarta_Sans } from "next/font/google";
+import Script from "next/script";
+import "../styles/globals.css";
 import "./globals.css";
+import Footer from "@/components/layout/Footer";
+import Navbar from "@/components/layout/Navbar";
+import { CookieBanner } from "@/components/layout/CookieBanner";
+import WhatsAppButton from "@/components/layout/WhatsAppButton";
+import { SiteContentProvider } from "@/components/SiteContentProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { getPublicSiteSettings } from "@/lib/site-content";
 
 const displayFont = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -23,49 +31,59 @@ const uiFont = Outfit({
   weight: ["400", "500", "600", "700"],
   display: "swap",
 });
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import WhatsAppButton from "@/components/layout/WhatsAppButton";
-import { CookieBanner } from "@/components/layout/CookieBanner";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { SiteContentProvider } from "@/components/SiteContentProvider";
-import { getPublicSiteSettings } from "@/lib/site-content";
+
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || "https://seeltransport.de";
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#eef2f8" },
-    { media: "(prefers-color-scheme: dark)", color: "#050b14" },
+    { media: "(prefers-color-scheme: light)", color: "#F5F7FA" },
+    { media: "(prefers-color-scheme: dark)", color: "#0B1628" },
   ],
   width: "device-width",
   initialScale: 1,
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://seeltransport.de"),
-  title: "Umzug Berlin | SEEL Transport & Reinigung",
+  metadataBase: new URL(BASE_URL),
+  title: {
+    default: "SEEL Transport & Reinigung",
+    template: "%s",
+  },
   description:
     "Professionelle Umzüge, Reinigung und Entrümpelung in Berlin und Brandenburg. Transparent, versichert, kurzfristig buchbar. Ab 34 €/Std.",
   keywords: [
     "Umzug Berlin",
     "Umzugsfirma Berlin",
     "Entrümpelung Berlin",
-    "Transport Service Berlin",
+    "Transport Berlin",
     "Reinigung Berlin",
   ],
   manifest: "/manifest.json",
+  alternates: {
+    canonical: "/",
+    languages: {
+      de: "/",
+    },
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "SEEL Transport",
   },
   openGraph: {
-    title: "SEEL Transport - Umzugsfirma Berlin",
+    title: "Umzug Berlin | SEEL Transport & Reinigung",
     description: "Umzug, Transport, Reinigung und Entrümpelung aus einer Hand.",
     url: "https://seeltransport.de",
-    siteName: "SEEL Transport",
+    siteName: "SEEL Transport & Reinigung",
     locale: "de_DE",
     type: "website",
-    images: [{ url: "/images/logo.png", width: 512, height: 512, alt: "SEEL Transport Logo" }],
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "SEEL Transport & Reinigung" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Umzug Berlin | SEEL Transport & Reinigung",
+    description: "Professionelle Umzüge, Reinigung und Entrümpelung in Berlin und Brandenburg.",
+    images: ["/og-image.jpg"],
   },
 };
 
@@ -83,7 +101,7 @@ export default async function RootLayout({
     "@type": ["LocalBusiness", "MovingCompany"],
     name: siteContent.company.name,
     url: siteContent.contact.websiteUrl,
-    logo: `${siteContent.contact.websiteUrl}/images/logo.png`,
+    logo: `${siteContent.contact.websiteUrl}/images/logo-new.png`,
     telephone: siteContent.contact.primaryPhoneDisplay,
     email: siteContent.contact.email,
     address: {
@@ -96,8 +114,8 @@ export default async function RootLayout({
     openingHoursSpecification: {
       "@type": "OpeningHoursSpecification",
       dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-      opens: "00:00",
-      closes: "23:59",
+      opens: "07:00",
+      closes: "20:00",
     },
     priceRange: "EUR",
   };
@@ -106,14 +124,17 @@ export default async function RootLayout({
     <html lang="de" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
-        <link rel="apple-touch-icon" href="/images/logo.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="alternate" hrefLang="de" href="https://seeltransport.de/" />
         <meta name="mobile-web-app-capable" content="yes" />
         <Script id="local-business-schema" type="application/ld+json" strategy="beforeInteractive">
           {JSON.stringify(localBusinessSchema)}
         </Script>
       </head>
-      <body className={`antialiased ${displayFont.variable} ${interFont.variable} ${uiFont.variable} ${isAdmin ? "admin-site" : "public-site"}`}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+      <body
+        className={`antialiased ${displayFont.variable} ${interFont.variable} ${uiFont.variable} ${isAdmin ? "admin-site" : "public-site"}`}
+      >
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <SiteContentProvider value={siteContent}>
             {!isAdmin && <div className="site-aurora" />}
             {!isAdmin && <div className="site-grid-overlay" />}
@@ -133,39 +154,25 @@ export default async function RootLayout({
 
           {!isAdmin && (
             <>
-              <Script id="sw-register" strategy="afterInteractive">{`
-                (async function() {
-                  if (!('serviceWorker' in navigator)) return;
-                  try {
-                    var regs = await navigator.serviceWorker.getRegistrations();
-                    await Promise.all(regs.map(function(r) { return r.unregister(); }));
-                    if ('caches' in window) {
-                      var keys = await caches.keys();
-                      await Promise.all(keys.map(function(k) {
-                        return /^seel-v|^workbox/i.test(k) ? caches.delete(k) : Promise.resolve(false);
-                      }));
-                    }
-                  } catch (e) {}
-                })();
-              `}</Script>
               <Script id="scroll-reveal" strategy="afterInteractive">{`
                 (function() {
                   var io = new IntersectionObserver(function(entries) {
-                    entries.forEach(function(e) {
-                      if (e.isIntersecting) {
-                        e.target.classList.add('visible');
-                        io.unobserve(e.target);
+                    entries.forEach(function(entry) {
+                      if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        io.unobserve(entry.target);
                       }
                     });
-                  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-                  document.querySelectorAll('.scroll-reveal, .scroll-reveal-stagger').forEach(function(el) {
-                    io.observe(el);
-                  });
-                  new MutationObserver(function() {
-                    document.querySelectorAll('.scroll-reveal:not(.visible), .scroll-reveal-stagger:not(.visible)').forEach(function(el) {
+                  }, { threshold: 0.14, rootMargin: '0px 0px -48px 0px' });
+
+                  function observeTargets() {
+                    document.querySelectorAll('.scroll-reveal, .scroll-reveal-stagger').forEach(function(el) {
                       io.observe(el);
                     });
-                  }).observe(document.body, { childList: true, subtree: true });
+                  }
+
+                  observeTargets();
+                  new MutationObserver(observeTargets).observe(document.body, { childList: true, subtree: true });
                 })();
               `}</Script>
               <Script id="ambient-motion" strategy="afterInteractive">{`

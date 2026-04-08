@@ -178,7 +178,7 @@ export default function AdminShell({
           <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-navy-800 transition-colors"
-            aria-label="Menue oeffnen"
+            aria-label="Menü öffnen"
           >
             <Menu size={20} className="text-navy-800 dark:text-white" />
           </button>

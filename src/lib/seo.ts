@@ -2,25 +2,29 @@ import type { Metadata } from "next";
 
 const SITE_NAME = "SEEL Transport & Reinigung";
 const BASE_URL = "https://seeltransport.de";
+const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.jpg`;
+
+function absoluteUrl(path: string) {
+  return new URL(path, BASE_URL).toString();
+}
 
 export function buildMetadata({
   title,
   description,
   path,
   keywords,
+  image,
 }: {
   title: string;
   description: string;
   path: string;
   keywords?: string[];
+  image?: string;
 }): Metadata {
-  const url = `${BASE_URL}${path}`;
-  const normalizedTitle = title.includes("SEEL")
-    ? title
-    : `${title} | SEEL Transport & Reinigung`;
-  const openGraphTitle = title.includes(SITE_NAME)
-    ? title
-    : `${title} | ${SITE_NAME}`;
+  const url = absoluteUrl(path);
+  const normalizedTitle = title.includes("SEEL") ? title : `${title} | ${SITE_NAME}`;
+  const openGraphTitle = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
+  const imageUrl = image ? absoluteUrl(image) : DEFAULT_OG_IMAGE;
 
   return {
     title: normalizedTitle,
@@ -32,6 +36,12 @@ export function buildMetadata({
       "entrümpelung berlin",
       "transport berlin",
     ],
+    alternates: {
+      canonical: url,
+      languages: {
+        de: url,
+      },
+    },
     openGraph: {
       title: openGraphTitle,
       description,
@@ -39,16 +49,20 @@ export function buildMetadata({
       siteName: SITE_NAME,
       locale: "de_DE",
       type: "website",
-      images: [{ url: `${BASE_URL}/images/logo.png`, width: 512, height: 512, alt: "SEEL Transport Logo" }],
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${SITE_NAME} Open Graph Bild`,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: openGraphTitle,
       description,
-    },
-    alternates: {
-      canonical: url,
-      languages: { "de": url },
+      images: [imageUrl],
     },
   };
 }
@@ -76,7 +90,7 @@ export function buildBreadcrumbSchema(items: Array<{ name: string; url: string }
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      item: `${BASE_URL}${item.url}`,
+      item: absoluteUrl(item.url),
     })),
   };
 }
@@ -94,7 +108,7 @@ export function buildServiceSchema(service: {
     serviceType: service.name,
     name: service.name,
     description: service.description,
-    url: `${BASE_URL}${service.url}`,
+    url: absoluteUrl(service.url),
     provider: {
       "@type": "LocalBusiness",
       name: SITE_NAME,

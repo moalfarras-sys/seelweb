@@ -14,9 +14,24 @@ const FALLBACK_PRICES: PublicPrices = {
   minimumHoursLabel: "Mindestabnahme 2 Stunden",
 };
 
+function isBuildTime() {
+  return (
+    process.env.NEXT_PHASE === "phase-production-build" ||
+    process.env.npm_lifecycle_event === "build" ||
+    (process.argv.some((arg) => /next(?:\.js)?$/i.test(arg)) && process.argv.includes("build"))
+  );
+}
+
 export async function getPrices(): Promise<PublicPrices> {
   try {
-    noStore();
+    if (!isBuildTime()) {
+      noStore();
+    }
+
+    if (isBuildTime()) {
+      return FALLBACK_PRICES;
+    }
+
     const settings = await getPricingSettingsSnapshot();
     return {
       umzugStandard: settings.publicMovingStandardEur,

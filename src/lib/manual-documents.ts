@@ -1,6 +1,6 @@
 import { ManualDocumentType } from "@prisma/client";
 import { CONTACT } from "@/config/contact";
-import { calculateManualDocumentTotals, ManualDocumentItem, normalizeManualItems } from "@/lib/manual-document-utils";
+import { ManualDocumentItem } from "@/lib/manual-document-utils";
 import { nextContractNumber, nextInvoiceNumber, nextOfferNumber } from "@/lib/workflow";
 
 export type ManualDocumentPayload = {

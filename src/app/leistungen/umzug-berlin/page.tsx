@@ -102,7 +102,7 @@ export default async function UmzugBerlinPage() {
           <div className="hero-metrics justify-center">
             <span className="hero-metric">Berlin Experten</span>
             <span className="hero-metric">Halteverbotszonen</span>
-            <span className="hero-metric">Express moglich</span>
+            <span className="hero-metric">Express möglich</span>
           </div>
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
             <Link

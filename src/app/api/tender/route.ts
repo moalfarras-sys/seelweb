@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { sendEmail } from "@/lib/email";
-import { CONTACT } from "@/config/contact";
 import type { ServiceCategory } from "@prisma/client";
+import { prisma } from "@/lib/db";
+import { CONTACT } from "@/config/contact";
+import { sendEmail } from "@/lib/email";
 
 const CATEGORY_MAP: Record<string, ServiceCategory> = {
   BUEROUMZUG: "MOVING",
@@ -21,31 +21,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Pflichtfelder fehlen" }, { status: 400 });
     }
 
-    const customer = await prisma.customer.upsert({
-      where: { email },
-      update: {
-        name: contact,
-        phone,
-        company,
-      },
-      create: {
-        name: contact,
-        email,
-        phone,
-        company,
-      },
-    });
+    let referenceId = "E-MAIL";
 
-    const tender = await prisma.tender.create({
-      data: {
-        customerId: customer.id,
-        title: `${category} - ${company}`,
-        description: `${description}${budget ? `\n\nBudget: ${budget}` : ""}`,
-        category: CATEGORY_MAP[category] || "MOVING",
-        startDate: new Date(),
-        status: "OFFEN",
-      },
-    });
+    try {
+      const customer = await prisma.customer.upsert({
+        where: { email },
+        update: { name: contact, phone, company },
+        create: { name: contact, email, phone, company },
+      });
+
+      const tender = await prisma.tender.create({
+        data: {
+          customerId: customer.id,
+          title: `${category} - ${company}`,
+          description: `${description}${budget ? `\n\nBudget: ${budget}` : ""}`,
+          category: CATEGORY_MAP[category] || "MOVING",
+          startDate: new Date(),
+          status: "OFFEN",
+        },
+      });
+
+      referenceId = tender.id;
+    } catch (dbError) {
+      console.warn("[tender] database unavailable, continuing with email fallback", dbError);
+    }
 
     await sendEmail({
       to: CONTACT.EMAIL,
@@ -60,11 +59,12 @@ export async function POST(req: NextRequest) {
         <p><strong>Budget:</strong> ${budget || "-"}</p>
         <p><strong>Beschreibung:</strong></p>
         <p>${String(description).replace(/\n/g, "<br />")}</p>
-        <p><strong>Vorgangs-ID:</strong> ${tender.id}</p>
+        <p><strong>Referenz:</strong> ${referenceId}</p>
       `,
+      throwOnFailure: false,
     });
 
-    return NextResponse.json({ success: true, message: "Ausschreibung erhalten" });
+    return NextResponse.json({ success: true, message: "Ausschreibung erhalten", referenceId });
   } catch (error) {
     console.error("[tender] error:", error);
     return NextResponse.json({ error: "Serverfehler" }, { status: 500 });

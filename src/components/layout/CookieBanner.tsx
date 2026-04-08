@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Cookie } from "lucide-react";
 
 type ConsentState = {
@@ -11,73 +11,79 @@ type ConsentState = {
   marketing: boolean;
 };
 
-const DEFAULT_CONSENT: ConsentState = { necessary: true, analytics: false, marketing: false };
+const DEFAULT_CONSENT: ConsentState = {
+  necessary: true,
+  analytics: false,
+  marketing: false,
+};
 
 export function getCookieConsent(): ConsentState | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem("cookie-consent");
-    if (!raw) return null;
-    return JSON.parse(raw);
+    return raw ? (JSON.parse(raw) as ConsentState) : null;
   } catch {
     return null;
   }
 }
 
 export function CookieBanner() {
-  const [show, setShow] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const stored = getCookieConsent();
-    if (!stored) {
-      setShow(true);
+    if (!getCookieConsent()) {
+      setOpen(true);
     }
   }, []);
 
-  const saveConsent = (c: ConsentState) => {
-    localStorage.setItem("cookie-consent", JSON.stringify(c));
-    setShow(false);
+  const saveConsent = (consent: ConsentState) => {
+    localStorage.setItem("cookie-consent", JSON.stringify(consent));
+    setOpen(false);
   };
-
-  const acceptAll = () => saveConsent({ necessary: true, analytics: true, marketing: true });
-  const declineAll = () => saveConsent({ necessary: true, analytics: false, marketing: false });
 
   return (
     <AnimatePresence>
-      {show && (
+      {open && (
         <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
+          initial={{ opacity: 0, y: 32 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 24 }}
           transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-          className="fixed bottom-4 left-4 right-4 z-[60] mx-auto max-w-lg sm:left-auto sm:right-6 sm:bottom-6"
+          className="fixed bottom-4 left-4 right-4 z-[70] mx-auto max-w-2xl sm:bottom-6"
         >
-          <div className="rounded-card border border-border bg-white p-5 shadow-lg dark:border-border-dark dark:bg-surface-dark-card">
-            <div className="flex items-start gap-3">
-              <Cookie size={20} className="mt-0.5 shrink-0 text-brand-teal" />
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-text-primary dark:text-text-on-dark">
-                  Cookie-Einstellungen
-                </p>
-                <p className="mt-1 text-xs leading-5 text-text-muted dark:text-text-on-dark-muted">
-                  Wir verwenden Cookies für die grundlegende Funktionalität.{" "}
-                  <Link href="/datenschutz" className="text-brand-teal underline">Mehr erfahren</Link>
-                </p>
+          <div className="rounded-[24px] border border-border bg-white/95 p-4 shadow-[0_18px_50px_rgba(11,22,40,0.14)] backdrop-blur-xl dark:border-border-dark dark:bg-surface-dark-card/95">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-teal/10 text-brand-teal">
+                  <Cookie size={18} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-text-primary dark:text-text-on-dark">Cookie-Einstellungen</p>
+                  <p className="mt-1 text-xs leading-5 text-text-muted dark:text-text-on-dark-muted">
+                    Wir nutzen nur die notwendigen Cookies standardmäßig. Details finden Sie in der{" "}
+                    <Link href="/datenschutz" className="font-semibold text-brand-teal">
+                      Datenschutzerklärung
+                    </Link>
+                    .
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={acceptAll}
-                className="flex-1 rounded-button bg-brand-teal px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-110"
-              >
-                Alle akzeptieren
-              </button>
-              <button
-                onClick={declineAll}
-                className="flex-1 rounded-button border border-border px-4 py-2.5 text-sm font-semibold text-text-primary transition hover:bg-surface dark:border-border-dark dark:text-text-on-dark dark:hover:bg-surface-dark-elevated"
-              >
-                Nur notwendige
-              </button>
+              <div className="flex flex-wrap gap-2 sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => saveConsent({ ...DEFAULT_CONSENT, analytics: true, marketing: true })}
+                  className="rounded-pill bg-brand-teal px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110"
+                >
+                  Alle akzeptieren
+                </button>
+                <button
+                  type="button"
+                  onClick={() => saveConsent(DEFAULT_CONSENT)}
+                  className="rounded-pill border border-border px-4 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface dark:border-border-dark dark:text-text-on-dark dark:hover:bg-surface-dark-elevated"
+                >
+                  Nur notwendige
+                </button>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -87,13 +93,15 @@ export function CookieBanner() {
 }
 
 export function CookieSettingsButton() {
-  const reopenBanner = () => {
-    localStorage.removeItem("cookie-consent");
-    window.location.reload();
-  };
-
   return (
-    <button onClick={reopenBanner} className="text-text-on-dark-muted transition hover:text-brand-teal text-sm">
+    <button
+      type="button"
+      onClick={() => {
+        localStorage.removeItem("cookie-consent");
+        window.location.reload();
+      }}
+      className="text-left text-sm text-text-on-dark-muted transition hover:text-brand-teal"
+    >
       Cookie-Einstellungen
     </button>
   );

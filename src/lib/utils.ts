@@ -1,9 +1,6 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { cn } from "@/lib/cn";
 
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-};
+export { cn };
 
 export function formatCurrency(amount : number): string {
   return new Intl.NumberFormat("de-DE", {

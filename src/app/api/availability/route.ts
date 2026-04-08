@@ -1,84 +1,96 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-const SLOT_MINUTES = 30;
-const BUFFER_MINUTES = 30;
 const DEFAULT_SLOTS = ["08:00", "10:00", "13:00", "16:00"];
 
-type Interval = { start: number; end: number };
+type Interval = {
+  start: number;
+  end: number;
+};
 
 function toMinutes(hhmm: string) {
-  const [h, m] = hhmm.split(":").map(Number);
-  return h * 60 + m;
+  const [hours, minutes] = hhmm.split(":").map(Number);
+  return hours * 60 + minutes;
 }
 
 function formatMinutes(total: number) {
-  const h = Math.floor(total / 60)
+  const hours = Math.floor(total / 60)
     .toString()
     .padStart(2, "0");
-  const m = Math.floor(total % 60)
+  const minutes = Math.floor(total % 60)
     .toString()
     .padStart(2, "0");
-  return `${h}:${m}`;
+  return `${hours}:${minutes}`;
 }
 
 function parseSlot(slot: string | null | undefined): Interval | null {
   if (!slot) return null;
-  const parts = slot.split("-");
-  if (parts.length !== 2) return null;
-  const start = toMinutes(parts[0]);
-  const end = toMinutes(parts[1]);
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return null;
+
+  if (/^\d{2}:\d{2}$/.test(slot)) {
+    const start = toMinutes(slot);
+    return {
+      start,
+      end: start + 120,
+    };
+  }
+
+  const [startRaw, endRaw] = slot.split("-");
+  if (!startRaw || !endRaw) return null;
+  const start = toMinutes(startRaw);
+  const end = toMinutes(endRaw);
+
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+    return null;
+  }
+
   return { start, end };
 }
 
-function intervalsOverlap(a: Interval, b: Interval) {
+function overlaps(a: Interval, b: Interval) {
   return a.start < b.end && b.start < a.end;
 }
 
 function getWorkHours(date: Date) {
   const day = date.getDay();
-  if (day === 0) return null;
-  if (day === 6) return { start: toMinutes("09:00"), end: toMinutes("15:00") };
+  if (day === 0) {
+    return null;
+  }
+
+  if (day === 6) {
+    return { start: toMinutes("08:00"), end: toMinutes("16:00") };
+  }
+
   return { start: toMinutes("08:00"), end: toMinutes("18:00") };
+}
+
+function buildDefaultSlots(durationMinutes: number, work: Interval) {
+  const slotLength = Math.max(120, durationMinutes);
+
+  return DEFAULT_SLOTS.filter((time) => {
+    const start = toMinutes(time);
+    return start >= work.start && start + 60 <= work.end;
+  }).map((time) => {
+    const start = toMinutes(time);
+    const end = Math.min(work.end, start + slotLength);
+
+    return {
+      start: time,
+      end: formatMinutes(end),
+      label: time,
+      available: true,
+    };
+  });
 }
 
 function parseDuration(raw: string | null) {
   const parsed = Number(raw || 0);
   if (!Number.isFinite(parsed) || parsed <= 0) return 120;
-  return Math.max(30, Math.floor(parsed));
-}
-
-function buildSlots(work: Interval, durationMin: number) {
-  const slots: Array<{ start: string; end: string; label: string }> = [];
-  for (let start = work.start; start + durationMin <= work.end; start += SLOT_MINUTES) {
-    const candidate: Interval = { start, end: start + durationMin };
-    slots.push({
-      start: formatMinutes(candidate.start),
-      end: formatMinutes(candidate.end),
-      label: `${formatMinutes(candidate.start)}-${formatMinutes(candidate.end)}`,
-    });
-  }
-  return slots;
-}
-
-function buildDefaultSlots(work: Interval) {
-  return DEFAULT_SLOTS
-    .filter((time) => {
-      const mins = toMinutes(time);
-      return mins >= work.start && mins < work.end;
-    })
-    .map((time) => ({
-      start: time,
-      end: formatMinutes(Math.min(toMinutes(time) + 120, work.end)),
-      label: time,
-    }));
+  return Math.max(60, Math.floor(parsed));
 }
 
 export async function GET(req: NextRequest) {
   try {
     const dateStr = req.nextUrl.searchParams.get("date");
-    const rawDuration = parseDuration(req.nextUrl.searchParams.get("duration"));
     if (!dateStr) {
       return NextResponse.json({ success: false, error: "date ist erforderlich" }, { status: 400 });
     }
@@ -90,19 +102,18 @@ export async function GET(req: NextRequest) {
 
     const work = getWorkHours(selectedDate);
     if (!work) {
-      return NextResponse.json({ success: true, date: dateStr, durationMin: rawDuration, slots: [], fullyBooked: true });
+      return NextResponse.json({ success: true, date: dateStr, slots: [], fullyBooked: true, fallback: false });
     }
 
-    const workWindowMin = work.end - work.start;
-    const durationMin = Math.min(rawDuration, workWindowMin);
-
+    const durationMin = parseDuration(req.nextUrl.searchParams.get("duration"));
     const startDay = new Date(selectedDate);
     startDay.setHours(0, 0, 0, 0);
     const endDay = new Date(selectedDate);
     endDay.setHours(23, 59, 59, 999);
 
-    let orders: Array<{ timeSlot: string | null; bookedHours: number | null }> = [];
     let fallback = false;
+    let orders: Array<{ timeSlot: string | null }> = [];
+
     try {
       orders = await prisma.order.findMany({
         where: {
@@ -116,47 +127,32 @@ export async function GET(req: NextRequest) {
         },
         select: {
           timeSlot: true,
-          bookedHours: true,
         },
       });
     } catch {
       fallback = true;
     }
 
-    const blocked: Interval[] = orders
-      .map((o) => {
-        const parsed = parseSlot(o.timeSlot);
-        if (parsed) return parsed;
-        if (!o.bookedHours || o.bookedHours <= 0) return null;
-        return {
-          start: work.start,
-          end: Math.min(work.end, work.start + Math.floor(o.bookedHours * 60)),
-        };
-      })
-      .filter((x): x is Interval => x !== null)
-      .map((x) => ({
-        start: Math.max(work.start, x.start - BUFFER_MINUTES),
-        end: Math.min(work.end, x.end + BUFFER_MINUTES),
-      }));
+    const candidateSlots = buildDefaultSlots(durationMin, work);
 
-    let slots = fallback
-      ? buildSlots(work, durationMin)
-      : buildSlots(work, durationMin).filter((slot) => {
-          const candidate = parseSlot(slot.label);
-          return candidate ? !blocked.some((b) => intervalsOverlap(candidate, b)) : false;
-        });
+    const slots = candidateSlots.map((slot) => {
+      if (fallback) return slot;
 
-    if (slots.length === 0) {
-      const defaultSlots = buildDefaultSlots(work);
-      slots = fallback
-        ? defaultSlots
-        : defaultSlots.filter((slot) => {
-            const slotStart = toMinutes(slot.start);
-            const slotEnd = toMinutes(slot.end);
-            const candidate: Interval = { start: slotStart, end: slotEnd };
-            return !blocked.some((b) => intervalsOverlap(candidate, b));
-          });
-    }
+      const candidate: Interval = {
+        start: toMinutes(slot.start),
+        end: toMinutes(slot.end),
+      };
+
+      const taken = orders.some((order) => {
+        const blocked = parseSlot(order.timeSlot);
+        return blocked ? overlaps(candidate, blocked) : false;
+      });
+
+      return {
+        ...slot,
+        available: !taken,
+      };
+    });
 
     return NextResponse.json(
       {
@@ -164,7 +160,7 @@ export async function GET(req: NextRequest) {
         date: dateStr,
         durationMin,
         slots,
-        fullyBooked: slots.length === 0,
+        fullyBooked: slots.every((slot) => !slot.available),
         fallback,
       },
       {

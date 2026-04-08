@@ -3,270 +3,201 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Mail, MapPin, MessageCircle, Phone, ShieldCheck } from "lucide-react";
+import { Clock3, Mail, MapPin, MessageCircle, Phone, ShieldCheck } from "lucide-react";
 import { useSiteContent } from "@/components/SiteContentProvider";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type TrackingState = {
-  utm_source: string;
-  utm_medium: string;
-  utm_campaign: string;
-  referrer: string;
-  landing_page: string;
-};
-
-function buildWhatsappUrl(number: string) {
+function whatsappUrl(number: string) {
   return `https://wa.me/${number}`;
 }
 
 export default function KontaktPage() {
   const { company, contact } = useSiteContent();
-  const addressLines = [company.addressLine1, company.addressLine2, `${company.city}, ${company.country}`].filter(Boolean);
-  const addressSummary = company.addressLine2 ? addressLines.join(", ") : company.addressLine1;
-  const searchParams = useSearchParams();
-  const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
-  const [honeypot, setHoneypot] = useState("");
-  const [tracking, setTracking] = useState<TrackingState>({
-    utm_source: "",
-    utm_medium: "",
-    utm_campaign: "",
-    referrer: "",
-    landing_page: "",
-  });
+  const search = useSearchParams();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
   const [gdpr, setGdpr] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState(false);
-  const [clientValidationError, setClientValidationError] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const subject = searchParams.get("subject");
-    if (!subject) return;
-    setForm((current) => ({ ...current, subject }));
-  }, [searchParams]);
+    const nextSubject = search.get("subject");
+    if (nextSubject) setSubject(nextSubject);
+  }, [search]);
 
-  useEffect(() => {
-    setTracking({
-      utm_source: searchParams.get("utm_source") ?? "",
-      utm_medium: searchParams.get("utm_medium") ?? "",
-      utm_campaign: searchParams.get("utm_campaign") ?? "",
-      referrer: typeof document !== "undefined" ? document.referrer : "",
-      landing_page: typeof window !== "undefined" ? window.location.pathname : "",
-    });
-  }, [searchParams]);
-
-  function updateForm(patch: Partial<typeof form>) {
-    setClientValidationError("");
-    setForm((current) => ({ ...current, ...patch }));
-  }
-
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setClientValidationError("");
-    setError(false);
-
-    if (honeypot.trim()) return;
-    if (!gdpr) return;
-
-    const nameOk = form.name.trim().length > 0;
-    const emailOk = form.email.trim().length > 0 && EMAIL_REGEX.test(form.email.trim());
-    const subjectOk = form.subject.trim().length > 0;
-    const messageOk = form.message.trim().length > 0;
-    if (!nameOk || !emailOk || !subjectOk || !messageOk) {
-      setClientValidationError("Bitte füllen Sie alle Pflichtfelder aus und geben Sie eine gültige E-Mail-Adresse ein.");
+  async function sendMessage() {
+    if (!name.trim() || !EMAIL_REGEX.test(email.trim()) || !subject.trim() || !message.trim() || !gdpr) {
+      setError("Bitte füllen Sie alle Pflichtfelder korrekt aus und bestätigen Sie den Datenschutz.");
       return;
     }
 
+    setLoading(true);
+    setError("");
+
     try {
-      setLoading(true);
       const response = await fetch("/api/kontakt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...form,
-          website: honeypot,
-          ...tracking,
+          name,
+          email,
+          phone,
+          subject,
+          message,
+          website: "",
+          utm_source: search.get("utm_source") || "",
+          utm_medium: search.get("utm_medium") || "",
+          utm_campaign: search.get("utm_campaign") || "",
+          referrer: typeof document !== "undefined" ? document.referrer : "",
+          landing_page: typeof window !== "undefined" ? window.location.pathname : "",
         }),
       });
-      if (!response.ok) throw new Error("request_failed");
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "Nachricht konnte nicht gesendet werden.");
+      }
+
       setSubmitted(true);
-    } catch {
-      setError(true);
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "Nachricht konnte nicht gesendet werden.");
     } finally {
       setLoading(false);
     }
   }
 
-  const inputClasses = "input-glass";
-
   return (
-    <>
-      <section className="hero-led-section kinetic-hero gradient-navy relative overflow-hidden py-28 md:py-36">
-        <div className="hero-light-sweep" />
-        <div className="cine-grid absolute inset-0 opacity-35" />
-        <div className="absolute inset-0 opacity-[0.10]">
-          <div className="absolute inset-0 bg-[url('/images/cleaning-team-office.png')] bg-cover bg-center" />
-        </div>
-        <div className="hero-film absolute inset-0 z-0" />
-        <div className="relative z-10 mx-auto max-w-6xl px-4 md:px-8">
-          <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
-            <div className="hero-copy-flow hero-subtle-parallax">
-              <p className="section-eyebrow text-cyan-200/90">Kontakt</p>
-              <h1
-                className="headline-prism hero-title-strong font-display mt-4 text-4xl font-semibold md:text-6xl"
-                style={{ color: "#f8fdff", WebkitTextFillColor: "#f8fdff" }}
-              >
-                Direkte Anfrage statt unnötiger Umwege.
-              </h1>
-              <p
-                className="hero-body mt-5 max-w-2xl text-white/90 dark:text-white/90"
-                style={{ color: "rgba(248, 253, 255, 0.92)" }}
-              >
-                Schreiben Sie uns für Umzug, Reinigung, Entrümpelung oder Ihre Festpreisanfrage. Wir melden uns strukturiert und zeitnah zurück.
-              </p>
-              <div className="hero-metrics">
-                <span className="hero-metric">24/7 erreichbar</span>
-                <span className="hero-metric">WhatsApp direkt</span>
-                <span className="hero-metric">Klare Ruckmeldung</span>
-              </div>
-            </div>
-            <div className="glass-dark rounded-[32px] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.30)]">
-              <div className="grid gap-4 md:grid-cols-3">
-                {[
-                  { label: "Servicegebiet", value: contact.serviceRegion },
-                  { label: "Telefon", value: contact.primaryPhoneDisplay },
-                  { label: "Erreichbarkeit", value: contact.availability },
-                ].map((item) => (
-                  <div key={item.label} className="rounded-[22px] border border-white/[0.08] bg-white/5 p-4">
-                    <p className="text-xs uppercase tracking-[0.24em] text-white/55">{item.label}</p>
-                    <p className="mt-2 text-sm font-semibold text-white">{item.value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+    <main className="px-4 pb-14 pt-10 md:px-8">
+      <div className="mx-auto max-w-[1200px]">
+        <section className="overflow-hidden rounded-[36px] bg-[linear-gradient(135deg,#081220_0%,#0B1628_48%,#152238_100%)] px-6 py-10 text-white md:px-10">
+          <p className="font-ui text-xs uppercase tracking-[0.3em] text-brand-teal-light">Kontakt</p>
+          <h1 className="mt-4 font-display text-4xl font-bold md:text-5xl">Direkte Anfrage statt unnötiger Umwege.</h1>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-white/80">
+            Schreiben Sie uns für Umzug, Reinigung, Entrümpelung oder Festpreisanfragen. Wir melden uns strukturiert und zeitnah zurück.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <a href={`tel:${contact.primaryPhone}`} className="rounded-pill bg-brand-teal px-5 py-3 text-sm font-semibold text-white">
+              {contact.primaryPhoneDisplay}
+            </a>
+            <a href={whatsappUrl(contact.whatsappNumber)} target="_blank" rel="noopener noreferrer" className="rounded-pill border border-white/15 px-5 py-3 text-sm font-semibold text-white">
+              WhatsApp direkt
+            </a>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="section-padding">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 md:px-8 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="mt-8 grid gap-8 lg:grid-cols-[380px_minmax(0,1fr)]">
           <div className="space-y-4">
             {[
               { icon: Phone, title: "Telefon", value: contact.primaryPhoneDisplay, href: `tel:${contact.primaryPhone}` },
               { icon: Mail, title: "E-Mail", value: contact.email, href: `mailto:${contact.email}` },
-              { icon: MapPin, title: "Adresse", value: addressSummary },
-              { icon: MessageCircle, title: "WhatsApp", value: "Direktnachricht starten", href: buildWhatsappUrl(contact.whatsappNumber), external: true },
+              { icon: MessageCircle, title: "WhatsApp", value: "Direktnachricht starten", href: whatsappUrl(contact.whatsappNumber), external: true },
+              { icon: Clock3, title: "Öffnungszeiten", value: "Mo–So 07:00–20:00 · Notfälle 24/7" },
+              { icon: MapPin, title: "Adresse", value: `${company.addressLine1}, ${company.addressLine2}, ${company.city}` },
             ].map((item) => {
               const Icon = item.icon;
-              const content = (
-                <div className="premium-panel rounded-[28px] p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-sky-500/10 text-sky-700 dark:text-cyan-300">
+              const card = (
+                <div className="rounded-[24px] border border-border bg-white p-5 shadow-[var(--shadow-card)] dark:border-border-dark dark:bg-surface-dark-card">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-brand-teal/10 text-brand-teal">
                       <Icon size={20} />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-slate-900 dark:text-white">{item.title}</p>
-                      <p className="mt-1 text-sm text-slate-600 dark:text-white/55">{item.value}</p>
+                      <p className="text-sm font-semibold text-text-primary dark:text-text-on-dark">{item.title}</p>
+                      <p className="mt-1 text-sm leading-6 text-text-body dark:text-text-on-dark-muted">{item.value}</p>
                     </div>
                   </div>
                 </div>
               );
 
-              if (!item.href) return <div key={item.title}>{content}</div>;
-
-              return (
+              return item.href ? (
                 <a key={item.title} href={item.href} target={item.external ? "_blank" : undefined} rel={item.external ? "noopener noreferrer" : undefined}>
-                  {content}
+                  {card}
                 </a>
+              ) : (
+                <div key={item.title}>{card}</div>
               );
             })}
 
-            <div className="premium-panel rounded-[28px] p-6">
+            <div className="rounded-[24px] border border-border bg-white p-5 shadow-[var(--shadow-card)] dark:border-border-dark dark:bg-surface-dark-card">
               <div className="flex items-start gap-3">
-                <ShieldCheck size={18} className="mt-1 text-sky-700 dark:text-cyan-300" />
+                <ShieldCheck size={18} className="mt-1 text-brand-teal" />
                 <div>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white">Klare Bearbeitung</p>
-                  <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-white/55">
-                    Ihre Anfrage landet direkt bei {company.name}. Pflichtangaben, Datenschutz und Rückmeldungen bleiben sauber strukturiert.
+                  <p className="text-sm font-semibold text-text-primary dark:text-text-on-dark">Saubere Bearbeitung</p>
+                  <p className="mt-2 text-sm leading-7 text-text-body dark:text-text-on-dark-muted">
+                    Ihre Anfrage landet direkt bei {company.name}. Wir antworten mit klaren nächsten Schritten statt mit Standardbausteinen.
                   </p>
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="premium-panel rounded-[28px] p-6">
-              <p className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-white/45">So arbeiten wir</p>
-              <ul className="mt-4 space-y-3 text-sm leading-7 text-slate-600 dark:text-white/55">
-                <li>Eine zentrale Anlaufstelle für Umzug, Reinigung und Entrümpelung.</li>
-                <li>Feste Rückmeldungen zu Termin, Leistungsumfang und Preisrahmen.</li>
-                <li>Serviceeinsätze in {contact.serviceRegion}.</li>
-              </ul>
+          <div className="space-y-6">
+            <div className="rounded-[30px] border border-border bg-white p-6 shadow-[var(--shadow-card)] dark:border-border-dark dark:bg-surface-dark-card md:p-8">
+              {submitted ? (
+                <div className="rounded-[24px] bg-brand-teal/8 p-8 text-center">
+                  <h2 className="text-2xl font-bold text-text-primary dark:text-text-on-dark">Nachricht gesendet</h2>
+                  <p className="mt-3 text-sm leading-7 text-text-body dark:text-text-on-dark-muted">
+                    Vielen Dank. Wir melden uns schnellstmöglich bei Ihnen zurück.
+                  </p>
+                  <Link href="/" className="mt-5 inline-flex text-sm font-semibold text-brand-teal">
+                    Zur Startseite
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  <p className="font-ui text-xs uppercase tracking-[0.28em] text-brand-teal">Kontaktformular</p>
+                  <h2 className="mt-3 text-2xl font-bold text-text-primary dark:text-text-on-dark">Anfrage senden</h2>
+
+                  {error ? (
+                    <div className="mt-5 rounded-[20px] border border-status-error/20 bg-status-error/10 px-4 py-3 text-sm text-status-error">
+                      {error}
+                    </div>
+                  ) : null}
+
+                  <div className="mt-5 grid gap-4 md:grid-cols-2">
+                    <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Ihr Name" className="input-glass" />
+                    <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="E-Mail" className="input-glass" />
+                    <input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="Telefon" className="input-glass" />
+                    <input value={subject} onChange={(event) => setSubject(event.target.value)} placeholder="Betreff" className="input-glass" />
+                  </div>
+
+                  <textarea value={message} onChange={(event) => setMessage(event.target.value)} rows={7} placeholder="Ihre Nachricht" className="input-glass mt-4 resize-none" />
+
+                  <label className="mt-4 flex items-start gap-3 text-sm text-text-body dark:text-text-on-dark-muted">
+                    <input type="checkbox" checked={gdpr} onChange={(event) => setGdpr(event.target.checked)} className="mt-1" />
+                    <span>
+                      Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
+                      <Link href="/datenschutz" className="font-semibold text-brand-teal">
+                        Datenschutzerklärung
+                      </Link>{" "}
+                      zu.
+                    </span>
+                  </label>
+
+                  <button type="button" onClick={sendMessage} disabled={loading} className="mt-6 rounded-pill bg-brand-teal px-6 py-3 text-sm font-semibold text-white disabled:opacity-50">
+                    {loading ? "Wird gesendet..." : "Nachricht senden"}
+                  </button>
+                </>
+              )}
+            </div>
+
+            <div className="overflow-hidden rounded-[30px] border border-border bg-white shadow-[var(--shadow-card)] dark:border-border-dark dark:bg-surface-dark-card">
+              <iframe
+                title="SEEL Transport Berlin Karte"
+                src="https://www.google.com/maps?q=Forster%20Stra%C3%9Fe%205%2C%2012627%20Berlin&z=13&output=embed"
+                className="h-[340px] w-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
             </div>
           </div>
-
-          <div className="premium-panel rounded-[34px] p-6 md:p-8">
-            {submitted ? (
-              <div className="rounded-[28px] bg-sky-50 p-8 text-center dark:bg-sky-500/10">
-                <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">Nachricht gesendet</h2>
-                <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-white/55">
-                  Vielen Dank. Wir melden uns schnellstmöglich bei Ihnen zurück.
-                </p>
-                <Link href="/" className="mt-5 inline-flex text-sm font-semibold text-sky-700 transition hover:text-sky-600">
-                  Zur Startseite
-                </Link>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Kontaktformular</p>
-                  <h2 className="font-display mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Anfrage senden</h2>
-                </div>
-
-                {clientValidationError && (
-                  <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-                    {clientValidationError}
-                  </div>
-                )}
-                {error && (
-                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
-                    Beim Senden ist ein Fehler aufgetreten.
-                  </div>
-                )}
-
-                <div className="absolute -left-[9999px] h-0 w-0 overflow-hidden opacity-0" aria-hidden="true">
-                  <label htmlFor="kontakt-website">Website</label>
-                  <input id="kontakt-website" type="text" name="website" tabIndex={-1} autoComplete="off" value={honeypot} onChange={(event) => setHoneypot(event.target.value)} />
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <input required value={form.name} onChange={(event) => updateForm({ name: event.target.value })} placeholder="Ihr Name" className={inputClasses} />
-                  <input required type="email" value={form.email} onChange={(event) => updateForm({ email: event.target.value })} placeholder="E-Mail" className={inputClasses} />
-                </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <input value={form.phone} onChange={(event) => updateForm({ phone: event.target.value })} placeholder="Telefon" className={inputClasses} />
-                  <input required value={form.subject} onChange={(event) => updateForm({ subject: event.target.value })} placeholder="Betreff" className={inputClasses} />
-                </div>
-                <textarea required rows={6} value={form.message} onChange={(event) => updateForm({ message: event.target.value })} placeholder="Ihre Nachricht" className={`${inputClasses} resize-none`} />
-
-                <label className="flex items-start gap-3 text-sm text-slate-600 dark:text-white/55">
-                  <input type="checkbox" checked={gdpr} onChange={(event) => setGdpr(event.target.checked)} className="mt-1" />
-                  <span>
-                    Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
-                    <Link href="/datenschutz" className="font-semibold text-sky-700 transition hover:text-sky-600">
-                      Datenschutzerklärung
-                    </Link>{" "}
-                    zu.
-                  </span>
-                </label>
-
-                <button type="submit" disabled={loading || !gdpr} className="btn-primary-glass disabled:cursor-not-allowed disabled:opacity-60">
-                  {loading ? "Wird gesendet..." : "Nachricht senden"}
-                </button>
-              </form>
-            )}
-          </div>
         </div>
-      </section>
-    </>
+      </div>
+    </main>
   );
 }

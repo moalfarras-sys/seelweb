@@ -1,93 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { generateSignedContractPDF } from "@/lib/pdf";
+import { buildContractPdf, getSignedState, readContractToken } from "@/lib/fallback-booking";
 
 type Params = { params: Promise<{ token: string }> };
 
 export async function GET(req: NextRequest, { params }: Params) {
-  try {
-    const { token } = await params;
-    const download = req.nextUrl.searchParams.get("download") === "1";
+  const { token } = await params;
+  const payload = readContractToken(token);
 
-    const contract = await prisma.contract.findUnique({
-      where: { token },
-      include: {
-        signatures: { orderBy: { signedAt: "desc" }, take: 1 },
-        customer: true,
-        offer: {
-          include: {
-            items: { orderBy: { position: "asc" } },
-            order: { include: { service: true, fromAddress: true, toAddress: true } },
-          },
-        },
-      },
-    });
-
-    if (!contract) {
-      return NextResponse.json({ error: "Vertrag nicht gefunden" }, { status: 404 });
-    }
-
-    let pdfBuffer: Buffer;
-    if (contract.signedPdfBase64) {
-      pdfBuffer = Buffer.from(contract.signedPdfBase64, "base64");
-    } else {
-      pdfBuffer = await generateSignedContractPDF({
-        contractNumber: contract.contractNumber,
-        offerNumber: contract.offer.offerNumber,
-        customerName: contract.customer.name,
-        customerEmail: contract.customer.email,
-        customerCompany: contract.customer.company,
-        serviceSummary: contract.offer.order.service.nameDe,
-        serviceDate: contract.offer.order.scheduledAt?.toLocaleDateString("de-DE") ?? null,
-        timeSlot: contract.offer.order.timeSlot,
-        fromAddress: contract.offer.order.fromAddress
-          ? [
-              contract.offer.order.fromAddress.street,
-              contract.offer.order.fromAddress.houseNumber,
-              contract.offer.order.fromAddress.zip,
-              contract.offer.order.fromAddress.city,
-            ]
-              .filter(Boolean)
-              .join(", ")
-          : null,
-        toAddress: contract.offer.order.toAddress
-          ? [
-              contract.offer.order.toAddress.street,
-              contract.offer.order.toAddress.houseNumber,
-              contract.offer.order.toAddress.zip,
-              contract.offer.order.toAddress.city,
-            ]
-              .filter(Boolean)
-              .join(", ")
-          : null,
-        items: contract.offer.items.map((i) => ({
-          title: i.title,
-          description: i.description,
-          quantity: i.quantity,
-          unitPrice: i.unitPrice,
-          totalPrice: i.totalPrice,
-        })),
-        subtotal: contract.offer.items.reduce((sum, i) => sum + i.totalPrice, 0),
-        discountAmount: contract.offer.discountAmount,
-        extraFees: contract.offer.extraFees,
-        totalPrice: contract.finalTotalPrice,
-        netto: contract.finalNetto,
-        mwst: contract.finalMwst,
-        signedByName: contract.signedByName || "Nicht unterschrieben",
-        signedAt: contract.signedAt?.toLocaleString("de-DE") || "Nicht unterschrieben",
-        ipAddress: contract.signedByIp,
-        signatureDataUrl: contract.signatures[0]?.imageDataUrl ?? null,
-      });
-    }
-
-    return new NextResponse(new Uint8Array(pdfBuffer), {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `${download ? "attachment" : "inline"}; filename="Vertrag-${contract.contractNumber}.pdf"`,
-      },
-    });
-  } catch (error) {
-    console.error("GET /api/vertrag/[token]/pdf error:", error);
-    return NextResponse.json({ error: "Interner Serverfehler" }, { status: 500 });
+  if (!payload) {
+    return NextResponse.json({ error: "Vertrag nicht gefunden" }, { status: 404 });
   }
+
+  const signed = getSignedState(token);
+  const pdf = signed?.signedPdfBase64
+    ? Buffer.from(signed.signedPdfBase64, "base64")
+    : await buildContractPdf(payload, signed ? { signedAt: new Date(signed.signedAt).toLocaleString("de-DE"), signedByName: signed.signedByName } : undefined);
+  const download = req.nextUrl.searchParams.get("download") === "1";
+
+  return new NextResponse(new Uint8Array(pdf), {
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `${download ? "attachment" : "inline"}; filename="Vertrag-${payload.contractNumber}.pdf"`,
+    },
+  });
 }

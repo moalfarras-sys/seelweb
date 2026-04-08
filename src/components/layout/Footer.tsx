@@ -1,11 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { Clock, Mail, MapPin, Phone } from "lucide-react";
-import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
+import { Clock3, Mail, MapPin, Phone } from "lucide-react";
 import { CookieSettingsButton } from "@/components/layout/CookieBanner";
-import { useSiteContent } from "@/components/SiteContentProvider";
 import { LogoImage } from "@/components/layout/Navbar";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
+import { useSiteContent } from "@/components/SiteContentProvider";
+
+const SERVICE_LINKS = [
+  { href: "/leistungen/umzug-berlin", label: "Umzugsfirma Berlin" },
+  { href: "/leistungen/privatumzug", label: "Privatumzug" },
+  { href: "/leistungen/firmenumzug", label: "Firmenumzug" },
+  { href: "/leistungen/schulumzug", label: "Schulumzug" },
+  { href: "/leistungen/reinigung", label: "Reinigung" },
+  { href: "/leistungen/entruempelung", label: "Entrümpelung" },
+];
+
+const QUICK_LINKS = [
+  { href: "/buchen", label: "Preise & Buchen" },
+  { href: "/unternehmen", label: "Unternehmen" },
+  { href: "/kontakt", label: "Kontakt" },
+  { href: "/galerie", label: "Galerie" },
+  { href: "/agb", label: "AGB" },
+  { href: "/impressum", label: "Impressum" },
+  { href: "/datenschutz", label: "Datenschutz" },
+];
 
 function buildWhatsappUrl(number: string) {
   return `https://wa.me/${number}`;
@@ -17,69 +36,67 @@ export default function Footer() {
 
   return (
     <footer className="relative z-10 overflow-hidden bg-brand-navy text-text-on-dark">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-0 top-0 h-80 w-80 rounded-full bg-brand-teal/5 blur-[130px]" />
-        <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-brand-teal/5 blur-[130px]" />
-      </div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,197,160,0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(201,168,76,0.12),transparent_24%)]" />
 
-      <div className="relative mx-auto max-w-[1200px] px-4 py-16 md:px-8">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
-          <div className="lg:col-span-1">
+      <div className="relative mx-auto max-w-[1200px] px-4 py-16 md:px-6 xl:px-0">
+        <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-4">
+          <div>
             <div className="flex items-center gap-3">
               <LogoImage size={48} />
               <div>
-                <p className="font-display text-xl font-bold tracking-wide">SEEL</p>
-                <p className="text-[0.62rem] uppercase tracking-[0.35em] text-text-on-dark-muted">Transport & Reinigung</p>
+                <p className="font-display text-xl font-bold tracking-[0.12em]">SEEL</p>
+                <p className="text-[11px] uppercase tracking-[0.28em] text-text-on-dark-muted">Transport & Reinigung</p>
               </div>
             </div>
             <p className="mt-5 max-w-xs text-sm leading-7 text-text-on-dark-muted">
-              Strukturierte Einsätze für Umzug, Reinigung und Entrümpelung in {contact.serviceRegion}.
+              Ihr Umzug. Unsere Präzision. Berlin-basiert, zuverlässig geplant und sauber ausgeführt.
             </p>
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <a href={`tel:${contact.primaryPhone}`} className="inline-flex items-center gap-2 rounded-button border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-text-on-dark transition hover:bg-white/10 hover:text-brand-teal">
-                <Phone size={14} />
-                {contact.primaryPhoneDisplay}
-              </a>
+            <div className="mt-5 flex flex-wrap gap-3">
               <a
                 href={buildWhatsappUrl(contact.whatsappNumber)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-button border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-text-on-dark transition hover:bg-white/10 hover:text-brand-teal"
+                className="inline-flex items-center gap-2 rounded-pill border border-white/10 px-4 py-2 text-sm text-text-on-dark-muted transition hover:text-brand-teal"
               >
                 <WhatsAppIcon className="h-4 w-4 fill-current" />
                 WhatsApp
+              </a>
+              <a
+                href={`tel:${contact.primaryPhone}`}
+                className="inline-flex items-center gap-2 rounded-pill border border-white/10 px-4 py-2 text-sm text-text-on-dark-muted transition hover:text-brand-teal"
+              >
+                <Phone size={14} />
+                Anrufen
               </a>
             </div>
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-text-on-dark">Leistungen</h3>
-            <div className="mt-4 space-y-2.5 text-sm text-text-on-dark-muted">
-              <Link href="/leistungen/umzug-berlin" className="block transition hover:text-brand-teal">Umzugsfirma Berlin</Link>
-              <Link href="/leistungen/privatumzug" className="block transition hover:text-brand-teal">Privatumzug</Link>
-              <Link href="/leistungen/firmenumzug" className="block transition hover:text-brand-teal">Firmenumzug</Link>
-              <Link href="/leistungen/schulumzug" className="block transition hover:text-brand-teal">Schulumzug</Link>
-              <Link href="/leistungen/reinigung" className="block transition hover:text-brand-teal">Reinigung</Link>
-              <Link href="/leistungen/entruempelung" className="block transition hover:text-brand-teal">Entrümpelung</Link>
+            <h3 className="font-ui text-sm font-semibold uppercase tracking-[0.24em] text-text-on-dark">Leistungen</h3>
+            <div className="mt-4 space-y-3 text-sm text-text-on-dark-muted">
+              {SERVICE_LINKS.map((link) => (
+                <Link key={link.href} href={link.href} className="block transition hover:text-brand-teal">
+                  {link.label}
+                </Link>
+              ))}
             </div>
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-text-on-dark">Schnellzugriff</h3>
-            <div className="mt-4 space-y-2.5 text-sm text-text-on-dark-muted">
-              <Link href="/buchen" className="block transition hover:text-brand-teal">Preise & Buchen</Link>
-              <Link href="/unternehmen" className="block transition hover:text-brand-teal">Unternehmen</Link>
-              <Link href="/kontakt" className="block transition hover:text-brand-teal">Kontakt</Link>
-              <Link href="/impressum" className="block transition hover:text-brand-teal">Impressum</Link>
-              <Link href="/datenschutz" className="block transition hover:text-brand-teal">Datenschutz</Link>
-              <Link href="/agb" className="block transition hover:text-brand-teal">AGB</Link>
+            <h3 className="font-ui text-sm font-semibold uppercase tracking-[0.24em] text-text-on-dark">Schnellzugriff</h3>
+            <div className="mt-4 space-y-3 text-sm text-text-on-dark-muted">
+              {QUICK_LINKS.map((link) => (
+                <Link key={link.href} href={link.href} className="block transition hover:text-brand-teal">
+                  {link.label}
+                </Link>
+              ))}
               <CookieSettingsButton />
             </div>
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-text-on-dark">Kontakt</h3>
-            <div className="mt-4 space-y-3 text-sm text-text-on-dark-muted">
+            <h3 className="font-ui text-sm font-semibold uppercase tracking-[0.24em] text-text-on-dark">Kontakt</h3>
+            <div className="mt-4 space-y-4 text-sm text-text-on-dark-muted">
               <div className="flex items-start gap-3">
                 <MapPin size={16} className="mt-0.5 shrink-0 text-brand-teal" />
                 <div className="space-y-0.5">
@@ -97,22 +114,25 @@ export default function Footer() {
                 {contact.email}
               </a>
               <div className="flex items-start gap-3">
-                <Clock size={16} className="mt-0.5 shrink-0 text-brand-teal" />
-                <span>{contact.availability}</span>
+                <Clock3 size={16} className="mt-0.5 shrink-0 text-brand-teal" />
+                <span>Mo–So 07:00–20:00 · Notfälle 24/7</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 text-sm text-text-on-dark-muted md:flex-row md:items-center md:justify-between">
-          <div className="space-y-1">
-            <p>&copy; {new Date().getFullYear()} {company.name}. Alle Rechte vorbehalten.</p>
-            {company.vatId ? <p className="text-xs text-white/30">USt-IdNr.: {company.vatId}</p> : null}
-          </div>
-          <div className="flex flex-wrap items-center gap-4 text-xs">
-            <Link href="/agb" className="transition hover:text-brand-teal">AGB</Link>
-            <Link href="/impressum" className="transition hover:text-brand-teal">Impressum</Link>
-            <Link href="/datenschutz" className="transition hover:text-brand-teal">Datenschutz</Link>
+        <div className="mt-14 flex flex-col gap-3 text-sm text-text-on-dark-muted md:flex-row md:items-center md:justify-between">
+          <p>© 2026 SEEL Transport & Reinigung · USt-IdNr.: DE454962817</p>
+          <div className="flex flex-wrap items-center gap-4">
+            <Link href="/agb" className="transition hover:text-brand-teal">
+              AGB
+            </Link>
+            <Link href="/impressum" className="transition hover:text-brand-teal">
+              Impressum
+            </Link>
+            <Link href="/datenschutz" className="transition hover:text-brand-teal">
+              Datenschutz
+            </Link>
           </div>
         </div>
       </div>
