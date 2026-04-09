@@ -85,7 +85,7 @@ export default async function ExpressumzugPage() {
             <Link href="/buchen?service=EXPRESS_MOVING" className="btn-primary-glass gap-2 px-8 py-4">
               Expressumzug buchen <ArrowRight size={18} />
             </Link>
-            <Link href="/kontakt?subject=Expressumzug%20Berlin" className="btn-secondary-glass px-8 py-4 text-white">
+            <Link href="/kontakt?subject=Expressumzug%20Berlin" className="btn-secondary-glass px-8 py-4">
               Direkt Rückruf anfordern
             </Link>
           </div>
@@ -202,7 +202,7 @@ export default async function ExpressumzugPage() {
               <Link href="/buchen?service=EXPRESS_MOVING" className="btn-primary-glass gap-2 px-10 py-4">
                 Expressumzug anfragen <ArrowRight size={20} />
               </Link>
-              <Link href="/kontakt" className="btn-secondary-glass px-10 py-4 text-white">
+              <Link href="/kontakt" className="btn-secondary-glass px-10 py-4">
                 Rückruf anfordern
               </Link>
             </div>

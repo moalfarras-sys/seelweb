@@ -160,10 +160,9 @@ export default async function HomePage() {
       <section className="hero-led-section relative px-4 pb-8 pt-28 md:px-6 md:pt-32 xl:px-0">
         <div className="mx-auto max-w-[1240px]">
           <div className="page-hero-shell">
-            <div className="hero-light-sweep opacity-70" />
             <div className="page-hero-grid">
               <div className="hero-copy-flow max-w-3xl">
-                <span className="hero-badge-glow inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-white/88 backdrop-blur-2xl">
+                <span className="hero-badge-glow inline-flex items-center gap-2 rounded-full border border-white/42 bg-white/54 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-text-primary backdrop-blur-2xl dark:border-white/14 dark:bg-white/10 dark:text-white/88">
                   <Sparkles size={14} className="text-brand-teal-light" />
                   Berlin · Brandenburg · Deutschlandweit
                 </span>

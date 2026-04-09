@@ -99,7 +99,7 @@ export default function UmzugPage() {
             <Link href="/buchen?service=MOVING" className="btn-primary-glass gap-2 px-8 py-4">
               Jetzt Umzug anfragen <ArrowRight size={18} />
             </Link>
-            <Link href="/kontakt?subject=Privatumzug%20Berlin" className="btn-secondary-glass px-8 py-4 text-white">
+            <Link href="/kontakt?subject=Privatumzug%20Berlin" className="btn-secondary-glass px-8 py-4">
               Rückruf anfordern
             </Link>
           </div>
@@ -224,7 +224,7 @@ export default function UmzugPage() {
                 <Link href="/buchen?service=MOVING" className="btn-primary-glass gap-2 px-10 py-4">
                   Jetzt Angebot anfordern <ArrowRight size={20} />
                 </Link>
-                <Link href="/kontakt" className="btn-secondary-glass px-10 py-4 text-white">
+                <Link href="/kontakt" className="btn-secondary-glass px-10 py-4">
                   Kontakt aufnehmen
                 </Link>
               </div>

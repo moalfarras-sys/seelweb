@@ -68,7 +68,7 @@ export default function EntruempelungPage() {
             <Link href="/buchen?service=DISPOSAL" className="btn-primary-glass gap-2 px-8 py-4">
               Jetzt Entrümpelung buchen <ArrowRight size={18} />
             </Link>
-            <Link href="/kontakt?subject=Entrümpelung%20Berlin" className="btn-secondary-glass px-8 py-4 text-white">
+            <Link href="/kontakt?subject=Entrümpelung%20Berlin" className="btn-secondary-glass px-8 py-4">
               Objekt prüfen lassen
             </Link>
           </div>

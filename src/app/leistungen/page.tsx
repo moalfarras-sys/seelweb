@@ -96,7 +96,6 @@ export default async function LeistungenPage() {
       <section className="relative px-4 pb-8 pt-28 md:px-8 md:pt-32">
         <div className="mx-auto max-w-[1240px]">
           <div className="page-hero-shell">
-            <div className="hero-light-sweep opacity-60" />
             <div className="page-hero-grid">
               <div>
                 <p className="page-kicker">Leistungen</p>
@@ -117,6 +116,7 @@ export default async function LeistungenPage() {
                     src="/images/umzug-1.jpeg"
                     alt="SEEL Leistungen Überblick"
                     fill
+                    priority
                     className="image-cinematic object-cover"
                     sizes="(max-width: 1024px) 100vw, 44vw"
                   />

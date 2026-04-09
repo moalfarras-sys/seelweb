@@ -287,7 +287,7 @@ export default function Gallery({ images, title, subtitle, description, mode = "
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute left-[8%] top-20 h-56 w-56 rounded-full bg-sky-300/15 blur-[130px] dark:bg-sky-500/8" />
           <div className="absolute right-[8%] top-1/3 h-60 w-60 rounded-full bg-cyan-300/15 blur-[140px] dark:bg-cyan-500/8" />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(248,250,252,0.60)_0%,rgba(241,245,249,0.88)_48%,rgba(248,250,252,0.78)_100%)] dark:bg-[linear-gradient(180deg,rgba(3,8,16,0.96)_0%,rgba(3,8,16,0.98)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(248,250,252,0.24)_0%,rgba(241,245,249,0.38)_48%,rgba(248,250,252,0.18)_100%)] dark:bg-[linear-gradient(180deg,rgba(3,8,16,0.28)_0%,rgba(3,8,16,0.42)_100%)]" />
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 md:px-8">
@@ -314,7 +314,7 @@ export default function Gallery({ images, title, subtitle, description, mode = "
                   Eine filmische Wand aus echten Einsätzen statt einer statischen Standardgalerie.
                 </p>
               </div>
-              <div className="rounded-[28px] border border-white/[0.08] bg-[#040a14] p-5 text-white shadow-[0_24px_70px_rgba(0,0,0,0.30)]">
+              <div className="premium-panel-dark p-5">
                 <div className="flex items-center gap-3">
                   <Sparkles size={18} className="text-cyan-300/80" />
                   <p className="text-sm font-semibold">Cinematic Viewer</p>
@@ -323,7 +323,7 @@ export default function Gallery({ images, title, subtitle, description, mode = "
                   Großzügige Bildflächen, ruhige Kontraste und ein dunkler Viewer erzeugen Portfolio-Gefühl statt Standardraster.
                 </p>
               </div>
-              <div className="rounded-[28px] border border-slate-200/70 bg-white/75 p-5 text-slate-900 shadow-[0_22px_60px_rgba(15,23,42,0.08)] dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-white">
+              <div className="glass-card p-5 text-slate-900 dark:text-white">
                 <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500 dark:text-white/45">Archiv</p>
                 <div className="mt-4 flex items-end gap-4">
                   <div>
@@ -368,7 +368,7 @@ export default function Gallery({ images, title, subtitle, description, mode = "
                   Alle Bilder erscheinen jetzt in derselben Größe. Das Ergebnis wirkt ruhiger, hochwertiger und näher an einem kuratierten Marken-Portfolio als an einer technischen Standardgalerie.
                 </p>
               </div>
-              <div className="rounded-[30px] border border-white/[0.08] bg-[#06111d] p-6 text-white shadow-[0_28px_90px_rgba(2,8,18,0.30)]">
+              <div className="premium-panel-dark p-6">
                 <p className="text-[11px] uppercase tracking-[0.32em] text-cyan-200/65">Aktive Auswahl</p>
                 <p className="mt-4 text-3xl font-semibold">{categoryLabels[activeCategory]}</p>
                 <p className="mt-3 text-sm leading-7 text-white/68">{categoryDescriptions[activeCategory]}</p>

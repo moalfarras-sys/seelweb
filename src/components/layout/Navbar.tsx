@@ -160,13 +160,16 @@ export default function Navbar() {
             scrolled ? "shadow-[0_26px_72px_rgba(4,9,20,0.28)]" : "shadow-[0_18px_48px_rgba(4,9,20,0.2)]"
           )}
         >
-          <Link href="/" className="flex min-w-0 items-center gap-3 rounded-[22px] px-2 py-1.5 transition-colors hover:bg-white/8">
+          <Link
+            href="/"
+            className="flex min-w-0 items-center gap-3 rounded-[22px] px-2 py-1.5 transition-colors hover:bg-white/55 dark:hover:bg-white/8"
+          >
             <LogoImage size={34} />
             <div className="min-w-0">
-              <p className="font-display text-[0.92rem] font-bold tracking-[0.22em] text-white md:text-base">
+              <p className="font-display text-[0.92rem] font-bold tracking-[0.22em] text-text-primary dark:text-white md:text-base">
                 SEEL
               </p>
-              <p className="truncate text-[8px] uppercase tracking-[0.34em] text-white/44">
+              <p className="truncate text-[8px] uppercase tracking-[0.34em] text-text-muted dark:text-white/44">
                 Transport & Reinigung
               </p>
             </div>
@@ -181,8 +184,8 @@ export default function Navbar() {
                     className={cn(
                       "inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all",
                       pathname.startsWith("/leistungen")
-                        ? "bg-[linear-gradient(135deg,rgba(18,215,198,0.24),rgba(111,121,255,0.22))] text-white shadow-[0_12px_32px_rgba(18,215,198,0.18),inset_0_1px_0_rgba(255,255,255,0.14)]"
-                        : "text-white/88 hover:bg-white/10 hover:text-white"
+                        ? "bg-[linear-gradient(135deg,rgba(18,215,198,0.24),rgba(111,121,255,0.22))] text-text-primary shadow-[0_12px_32px_rgba(18,215,198,0.18),inset_0_1px_0_rgba(255,255,255,0.3)] dark:text-white dark:shadow-[0_12px_32px_rgba(18,215,198,0.18),inset_0_1px_0_rgba(255,255,255,0.14)]"
+                        : "text-text-primary/84 hover:bg-white/55 hover:text-text-primary dark:text-white/88 dark:hover:bg-white/10 dark:hover:text-white"
                     )}
                   >
                     {item.label}
@@ -251,9 +254,9 @@ export default function Navbar() {
                   href={item.href}
                   className={cn(
                     "rounded-full px-4 py-2.5 text-sm font-semibold transition-all",
-                    pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
-                      ? "bg-[linear-gradient(135deg,rgba(18,215,198,0.24),rgba(111,121,255,0.22))] text-white shadow-[0_12px_32px_rgba(18,215,198,0.18),inset_0_1px_0_rgba(255,255,255,0.14)]"
-                      : "text-white/88 hover:bg-white/10 hover:text-white"
+                      pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
+                      ? "bg-[linear-gradient(135deg,rgba(18,215,198,0.24),rgba(111,121,255,0.22))] text-text-primary shadow-[0_12px_32px_rgba(18,215,198,0.18),inset_0_1px_0_rgba(255,255,255,0.3)] dark:text-white dark:shadow-[0_12px_32px_rgba(18,215,198,0.18),inset_0_1px_0_rgba(255,255,255,0.14)]"
+                      : "text-text-primary/84 hover:bg-white/55 hover:text-text-primary dark:text-white/88 dark:hover:bg-white/10 dark:hover:text-white"
                   )}
                 >
                   {item.label}
@@ -274,7 +277,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setDrawerOpen((current) => !current)}
-              className="inline-flex h-12 w-12 items-center justify-center rounded-[18px] border border-white/12 bg-white/7 text-white backdrop-blur-xl transition-all hover:bg-white/12"
+              className="inline-flex h-12 w-12 items-center justify-center rounded-[18px] border border-white/40 bg-white/55 text-text-primary backdrop-blur-xl transition-all hover:bg-white/72 dark:border-white/12 dark:bg-white/7 dark:text-white dark:hover:bg-white/12"
               aria-label={drawerOpen ? "Menü schließen" : "Menü öffnen"}
             >
               <span className="relative flex h-5 w-5 items-center justify-center">

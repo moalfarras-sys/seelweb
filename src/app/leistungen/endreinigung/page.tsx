@@ -108,7 +108,7 @@ export default function EndreinigungPage() {
             <Link href="/buchen?service=MOVE_OUT_CLEANING" className="btn-primary-glass gap-2 px-8 py-4">
               Endreinigung buchen <ArrowRight size={18} />
             </Link>
-            <Link href="/kontakt?subject=Endreinigung%20Berlin" className="btn-secondary-glass px-8 py-4 text-white">
+            <Link href="/kontakt?subject=Endreinigung%20Berlin" className="btn-secondary-glass px-8 py-4">
               Übergabetermin abstimmen
             </Link>
           </div>
@@ -242,7 +242,7 @@ export default function EndreinigungPage() {
                 <Link href="/buchen?service=MOVE_OUT_CLEANING" className="btn-primary-glass gap-2 px-10 py-4">
                   Jetzt Angebot anfordern <ArrowRight size={20} />
                 </Link>
-                <Link href="/kontakt" className="btn-secondary-glass px-10 py-4 text-white">
+                <Link href="/kontakt" className="btn-secondary-glass px-10 py-4">
                   Kontakt aufnehmen
                 </Link>
               </div>

@@ -19,16 +19,37 @@ export default async function ImpressumPage() {
 
   return (
     <>
-      <section className="hero-led-section relative overflow-hidden px-4 pb-8 pt-28 md:px-8 md:pt-32">
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,#081220_0%,#0B1628_48%,#152238_100%)]" />
-        <div className="mx-auto max-w-5xl px-4 text-center md:px-8">
-          <p className="section-eyebrow text-cyan-200/90">
-            Rechtliche Angaben
-          </p>
-          <h1 className="hero-title-strong mt-4 font-display text-3xl font-semibold text-white md:text-5xl">Impressum</h1>
-          <p className="hero-body mt-4 text-base leading-8 text-white/74">
-            Zentrale Unternehmens- und Kontaktdaten von {settings.company.name}.
-          </p>
+      <section className="relative px-4 pb-8 pt-28 md:px-8 md:pt-32">
+        <div className="mx-auto max-w-5xl">
+          <div className="page-hero-shell">
+            <div className="page-hero-grid">
+              <div className="hero-copy-flow max-w-3xl">
+                <p className="page-kicker">Rechtliche Angaben</p>
+                <h1 className="page-title max-w-[8ch]">Impressum</h1>
+                <p className="page-copy">
+                  Zentrale Unternehmens- und Kontaktdaten von {settings.company.name} in einer klaren, ruhigen und mobil gut lesbaren Struktur.
+                </p>
+                <div className="page-chip-row">
+                  <span className="page-chip">Berlin</span>
+                  <span className="page-chip">Kontakt klar gepflegt</span>
+                  <span className="page-chip">Stand 2026</span>
+                </div>
+              </div>
+
+              <div className="page-info-card p-5">
+                <p className="text-[11px] uppercase tracking-[0.28em] text-white/48">Direkt erreichbar</p>
+                <div className="mt-4 space-y-3 text-sm leading-7 text-white/74">
+                  <p>{settings.contact.primaryPhoneDisplay}</p>
+                  <p>{settings.contact.email}</p>
+                  <p>{settings.contact.websiteDisplay}</p>
+                </div>
+                <div className="mt-5 rounded-[22px] border border-white/10 bg-white/6 p-4 text-white">
+                  <p className="text-[11px] uppercase tracking-[0.24em] text-white/46">Servicegebiet</p>
+                  <p className="mt-2 text-lg font-semibold">{settings.contact.serviceRegion}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -36,30 +57,30 @@ export default async function ImpressumPage() {
         <div className="mx-auto max-w-5xl px-4 md:px-8">
           <div className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
             <aside className="space-y-6">
-              <div className="glass-card rounded-[30px] p-6">
-                <p className="text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-white/45">
+              <div className="page-info-card-light p-6">
+                <p className="text-xs uppercase tracking-[0.28em] text-text-muted dark:text-white/45">
                   Unternehmen
                 </p>
-                <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">
+                <h2 className="mt-3 text-2xl font-semibold text-text-primary dark:text-white">
                   {settings.company.name}
                 </h2>
-                <div className="mt-4 space-y-2 text-sm leading-7 text-slate-600 dark:text-white/62">
+                <div className="mt-4 space-y-2 text-sm leading-7 text-text-body dark:text-white/62">
                   {addressLines.map((line) => (
                     <p key={line}>{line}</p>
                   ))}
                 </div>
               </div>
 
-              <div className="glass-card rounded-[30px] p-6">
-                <p className="text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-white/45">
+              <div className="page-info-card-light p-6">
+                <p className="text-xs uppercase tracking-[0.28em] text-text-muted dark:text-white/45">
                   Direkter Kontakt
                 </p>
-                <div className="mt-4 space-y-3 text-sm leading-7 text-slate-600 dark:text-white/62">
+                <div className="mt-4 space-y-3 text-sm leading-7 text-text-body dark:text-white/62">
                   <p>
                     Telefon:{" "}
                     <a
                       href={`tel:${settings.contact.primaryPhone}`}
-                      className="font-semibold text-emerald-700 dark:text-teal-300"
+                      className="font-semibold text-brand-teal"
                     >
                       {settings.contact.primaryPhoneDisplay}
                     </a>
@@ -68,7 +89,7 @@ export default async function ImpressumPage() {
                     E-Mail:{" "}
                     <a
                       href={`mailto:${settings.contact.email}`}
-                      className="font-semibold text-emerald-700 dark:text-teal-300"
+                      className="font-semibold text-brand-teal"
                     >
                       {settings.contact.email}
                     </a>
@@ -77,7 +98,7 @@ export default async function ImpressumPage() {
                     Website:{" "}
                     <a
                       href={settings.contact.websiteUrl}
-                      className="font-semibold text-emerald-700 dark:text-teal-300"
+                      className="font-semibold text-brand-teal"
                     >
                       {settings.contact.websiteDisplay}
                     </a>
@@ -86,10 +107,10 @@ export default async function ImpressumPage() {
               </div>
             </aside>
 
-            <div className="glass-strong rounded-[32px] p-8 md:p-10">
-              <div className="space-y-8 text-sm leading-8 text-slate-700 dark:text-white/68">
+            <div className="glass-strong p-8 md:p-10">
+              <div className="space-y-8 text-sm leading-8 text-text-body dark:text-white/68">
                 <section>
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+                  <h2 className="text-xl font-semibold text-text-primary dark:text-white">
                     Angaben gemäß § 5 TMG
                   </h2>
                   <div className="mt-4 space-y-1">
@@ -104,7 +125,7 @@ export default async function ImpressumPage() {
                 </section>
 
                 <section>
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Kontakt</h2>
+                  <h2 className="text-xl font-semibold text-text-primary dark:text-white">Kontakt</h2>
                   <div className="mt-4 space-y-1">
                     <p>Telefon: {settings.contact.primaryPhoneDisplay}</p>
                     {settings.contact.secondaryPhoneDisplay && (
@@ -116,7 +137,7 @@ export default async function ImpressumPage() {
                 </section>
 
                 <section>
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+                  <h2 className="text-xl font-semibold text-text-primary dark:text-white">
                     Steuer- und Registerangaben
                   </h2>
                   <div className="mt-4 space-y-1">
@@ -135,7 +156,7 @@ export default async function ImpressumPage() {
                 </section>
 
                 <section>
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+                  <h2 className="text-xl font-semibold text-text-primary dark:text-white">
                     Hinweis zur Streitbeilegung
                   </h2>
                   <p className="mt-4">
@@ -145,7 +166,7 @@ export default async function ImpressumPage() {
                       href="https://ec.europa.eu/consumers/odr/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-emerald-700 underline dark:text-teal-300"
+                      className="font-semibold text-brand-teal underline"
                     >
                       https://ec.europa.eu/consumers/odr/
                     </a>
@@ -155,7 +176,7 @@ export default async function ImpressumPage() {
                   </p>
                 </section>
 
-                <div className="border-t border-slate-200 pt-6 text-xs uppercase tracking-[0.24em] text-slate-500 dark:border-white/10 dark:text-white/38">
+                <div className="border-t border-white/20 pt-6 text-xs uppercase tracking-[0.24em] text-text-muted dark:border-white/10 dark:text-white/38">
                   Stand: März 2026
                 </div>
               </div>
