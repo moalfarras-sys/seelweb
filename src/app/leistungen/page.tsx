@@ -122,7 +122,7 @@ export default async function LeistungenPage() {
             <article
               key={section.id}
               id={section.id}
-              className="premium-panel card-interactive scroll-reveal grid items-center gap-8 overflow-hidden rounded-[36px] lg:grid-cols-2"
+              className="premium-panel card-interactive grid items-center gap-8 overflow-hidden rounded-[36px] lg:grid-cols-2"
               style={{ transitionDelay: `${index * 80}ms` }}
             >
               <div className={index % 2 === 1 ? "order-2 lg:order-1" : ""}>
