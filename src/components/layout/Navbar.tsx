@@ -182,7 +182,7 @@ export default function Navbar() {
                       "inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all",
                       pathname.startsWith("/leistungen")
                         ? "bg-[linear-gradient(135deg,rgba(18,215,198,0.24),rgba(111,121,255,0.22))] text-white shadow-[0_12px_32px_rgba(18,215,198,0.18),inset_0_1px_0_rgba(255,255,255,0.14)]"
-                        : "text-white/78 hover:bg-white/8 hover:text-white"
+                        : "text-white/88 hover:bg-white/10 hover:text-white"
                     )}
                   >
                     {item.label}
@@ -253,7 +253,7 @@ export default function Navbar() {
                     "rounded-full px-4 py-2.5 text-sm font-semibold transition-all",
                     pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
                       ? "bg-[linear-gradient(135deg,rgba(18,215,198,0.24),rgba(111,121,255,0.22))] text-white shadow-[0_12px_32px_rgba(18,215,198,0.18),inset_0_1px_0_rgba(255,255,255,0.14)]"
-                      : "text-white/78 hover:bg-white/8 hover:text-white"
+                      : "text-white/88 hover:bg-white/10 hover:text-white"
                   )}
                 >
                   {item.label}
