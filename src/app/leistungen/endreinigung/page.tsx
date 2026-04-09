@@ -54,6 +54,22 @@ const faqs = [
   },
 ];
 
+const cleaningGallery = [
+  "clean (2).jpeg",
+  "clean (3).jpeg",
+  "clean (4).jpeg",
+  "clean (5).jpeg",
+  "clean (6).jpeg",
+  "clean (7).jpeg",
+  "clean (8).jpeg",
+  "clean (9).jpeg",
+  "clean (10).jpeg",
+  "clean (12).jpeg",
+  "clean (13).jpeg",
+  "clean (15).jpeg",
+  "clean (16).jpeg",
+];
+
 export default function EndreinigungPage() {
   return (
     <>
@@ -190,8 +206,8 @@ export default function EndreinigungPage() {
       <Gallery
         title="Reinigungsarbeiten im Einsatz"
         subtitle="Echte Eindrücke"
-        images={Array.from({ length: 16 }, (_, index) => ({
-          src: `/images/clean/clean (${index + 1}).jpeg`,
+        images={cleaningGallery.map((image, index) => ({
+          src: `/images/clean/${image}`,
           alt: `SEEL Endreinigung Berlin – Arbeitsbild ${index + 1}`,
         }))}
       />

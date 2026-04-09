@@ -28,6 +28,22 @@ const faqItems = [
   },
 ];
 
+const cleaningGallery = [
+  "clean (2).jpeg",
+  "clean (3).jpeg",
+  "clean (4).jpeg",
+  "clean (5).jpeg",
+  "clean (6).jpeg",
+  "clean (7).jpeg",
+  "clean (8).jpeg",
+  "clean (9).jpeg",
+  "clean (10).jpeg",
+  "clean (12).jpeg",
+  "clean (13).jpeg",
+  "clean (15).jpeg",
+  "clean (16).jpeg",
+];
+
 export default async function ReinigungPage() {
   const prices = await getPrices();
 
@@ -124,9 +140,9 @@ export default async function ReinigungPage() {
       <Gallery
         title="Unsere Reinigungsarbeiten"
         subtitle="Einblicke"
-        images={Array.from({ length: 16 }, (_, i) => ({
-          src: `/images/clean/clean (${i + 1}).jpeg`,
-          alt: `SEEL Reinigung Berlin - Arbeitsbild ${i + 1}`,
+        images={cleaningGallery.map((image, index) => ({
+          src: `/images/clean/${image}`,
+          alt: `SEEL Reinigung Berlin - Arbeitsbild ${index + 1}`,
         }))}
       />
 
