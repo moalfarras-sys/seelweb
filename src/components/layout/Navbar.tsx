@@ -66,12 +66,13 @@ const services = [
 
 function LogoImage({ size = 42 }: { size?: number }) {
   const [useFallback, setUseFallback] = useState(false);
+  const width = Math.round(size * 1.78);
 
   if (useFallback) {
     return (
       <div
         className="flex items-center justify-center rounded-[18px] bg-brand-navy px-3 text-sm font-bold tracking-[0.24em] text-white shadow-[0_14px_34px_rgba(11,22,40,0.22)]"
-        style={{ width: size * 1.78, height: size }}
+        style={{ width, height: size }}
       >
         SEEL
       </div>
@@ -79,16 +80,22 @@ function LogoImage({ size = 42 }: { size?: number }) {
   }
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src="/images/logo-new.png"
-      alt="SEEL Transport & Reinigung Logo"
-      width={Math.round(size * 1.78)}
-      height={size}
-      className="h-auto w-auto object-contain"
-      loading="eager"
-      onError={() => setUseFallback(true)}
-    />
+    <span
+      className="relative block shrink-0 overflow-hidden"
+      style={{ width, height: size }}
+      aria-hidden="true"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/images/logo-new.png"
+        alt="SEEL Transport & Reinigung Logo"
+        width={width}
+        height={size}
+        className="block h-full w-full object-contain"
+        loading="eager"
+        onError={() => setUseFallback(true)}
+      />
+    </span>
   );
 }
 
