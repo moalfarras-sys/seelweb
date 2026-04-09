@@ -42,14 +42,14 @@ export default function Footer() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_16%,rgba(18,215,198,0.16),transparent_26%),radial-gradient(circle_at_88%_18%,rgba(111,121,255,0.16),transparent_24%),radial-gradient(circle_at_50%_100%,rgba(255,146,121,0.08),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_36%)]" />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/18 to-transparent" />
 
-      <div className="relative mx-auto max-w-[1240px] px-4 py-16 md:px-6 xl:px-0">
-        <div className="grid gap-6 lg:grid-cols-[1.15fr_0.75fr_0.75fr_0.95fr]">
-          <div className="page-info-card p-6 sm:p-7">
+      <div className="relative mx-auto max-w-[1240px] px-4 py-14 md:px-6 xl:px-0">
+        <div className="grid gap-4 lg:grid-cols-[1.15fr_0.75fr_0.75fr_0.95fr]">
+          <div className="page-info-card p-5 sm:p-6">
             <div className="flex items-center gap-3">
-              <LogoImage size={46} />
+              <LogoImage size={40} />
               <div>
-                <p className="font-display text-xl font-bold tracking-[0.18em] text-white">SEEL</p>
-                <p className="text-[11px] uppercase tracking-[0.34em] text-white/52">Transport & Reinigung</p>
+                <p className="font-display text-lg font-bold tracking-[0.16em] text-white">SEEL</p>
+                <p className="text-[10px] uppercase tracking-[0.24em] text-white/52">Transport & Reinigung</p>
               </div>
             </div>
             <p className="mt-5 max-w-sm text-sm leading-7 text-white/68">
@@ -75,7 +75,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="page-info-card p-6 text-text-on-dark">
+          <div className="page-info-card p-5 text-text-on-dark">
             <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-brand-teal-light">Leistungen</p>
             <div className="mt-5 space-y-3 text-sm text-white/70">
               {SERVICE_LINKS.map((link) => (
@@ -86,7 +86,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="page-info-card p-6 text-text-on-dark">
+          <div className="page-info-card p-5 text-text-on-dark">
             <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-brand-teal-light">Schnellzugriff</p>
             <div className="mt-5 space-y-3 text-sm text-white/70">
               {QUICK_LINKS.map((link) => (
@@ -108,7 +108,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="page-info-card p-6 sm:p-7">
+          <div className="page-info-card p-5 sm:p-6">
             <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-brand-teal-light">Kontakt</p>
             <div className="mt-5 space-y-4 text-sm text-white/70">
               <div className="flex items-start gap-3">
@@ -135,7 +135,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-4 border-t border-white/8 pt-6 text-sm text-white/50 md:flex-row md:items-center md:justify-between">
+        <div className="mt-8 flex flex-col gap-4 border-t border-white/8 pt-6 text-sm text-white/50 md:flex-row md:items-center md:justify-between">
           <p>© 2026 SEEL Transport & Reinigung · USt-IdNr.: DE454962817</p>
           <div className="flex flex-wrap items-center gap-4">
             {LEGAL_LINKS.map((link) => (

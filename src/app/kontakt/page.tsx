@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -32,7 +32,7 @@ export default function KontaktPage() {
 
   async function sendMessage() {
     if (!name.trim() || !EMAIL_REGEX.test(email.trim()) || !subject.trim() || !message.trim() || !gdpr) {
-      setError("Bitte füllen Sie alle Pflichtfelder korrekt aus und bestätigen Sie den Datenschutz.");
+      setError("Bitte fÃ¼llen Sie alle Pflichtfelder korrekt aus und bestÃ¤tigen Sie den Datenschutz.");
       return;
     }
 
@@ -75,8 +75,8 @@ export default function KontaktPage() {
     { icon: Phone, title: "Telefon", value: contact.primaryPhoneDisplay, href: `tel:${contact.primaryPhone}` },
     { icon: Mail, title: "E-Mail", value: contact.email, href: `mailto:${contact.email}` },
     { icon: MessageCircle, title: "WhatsApp", value: "Direktnachricht starten", href: whatsappUrl(contact.whatsappNumber), external: true },
-    { icon: Clock3, title: "Öffnungszeiten", value: "Mo–So 07:00–20:00 · Notfälle 24/7" },
-    { icon: MapPin, title: "Adresse", value: `${company.addressLine1}, ${company.addressLine2}, ${company.city}` },
+    { icon: Clock3, title: "Ã–ffnungszeiten", value: "Moâ€“So 07:00â€“20:00 Â· NotfÃ¤lle 24/7" },
+    { icon: MapPin, title: "Adresse", value: [company.addressLine1, company.addressLine2, company.city].filter(Boolean).join(", ") },
   ];
 
   return (
@@ -86,9 +86,9 @@ export default function KontaktPage() {
           <div className="page-hero-grid">
             <div>
               <p className="page-kicker">Kontakt</p>
-              <h1 className="page-title max-w-[11ch]">Direkte Anfrage statt unnötiger Umwege.</h1>
+              <h1 className="page-title max-w-[11ch]">Direkte Anfrage statt unnÃ¶tiger Umwege.</h1>
               <p className="page-copy">
-                Schreiben Sie uns für Umzug, Reinigung, Entrümpelung oder Festpreisanfragen. Wir antworten zeitnah, klar strukturiert und ohne Standardfloskeln.
+                Schreiben Sie uns fÃ¼r Umzug, Reinigung, EntrÃ¼mpelung oder Festpreisanfragen. Wir antworten zeitnah, klar strukturiert und ohne Standardfloskeln.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a href={`tel:${contact.primaryPhone}`} className="btn-primary-glass px-5 py-3 text-sm font-semibold text-white">
@@ -100,12 +100,12 @@ export default function KontaktPage() {
               </div>
               <div className="page-chip-row">
                 <span className="page-chip">Berlin vor Ort</span>
-                <span className="page-chip">Mo–So erreichbar</span>
-                <span className="page-chip">Klare Rückmeldung</span>
+                <span className="page-chip">Moâ€“So erreichbar</span>
+                <span className="page-chip">Klare RÃ¼ckmeldung</span>
               </div>
             </div>
 
-            <div className="page-info-card p-4 sm:p-5">
+            <div className="page-info-card-light p-4 sm:p-5">
               <div className="grid gap-3 sm:grid-cols-2">
                 {[
                   { label: "Telefon", value: contact.primaryPhoneDisplay },
@@ -113,8 +113,8 @@ export default function KontaktPage() {
                   { label: "Servicegebiet", value: contact.serviceRegion },
                   { label: "Antwortzeit", value: contact.availability },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-[22px] border border-white/10 bg-white/7 p-4 text-white">
-                    <p className="text-[11px] uppercase tracking-[0.24em] text-white/46">{item.label}</p>
+                  <div key={item.label} className="rounded-[18px] border border-white/45 bg-white/58 p-4 text-text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] dark:border-white/10 dark:bg-white/7 dark:text-white">
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-text-muted dark:text-white/46">{item.label}</p>
                     <p className="mt-2 text-base font-semibold leading-7">{item.value}</p>
                   </div>
                 ))}
@@ -156,7 +156,7 @@ export default function KontaktPage() {
                 <div>
                   <p className="text-sm font-semibold text-text-primary dark:text-text-on-dark">Saubere Bearbeitung</p>
                   <p className="mt-2 text-sm leading-7 text-text-body dark:text-text-on-dark-muted">
-                    Ihre Anfrage landet direkt bei {company.name}. Wir antworten mit klaren nächsten Schritten statt mit Standardbausteinen.
+                    Ihre Anfrage landet direkt bei {company.name}. Wir antworten mit klaren nÃ¤chsten Schritten statt mit Standardbausteinen.
                   </p>
                 </div>
               </div>
@@ -169,7 +169,7 @@ export default function KontaktPage() {
                 <div className="rounded-[24px] bg-brand-teal/8 p-8 text-center">
                   <h2 className="text-2xl font-bold text-text-primary dark:text-text-on-dark">Nachricht gesendet</h2>
                   <p className="mt-3 text-sm leading-7 text-text-body dark:text-text-on-dark-muted">
-                    Vielen Dank. Wir melden uns schnellstmöglich bei Ihnen zurück.
+                    Vielen Dank. Wir melden uns schnellstmÃ¶glich bei Ihnen zurÃ¼ck.
                   </p>
                   <Link href="/" className="mt-5 inline-flex text-sm font-semibold text-brand-teal">
                     Zur Startseite
@@ -198,9 +198,9 @@ export default function KontaktPage() {
                   <label className="mt-4 flex items-start gap-3 text-sm text-text-body dark:text-text-on-dark-muted">
                     <input type="checkbox" checked={gdpr} onChange={(event) => setGdpr(event.target.checked)} className="mt-1" />
                     <span>
-                      Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
+                      Ich stimme der Verarbeitung meiner Daten gemÃ¤ÃŸ der{" "}
                       <Link href="/datenschutz" className="font-semibold text-brand-teal">
-                        Datenschutzerklärung
+                        DatenschutzerklÃ¤rung
                       </Link>{" "}
                       zu.
                     </span>
@@ -228,3 +228,4 @@ export default function KontaktPage() {
     </main>
   );
 }
+

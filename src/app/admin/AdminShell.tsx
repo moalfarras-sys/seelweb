@@ -69,24 +69,24 @@ export default function AdminShell({
   };
 
   return (
-    <div className="admin-shell min-h-screen bg-gradient-to-br from-sky-100/90 via-cyan-50/85 to-blue-100/85 dark:from-[#060f20] dark:via-[#08152b] dark:to-[#050b16] flex">
+    <div className="admin-shell min-h-screen bg-gradient-to-br from-sky-100/94 via-cyan-50/88 to-blue-100/90 dark:from-[#060f20] dark:via-[#08152b] dark:to-[#050b16] flex">
       <AdminPwaProvider />
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 lg:translate-x-0 lg:static flex flex-col",
-          "bg-white/88 dark:bg-[#030810]/96 backdrop-blur-2xl border-r border-sky-200/60 dark:border-white/5 shadow-xl shadow-sky-900/5 dark:shadow-black/30",
+          "fixed inset-y-0 left-0 z-50 w-[17.5rem] transform transition-transform duration-300 lg:translate-x-0 lg:static flex flex-col",
+          "bg-white/92 dark:bg-[#030810]/96 backdrop-blur-xl border-r border-sky-200/60 dark:border-white/5 shadow-xl shadow-sky-900/5 dark:shadow-black/30",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="flex items-center justify-between px-5 py-5 border-b border-sky-200/60 dark:border-white/5">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-sky-200/60 dark:border-white/5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl overflow-hidden ring-2 ring-teal-500/30 shadow-lg">
+            <div className="w-9 h-9 rounded-xl overflow-hidden ring-2 ring-teal-500/30 shadow-lg">
               <Image
                 src="/images/logo.png"
                 alt="Seel"
-                width={40}
-                height={40}
+                width={36}
+                height={36}
                 className="h-full w-full object-cover"
                 style={{ height: "100%", width: "100%" }}
               />
@@ -105,7 +105,7 @@ export default function AdminShell({
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+        <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-5">
           {groups.map((group) => {
             const links = sidebarLinks.filter((l) => l.group === group.key);
             return (
@@ -123,7 +123,7 @@ export default function AdminShell({
                         href={link.href}
                         onClick={() => setSidebarOpen(false)}
                         className={cn(
-                          "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group",
+                          "flex items-center gap-3 px-3 py-2.5 rounded-[16px] text-sm font-medium transition-all duration-200 group",
                           active
                             ? "bg-teal-500/15 text-teal-700 dark:text-teal-400 shadow-sm"
                             : "text-slate-600 dark:text-white/50 hover:bg-sky-100/70 dark:hover:bg-white/5 hover:text-navy-900 dark:hover:text-white/90"
@@ -149,7 +149,7 @@ export default function AdminShell({
           })}
         </nav>
 
-        <div className="px-3 py-4 border-t border-sky-200/60 dark:border-white/5">
+        <div className="px-3 py-3 border-t border-sky-200/60 dark:border-white/5">
           <Link
             href="/"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 dark:text-white/40 hover:bg-sky-100/70 dark:hover:bg-white/5 hover:text-navy-800 dark:hover:text-white/80 transition-all mb-1"
@@ -174,7 +174,7 @@ export default function AdminShell({
       )}
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <header className="bg-white/82 dark:bg-navy-900/80 backdrop-blur-xl border-b border-sky-200/60 dark:border-white/5 px-4 md:px-8 py-3.5 flex items-center gap-4 sticky top-0 z-30">
+        <header className="bg-white/86 dark:bg-navy-900/84 backdrop-blur-xl border-b border-sky-200/60 dark:border-white/5 px-3 md:px-6 py-3 flex items-center gap-3 sticky top-0 z-30">
           <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-navy-800 transition-colors"
@@ -212,7 +212,7 @@ export default function AdminShell({
           </div>
         </header>
 
-        <main className="flex-1 p-4 md:p-8 overflow-auto">{children}</main>
+        <main className="flex-1 overflow-auto p-3 md:p-6">{children}</main>
       </div>
     </div>
   );

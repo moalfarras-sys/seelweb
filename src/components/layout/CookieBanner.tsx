@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -49,13 +49,13 @@ export function CookieBanner() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed inset-x-0 bottom-4 z-[70] px-4 sm:bottom-6"
+          className="fixed inset-x-0 bottom-3 z-[70] px-4 sm:bottom-5"
         >
-          <div className="mx-auto max-w-[780px] rounded-[28px] border border-white/12 bg-[linear-gradient(180deg,rgba(5,12,22,0.94)_0%,rgba(7,15,28,0.84)_100%)] p-4 text-white shadow-[0_28px_80px_rgba(0,0,0,0.34)] backdrop-blur-3xl sm:p-5">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="mx-auto max-w-[720px] rounded-[24px] border border-white/12 bg-[linear-gradient(180deg,rgba(5,12,22,0.94)_0%,rgba(7,15,28,0.84)_100%)] p-3.5 text-white shadow-[0_28px_80px_rgba(0,0,0,0.34)] backdrop-blur-3xl sm:p-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[16px] bg-white/8 text-brand-teal-light">
-                  <Cookie size={18} />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[14px] bg-white/8 text-brand-teal-light">
+                  <Cookie size={16} />
                 </div>
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -65,10 +65,10 @@ export function CookieBanner() {
                       Datenschutz zuerst
                     </span>
                   </div>
-                  <p className="mt-2 max-w-xl text-xs leading-6 text-white/68 sm:text-sm">
-                    Standardmäßig bleiben nur notwendige Cookies aktiv. Details finden Sie in der{" "}
+                  <p className="mt-1.5 max-w-xl text-xs leading-5 text-white/68 sm:text-sm sm:leading-6">
+                    StandardmÃ¤ÃŸig bleiben nur notwendige Cookies aktiv. Details finden Sie in der{" "}
                     <Link href="/datenschutz" className="font-semibold text-brand-teal-light">
-                      Datenschutzerklärung
+                      DatenschutzerklÃ¤rung
                     </Link>
                     .
                   </p>
@@ -113,3 +113,4 @@ export function CookieSettingsButton() {
     </button>
   );
 }
+
