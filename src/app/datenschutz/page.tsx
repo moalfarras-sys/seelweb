@@ -15,11 +15,12 @@ export default async function DatenschutzPage() {
 
   return (
     <>
-      <section className="gradient-navy py-16 md:py-20">
+      <section className="hero-led-section relative overflow-hidden px-4 pb-8 pt-28 md:px-8 md:pt-32">
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,#081220_0%,#0B1628_48%,#152238_100%)]" />
         <div className="mx-auto max-w-5xl px-4 text-center md:px-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.32em] text-teal-300">Datenschutz</p>
-          <h1 className="mt-4 text-3xl font-semibold text-white md:text-5xl">Datenschutzerklärung</h1>
-          <p className="mt-4 text-base leading-8 text-white/68">
+          <p className="section-eyebrow text-cyan-200/90">Datenschutz</p>
+          <h1 className="hero-title-strong mt-4 font-display text-3xl font-semibold text-white md:text-5xl">Datenschutzerklärung</h1>
+          <p className="hero-body mt-4 text-base leading-8 text-white/74">
             Informationen zur Verarbeitung personenbezogener Daten bei Kontakt-, Buchungs- und Ausschreibungsanfragen.
           </p>
         </div>

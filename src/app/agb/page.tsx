@@ -20,7 +20,8 @@ const sectionIds = SEEL_AGB_SECTIONS.map((section) => ({
 export default function AGBPage() {
   return (
     <>
-      <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(45,212,191,0.24),transparent_22%),linear-gradient(135deg,#071a33_0%,#10335d_48%,#0d9ea0_100%)] py-20 md:py-24">
+      <section className="hero-led-section relative overflow-hidden px-4 pb-8 pt-28 md:px-8 md:pt-32">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(45,212,191,0.24),transparent_22%),linear-gradient(135deg,#071a33_0%,#10335d_48%,#0d9ea0_100%)]" />
         <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:24px_24px]" />
         <div className="relative max-w-6xl mx-auto px-4 md:px-8">
           <div className="grid gap-8 lg:grid-cols-[1.3fr_0.7fr] items-end">
