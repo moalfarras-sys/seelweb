@@ -1,8 +1,5 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
-
 interface ScrollRevealProps {
   children: React.ReactNode;
   delay?: number;
@@ -10,15 +7,14 @@ interface ScrollRevealProps {
 };
 
 export default function ScrollReveal({ children, delay = 0, className = "" } : ScrollRevealProps) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-60px" });
-
   return (
-    <motion.div
-      ref={ref} initial={{ opacity : 0, y: 40 }} animate={isInView ? { opacity : 1, y: 0 } : { opacity: 0, y: 40 }} transition={{ duration : 0.6, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
+    <div
       className={className}
+      style={{
+        animation: `hero-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s both`,
+      }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
