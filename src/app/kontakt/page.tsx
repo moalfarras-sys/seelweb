@@ -71,37 +71,64 @@ export default function KontaktPage() {
     }
   }
 
+  const infoCards = [
+    { icon: Phone, title: "Telefon", value: contact.primaryPhoneDisplay, href: `tel:${contact.primaryPhone}` },
+    { icon: Mail, title: "E-Mail", value: contact.email, href: `mailto:${contact.email}` },
+    { icon: MessageCircle, title: "WhatsApp", value: "Direktnachricht starten", href: whatsappUrl(contact.whatsappNumber), external: true },
+    { icon: Clock3, title: "Öffnungszeiten", value: "Mo–So 07:00–20:00 · Notfälle 24/7" },
+    { icon: MapPin, title: "Adresse", value: `${company.addressLine1}, ${company.addressLine2}, ${company.city}` },
+  ];
+
   return (
     <main className="px-4 pb-14 pt-28 md:px-8 md:pt-32">
       <div className="mx-auto max-w-[1200px]">
-        <section className="premium-panel-dark overflow-hidden px-6 py-10 md:px-10 md:py-12">
-          <p className="font-ui text-xs uppercase tracking-[0.3em] text-brand-teal-light">Kontakt</p>
-          <h1 className="mt-4 font-display text-4xl font-bold md:text-5xl">Direkte Anfrage statt unnötiger Umwege.</h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-white/80">
-            Schreiben Sie uns für Umzug, Reinigung, Entrümpelung oder Festpreisanfragen. Wir melden uns strukturiert und zeitnah zurück.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <a href={`tel:${contact.primaryPhone}`} className="rounded-pill bg-brand-teal px-5 py-3 text-sm font-semibold text-white">
-              {contact.primaryPhoneDisplay}
-            </a>
-            <a href={whatsappUrl(contact.whatsappNumber)} target="_blank" rel="noopener noreferrer" className="rounded-pill border border-white/15 px-5 py-3 text-sm font-semibold text-white">
-              WhatsApp direkt
-            </a>
+        <section className="page-hero-shell">
+          <div className="page-hero-grid">
+            <div>
+              <p className="page-kicker">Kontakt</p>
+              <h1 className="page-title max-w-[11ch]">Direkte Anfrage statt unnötiger Umwege.</h1>
+              <p className="page-copy">
+                Schreiben Sie uns für Umzug, Reinigung, Entrümpelung oder Festpreisanfragen. Wir antworten zeitnah, klar strukturiert und ohne Standardfloskeln.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a href={`tel:${contact.primaryPhone}`} className="btn-primary-glass px-5 py-3 text-sm font-semibold text-white">
+                  {contact.primaryPhoneDisplay}
+                </a>
+                <a href={whatsappUrl(contact.whatsappNumber)} target="_blank" rel="noopener noreferrer" className="btn-secondary-glass px-5 py-3 text-sm font-semibold">
+                  WhatsApp direkt
+                </a>
+              </div>
+              <div className="page-chip-row">
+                <span className="page-chip">Berlin vor Ort</span>
+                <span className="page-chip">Mo–So erreichbar</span>
+                <span className="page-chip">Klare Rückmeldung</span>
+              </div>
+            </div>
+
+            <div className="page-info-card p-4 sm:p-5">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {[
+                  { label: "Telefon", value: contact.primaryPhoneDisplay },
+                  { label: "E-Mail", value: contact.email },
+                  { label: "Servicegebiet", value: contact.serviceRegion },
+                  { label: "Antwortzeit", value: contact.availability },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-[22px] border border-white/10 bg-white/7 p-4 text-white">
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-white/46">{item.label}</p>
+                    <p className="mt-2 text-base font-semibold leading-7">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[380px_minmax(0,1fr)]">
           <div className="space-y-4">
-            {[
-              { icon: Phone, title: "Telefon", value: contact.primaryPhoneDisplay, href: `tel:${contact.primaryPhone}` },
-              { icon: Mail, title: "E-Mail", value: contact.email, href: `mailto:${contact.email}` },
-              { icon: MessageCircle, title: "WhatsApp", value: "Direktnachricht starten", href: whatsappUrl(contact.whatsappNumber), external: true },
-              { icon: Clock3, title: "Öffnungszeiten", value: "Mo–So 07:00–20:00 · Notfälle 24/7" },
-              { icon: MapPin, title: "Adresse", value: `${company.addressLine1}, ${company.addressLine2}, ${company.city}` },
-            ].map((item) => {
+            {infoCards.map((item) => {
               const Icon = item.icon;
               const card = (
-                <div className="glass-card p-5">
+                <div className="page-info-card-light p-5">
                   <div className="flex items-start gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-brand-teal/10 text-brand-teal">
                       <Icon size={20} />
@@ -123,7 +150,7 @@ export default function KontaktPage() {
               );
             })}
 
-            <div className="glass-card p-5">
+            <div className="page-info-card-light p-5">
               <div className="flex items-start gap-3">
                 <ShieldCheck size={18} className="mt-1 text-brand-teal" />
                 <div>
@@ -137,7 +164,7 @@ export default function KontaktPage() {
           </div>
 
           <div className="space-y-6">
-            <div className="glass-strong rounded-[30px] p-6 md:p-8">
+            <div className="page-info-card-light rounded-[30px] p-6 md:p-8">
               {submitted ? (
                 <div className="rounded-[24px] bg-brand-teal/8 p-8 text-center">
                   <h2 className="text-2xl font-bold text-text-primary dark:text-text-on-dark">Nachricht gesendet</h2>
@@ -179,14 +206,14 @@ export default function KontaktPage() {
                     </span>
                   </label>
 
-                  <button type="button" onClick={sendMessage} disabled={loading} className="mt-6 rounded-pill bg-brand-teal px-6 py-3 text-sm font-semibold text-white disabled:opacity-50">
+                  <button type="button" onClick={sendMessage} disabled={loading} className="mt-6 btn-primary-glass px-6 py-3 text-sm font-semibold text-white disabled:opacity-50">
                     {loading ? "Wird gesendet..." : "Nachricht senden"}
                   </button>
                 </>
               )}
             </div>
 
-            <div className="glass-card overflow-hidden rounded-[30px] p-0">
+            <div className="page-info-card-light overflow-hidden rounded-[30px] p-0">
               <iframe
                 title="SEEL Transport & Reinigung Karte"
                 src="https://www.google.com/maps?q=Forster%20Stra%C3%9Fe%205%2C%2012627%20Berlin&z=13&output=embed"

@@ -51,10 +51,10 @@ export function CookieBanner() {
           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
           className="fixed inset-x-0 bottom-4 z-[70] px-4 sm:bottom-6"
         >
-          <div className="mx-auto max-w-[860px] rounded-[28px] border border-white/12 bg-[linear-gradient(180deg,rgba(5,12,22,0.88)_0%,rgba(7,15,28,0.78)_100%)] p-4 text-white shadow-[0_28px_80px_rgba(0,0,0,0.34)] backdrop-blur-3xl sm:p-5">
+          <div className="mx-auto max-w-[780px] rounded-[28px] border border-white/12 bg-[linear-gradient(180deg,rgba(5,12,22,0.94)_0%,rgba(7,15,28,0.84)_100%)] p-4 text-white shadow-[0_28px_80px_rgba(0,0,0,0.34)] backdrop-blur-3xl sm:p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-start gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[18px] bg-white/8 text-brand-teal-light">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[16px] bg-white/8 text-brand-teal-light">
                   <Cookie size={18} />
                 </div>
                 <div>
@@ -86,7 +86,7 @@ export function CookieBanner() {
                 <button
                   type="button"
                   onClick={() => saveConsent(DEFAULT_CONSENT)}
-                  className="rounded-full border border-white/12 bg-white/6 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
+                  className="btn-secondary-glass px-4 py-2.5"
                 >
                   Nur notwendige
                 </button>

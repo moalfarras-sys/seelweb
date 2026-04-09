@@ -42,7 +42,7 @@ export default async function LeistungenPage() {
     {
       id: "umzuege",
       title: "Privat- und Regionalumzüge",
-      description: "Privatumzüge, Berlin-Umzüge und Brandenburg-Routen mit klarer Taktung und transparenter Preisstruktur.",
+      description: "Privatumzüge, Berlin-Umzüge und Brandenburg-Routen mit klarer Taktung, transparenter Preisstruktur und versicherter Durchführung.",
       href: "/leistungen/umzug-berlin",
       image: "/images/umzug-1.jpeg",
       alt: "SEEL Transport Privatumzug Berlin – Möbeltransport und Umzugsteam",
@@ -62,7 +62,7 @@ export default async function LeistungenPage() {
     {
       id: "schule",
       title: "Schulumzug Berlin",
-      description: "Ferien- und Wochenendumzüge für Schulen, Kitas, Bibliotheken und Bildungseinrichtungen.",
+      description: "Ferien- und Wochenendumzüge für Schulen, Kitas, Bibliotheken und Bildungseinrichtungen mit sauberer Etappenplanung.",
       href: "/leistungen/schulumzug",
       image: "/images/corporate-school-cleaning.png",
       alt: "Schulumzug Berlin – SEEL Transport für Schulen und Bildungseinrichtungen",
@@ -82,7 +82,7 @@ export default async function LeistungenPage() {
     {
       id: "entruempelung",
       title: "Entrümpelung und Entsorgung",
-      description: "Räumung, Demontage und fachgerechte Entsorgung für Wohnung, Keller, Gewerbe und Nachlass.",
+      description: "Räumung, Demontage und fachgerechte Entsorgung für Wohnung, Keller, Gewerbe und Nachlass mit dokumentierter Übergabe.",
       href: "/leistungen/entruempelung",
       image: "/images/waste-disposal-recycling.png",
       alt: "Umweltgerechte Entrümpelung und Entsorgung in Berlin – SEEL Transport",
@@ -93,43 +93,70 @@ export default async function LeistungenPage() {
 
   return (
     <>
-      <section className="hero-led-section kinetic-hero gradient-navy relative overflow-hidden py-28 md:py-36">
-        <div className="absolute inset-0 opacity-[0.10]">
-          <Image src="/images/umzug-1.jpeg" alt="" fill className="image-cinematic object-cover object-center" />
-        </div>
-        <div className="hero-light-sweep" />
-        <div className="cine-grid absolute inset-0 opacity-35" />
-        <div className="hero-copy-flow relative mx-auto max-w-7xl px-4 md:px-8">
-          <p className="section-eyebrow text-cyan-200/80">Leistungen</p>
-          <h1 className="headline-prism hero-kicker hero-title-strong font-display mt-4 max-w-4xl text-4xl font-bold md:text-6xl">
-            Servicefelder für Berlin, Brandenburg und darüber hinaus
-          </h1>
-          <p className="hero-body mt-6 max-w-3xl text-white/80 dark:text-white/80">
-            Alle Leistungen sind auf schnelle Orientierung, klare Preise und verlässliche Kommunikation ausgelegt.
-            So finden Kundinnen und Kunden sofort den passenden Einsatzbereich.
-          </p>
-          <div className="hero-metrics">
-            <span className="hero-metric">Klar gegliedert</span>
-            <span className="hero-metric">Express bis Gewerbe</span>
-            <span className="hero-metric">Direkt buchbar</span>
+      <section className="relative px-4 pb-8 pt-28 md:px-8 md:pt-32">
+        <div className="mx-auto max-w-[1240px]">
+          <div className="page-hero-shell">
+            <div className="hero-light-sweep opacity-60" />
+            <div className="page-hero-grid">
+              <div>
+                <p className="page-kicker">Leistungen</p>
+                <h1 className="page-title max-w-[11ch]">Servicefelder für Berlin, Brandenburg und darüber hinaus</h1>
+                <p className="page-copy">
+                  Jede Leistung ist auf schnelle Orientierung, klare Preise und eine ruhige, hochwertige Anfrageführung aufgebaut.
+                </p>
+                <div className="page-chip-row">
+                  <span className="page-chip">Klar gegliedert</span>
+                  <span className="page-chip">Direkt buchbar</span>
+                  <span className="page-chip">Privat bis Gewerbe</span>
+                </div>
+              </div>
+
+              <div className="page-info-card p-4 sm:p-5">
+                <div className="relative min-h-[240px] overflow-hidden rounded-[26px]">
+                  <Image
+                    src="/images/umzug-1.jpeg"
+                    alt="SEEL Leistungen Überblick"
+                    fill
+                    className="image-cinematic object-cover"
+                    sizes="(max-width: 1024px) 100vw, 44vw"
+                  />
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,12,22,0.14)_0%,rgba(5,12,22,0.32)_48%,rgba(5,12,22,0.88)_100%)]" />
+                  <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+                    <p className="page-kicker">Orientierung</p>
+                    <p className="mt-3 text-2xl font-semibold leading-tight">Umzug, Reinigung und Entrümpelung in einer konsistenten Oberfläche.</p>
+                  </div>
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  {[
+                    { label: "Umzug", value: getPublicServicePriceLabel(prices, "umzug-berlin") },
+                    { label: "Express", value: getPublicServicePriceLabel(prices, "expressumzug") },
+                    { label: "Reinigung", value: getPublicServicePriceLabel(prices, "reinigung") },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-[20px] border border-white/10 bg-white/7 p-4 text-white">
+                      <p className="text-[11px] uppercase tracking-[0.24em] text-white/46">{item.label}</p>
+                      <p className="mt-2 text-lg font-semibold">{item.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="section-spotlight section-padding">
-        <div className="mx-auto max-w-7xl space-y-10 px-4 md:px-8">
+      <section className="section-padding">
+        <div className="mx-auto max-w-[1240px] space-y-10 px-4 md:px-8">
           {sections.map((section, index) => (
             <article
               key={section.id}
               id={section.id}
-              className="premium-panel card-interactive grid items-center gap-8 overflow-hidden rounded-[36px] lg:grid-cols-2"
-              style={{ transitionDelay: `${index * 80}ms` }}
+              className="page-info-card-light grid items-center gap-8 overflow-hidden rounded-[36px] lg:grid-cols-2"
             >
               <div className={index % 2 === 1 ? "order-2 lg:order-1" : ""}>
                 <div className="relative h-80">
                   <Image src={section.image} alt={section.alt} fill className="image-cinematic object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,8,18,0.04)_0%,rgba(2,8,18,0.58)_100%)]" />
-                  <span className="price-badge absolute left-5 top-5">{section.price}</span>
+                  <span className="absolute left-5 top-5 rounded-full bg-brand-gold px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-brand-navy">{section.price}</span>
                 </div>
               </div>
               <div className={`p-8 md:p-10 ${index % 2 === 1 ? "order-1 lg:order-2" : ""}`}>
@@ -155,9 +182,9 @@ export default async function LeistungenPage() {
         </div>
       </section>
 
-      <section className="section-spotlight pb-12">
-        <div className="mx-auto max-w-7xl px-4 md:px-8">
-          <div className="premium-panel rounded-[30px] p-6">
+      <section className="pb-24">
+        <div className="mx-auto max-w-[1240px] px-4 md:px-8">
+          <div className="page-info-card-light rounded-[30px] p-6">
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-white/45">Alle Leistungen</p>
             <nav aria-label="Alle Leistungen" className="mt-5">
               <ul className="flex flex-wrap gap-3">
@@ -170,27 +197,6 @@ export default async function LeistungenPage() {
                 ))}
               </ul>
             </nav>
-          </div>
-        </div>
-      </section>
-
-      <section className="section-spotlight pb-24">
-        <div className="mx-auto max-w-5xl px-4 md:px-8">
-          <div className="premium-panel rounded-[36px] p-10 text-center md:p-14">
-            <p className="section-eyebrow">Direkt online anfragen</p>
-            <h2 className="section-title mt-4 text-center">Jetzt strukturiert weitergehen</h2>
-            <p className="section-copy mx-auto mt-4 max-w-2xl text-center">
-              Nutzen Sie den Buchungsprozess für eine schnelle Preisorientierung oder senden Sie uns Ihre Festpreisanfrage über das Kontaktformular.
-            </p>
-            <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-              <Link href="/buchen" className="btn-primary-glass gap-2">
-                Jetzt buchen
-                <ArrowRight size={16} />
-              </Link>
-              <Link href="/kontakt" className="btn-secondary-glass">
-                Festpreis anfragen
-              </Link>
-            </div>
           </div>
         </div>
       </section>

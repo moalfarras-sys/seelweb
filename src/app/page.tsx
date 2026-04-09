@@ -38,6 +38,27 @@ const faqItems = [
   },
 ];
 
+const trustPoints = [
+  "Feste Ansprechpartner statt unklarer Hotline-Prozesse",
+  "Versicherte Ausführung nach HGB §451e",
+  "Kombinierbar mit Reinigung und Entrümpelung",
+];
+
+const reviews = [
+  {
+    text: "Pünktlich, freundlich und professionell. Unser Umzug lief absolut reibungslos.",
+    author: "Thomas K., Privatumzug Berlin-Mitte · Mai 2025",
+  },
+  {
+    text: "Tolle Organisation, transparente Preise. Buchen wir definitiv wieder.",
+    author: "Sandra M., Endreinigung Berlin-Prenzlauer Berg · März 2025",
+  },
+  {
+    text: "Express-Entrümpelung in 4 Stunden erledigt. Sehr empfehlenswert.",
+    author: "Bau GmbH Berlin, Gewerbekunde · Februar 2025",
+  },
+];
+
 export default async function HomePage() {
   const [{ prices }, settings, gallery] = await Promise.all([
     getPublicServicePrices(),
@@ -49,7 +70,7 @@ export default async function HomePage() {
     {
       href: "/leistungen/umzug-berlin",
       title: "Privat- & Firmenumzug",
-      description: "Klare Einsatzplanung, feste Ansprechpartner und ein ruhiger, versicherter Ablauf.",
+      description: "Planbare Umzüge mit klarer Führung, ruhiger Kommunikation und sauberer Durchführung.",
       image: "/images/umzug-1.jpeg",
       price: getPublicServicePriceLabel(prices, "umzug-berlin"),
       accent: "Planbar",
@@ -57,7 +78,7 @@ export default async function HomePage() {
     {
       href: "/leistungen/expressumzug",
       title: "Expressumzug",
-      description: "Kurzfristige Einsätze mit priorisierter Disposition und sauberer Kommunikation.",
+      description: "Kurzfristige Einsätze mit priorisierter Disposition und klaren Zeitfenstern.",
       image: "/images/Express.jpeg",
       price: getPublicServicePriceLabel(prices, "expressumzug"),
       accent: "Sofort",
@@ -65,7 +86,7 @@ export default async function HomePage() {
     {
       href: "/leistungen/firmenumzug",
       title: "Büro- & Gewerbeumzug",
-      description: "Projektlogik für Unternehmen, Praxen und Betriebsflächen mit minimaler Unterbrechung.",
+      description: "Projektorientierte Umzüge für Unternehmen, Praxen und laufende Betriebsflächen.",
       image: "/images/corporate-hallway-cleaning.png",
       price: getPublicServicePriceLabel(prices, "gewerbe"),
       accent: "Business",
@@ -73,7 +94,7 @@ export default async function HomePage() {
     {
       href: "/leistungen/reinigung",
       title: "Reinigung & Endreinigung",
-      description: "Wohnung, Büro und Übergabe aus einer Hand mit dokumentierter Qualität.",
+      description: "Wohnung, Büro und Übergabe aus einer Hand mit strukturiertem Qualitätsanspruch.",
       image: "/images/cleaning-team-office.png",
       price: getPublicServicePriceLabel(prices, "reinigung"),
       accent: "Sauber",
@@ -81,7 +102,7 @@ export default async function HomePage() {
     {
       href: "/leistungen/entruempelung",
       title: "Entrümpelung & Entsorgung",
-      description: "Räumung, Sortierung und fachgerechte Entsorgung in klar definierten Zeitfenstern.",
+      description: "Räumung, Sortierung und Entsorgung mit definierten Abläufen und klaren Slots.",
       image: "/images/waste-disposal-van.png",
       price: getPublicServicePriceLabel(prices, "entruempelung"),
       accent: "Effizient",
@@ -89,13 +110,14 @@ export default async function HomePage() {
   ];
 
   const galleryPreview = gallery.slice(0, 6);
+  const baseUrl = settings.contact.websiteUrl || "https://seeltransport.de";
 
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: settings.company.name,
-    url: settings.contact.websiteUrl,
-    logo: `${settings.contact.websiteUrl}/images/logo-new.png`,
+    url: baseUrl,
+    logo: `${baseUrl}/images/logo-new.png`,
     telephone: settings.contact.primaryPhoneDisplay,
     email: settings.contact.email,
   };
@@ -104,7 +126,7 @@ export default async function HomePage() {
     "@context": "https://schema.org",
     "@type": ["LocalBusiness", "MovingCompany"],
     name: settings.company.name,
-    url: settings.contact.websiteUrl,
+    url: baseUrl,
     telephone: settings.contact.primaryPhoneDisplay,
     email: settings.contact.email,
     openingHours: "Mo-So 07:00-20:00",
@@ -125,7 +147,7 @@ export default async function HomePage() {
     description: service.description,
     provider: { "@type": "LocalBusiness", name: settings.company.name },
     areaServed: "Berlin, Brandenburg, Deutschland",
-    url: `https://seeltransport.de${service.href}`,
+    url: `${baseUrl}${service.href}`,
   }));
 
   return (
@@ -135,91 +157,86 @@ export default async function HomePage() {
       <Script id="home-local-business-schema" type="application/ld+json">{JSON.stringify(localBusinessSchema)}</Script>
       <Script id="home-services-schema" type="application/ld+json">{JSON.stringify(serviceSchemas)}</Script>
 
-      <section className="hero-led-section relative min-h-[100svh] overflow-hidden px-4 pb-8 pt-28 md:px-6 md:pt-32 xl:px-0">
-        <Image
-          src="/images/moving-truck-hero.png"
-          alt="SEEL Transport Umzugswagen im Einsatz in Berlin"
-          fill
-          priority
-          className="image-cinematic object-cover object-center"
-          sizes="100vw"
-        />
-        <div className="hero-film absolute inset-0" />
-        <div className="hero-light-sweep" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_18%,rgba(255,255,255,0.14),transparent_22%),linear-gradient(180deg,transparent_0%,rgba(5,12,22,0.22)_100%)]" />
-
-        <div className="relative z-10 mx-auto flex min-h-[calc(100svh-7rem)] max-w-[1240px] items-center">
-          <div className="grid w-full gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
-            <div className="hero-copy-flow max-w-3xl text-white">
-              <span className="hero-badge-glow inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-white/88 backdrop-blur-2xl">
-                <Sparkles size={14} className="text-brand-teal-light" />
-                Berlin · Brandenburg · Deutschlandweit
-              </span>
-              <h1 className="headline-prism max-w-[12ch] font-display text-5xl font-bold leading-[0.94] sm:text-6xl md:text-7xl">
-                Ihr Umzug. Unsere Präzision.
-              </h1>
-              <p className="max-w-xl text-lg leading-8 text-white/78">
-                SEEL organisiert Umzüge, Reinigung und Entrümpelung mit klarer Struktur, sauberer Kommunikation und einer Premium-Präsentation, die Vertrauen sofort sichtbar macht.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Link href="/buchen" className="btn-primary-glass gap-2 px-7 py-4 text-base">
-                  Angebot anfragen <ArrowRight size={17} />
-                </Link>
-                <a href={`tel:${CONTACT.PRIMARY_PHONE}`} className="btn-secondary-glass gap-2 px-7 py-4 text-base">
-                  Direkt anrufen <PhoneCall size={17} />
-                </a>
-              </div>
-              <div className="hero-metrics">
-                <span className="hero-metric">Express verfügbar</span>
-                <span className="hero-metric">Vollversichert</span>
-                <span className="hero-metric">4.9 Bewertung</span>
-              </div>
-            </div>
-
-            <div className="grid gap-4 lg:justify-self-end">
-              <div className="premium-panel-dark max-w-[460px] p-6 sm:p-7">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-brand-teal-light">One Mission</p>
-                <h2 className="mt-4 text-3xl font-semibold text-white sm:text-[2rem]">Premium-Ablauf statt Transport-Chaos.</h2>
-                <p className="mt-4 text-sm leading-7 text-white/68">
-                  Für Privatkunden, Unternehmen und Expressfälle mit einer Oberfläche, die sich kontrolliert, modern und hochwertig anfühlt.
+      <section className="hero-led-section relative px-4 pb-8 pt-28 md:px-6 md:pt-32 xl:px-0">
+        <div className="mx-auto max-w-[1240px]">
+          <div className="page-hero-shell">
+            <div className="hero-light-sweep opacity-70" />
+            <div className="page-hero-grid">
+              <div className="hero-copy-flow max-w-3xl">
+                <span className="hero-badge-glow inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-white/88 backdrop-blur-2xl">
+                  <Sparkles size={14} className="text-brand-teal-light" />
+                  Berlin · Brandenburg · Deutschlandweit
+                </span>
+                <h1 className="page-title max-w-[10ch]">Ihr Umzug. Unsere Präzision.</h1>
+                <p className="page-copy">
+                  SEEL organisiert Umzüge, Reinigung und Entrümpelung mit ruhiger Führung, klarer Preisstruktur und einem Premium-Auftritt, der sofort Vertrauen ausstrahlt.
                 </p>
-                <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-[22px] border border-white/10 bg-white/6 p-4">
-                    <p className="text-[11px] uppercase tracking-[0.28em] text-white/46">Standardumzug</p>
-                    <p className="mt-3 text-2xl font-semibold">{getPublicServicePriceLabel(prices, "umzug-berlin")}</p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link href="/buchen" className="btn-primary-glass gap-2 px-7 py-4 text-base">
+                    Angebot anfragen <ArrowRight size={17} />
+                  </Link>
+                  <a href={`tel:${CONTACT.PRIMARY_PHONE}`} className="btn-secondary-glass gap-2 px-7 py-4 text-base">
+                    Direkt anrufen <PhoneCall size={17} />
+                  </a>
+                </div>
+                <div className="page-chip-row">
+                  <span className="page-chip">Express verfügbar</span>
+                  <span className="page-chip">Vollversichert</span>
+                  <span className="page-chip">4.9 Bewertung</span>
+                </div>
+              </div>
+
+              <div className="grid gap-4">
+                <div className="page-info-card p-4 sm:p-5">
+                  <div className="relative min-h-[240px] overflow-hidden rounded-[26px]">
+                    <Image
+                      src="/images/moving-truck-hero.png"
+                      alt="SEEL Transport Umzugswagen im Einsatz in Berlin"
+                      fill
+                      priority
+                      className="image-cinematic object-cover object-center"
+                      sizes="(max-width: 1024px) 100vw, 44vw"
+                    />
+                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,12,22,0.08)_0%,rgba(5,12,22,0.24)_46%,rgba(5,12,22,0.88)_100%)]" />
+                    <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+                      <p className="page-kicker">One Mission</p>
+                      <p className="mt-3 text-2xl font-semibold leading-tight sm:text-[2rem]">Premium-Ablauf statt Transport-Chaos.</p>
+                    </div>
                   </div>
-                  <div className="rounded-[22px] border border-white/10 bg-white/6 p-4">
-                    <p className="text-[11px] uppercase tracking-[0.28em] text-white/46">Expressumzug</p>
-                    <p className="mt-3 text-2xl font-semibold">{getPublicServicePriceLabel(prices, "expressumzug")}</p>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-[22px] border border-white/10 bg-white/7 p-4 text-white">
+                      <p className="text-[11px] uppercase tracking-[0.28em] text-white/46">Standardumzug</p>
+                      <p className="mt-3 text-2xl font-semibold">{getPublicServicePriceLabel(prices, "umzug-berlin")}</p>
+                    </div>
+                    <div className="rounded-[22px] border border-white/10 bg-white/7 p-4 text-white">
+                      <p className="text-[11px] uppercase tracking-[0.28em] text-white/46">Expressumzug</p>
+                      <p className="mt-3 text-2xl font-semibold">{getPublicServicePriceLabel(prices, "expressumzug")}</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 space-y-3 text-sm text-white/74">
+                    {trustPoints.map((item) => (
+                      <p key={item} className="flex items-start gap-3">
+                        <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-brand-teal-light" />
+                        {item}
+                      </p>
+                    ))}
                   </div>
                 </div>
-                <div className="mt-6 space-y-3 text-sm text-white/74">
+
+                <div className="page-metric-grid">
                   {[
-                    "Feste Ansprechpartner statt unklarer Hotline-Prozesse",
-                    "Versicherte Ausführung nach HGB §451e",
-                    "Kombinierbar mit Reinigung und Entrümpelung",
+                    { value: "500+", label: "Einsätze" },
+                    { value: "10", label: "Mitarbeiter" },
+                    { value: "48h", label: "Reaktionszeit" },
                   ].map((item) => (
-                    <p key={item} className="flex items-start gap-3">
-                      <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-brand-teal-light" />
-                      {item}
-                    </p>
+                    <div key={item.label} className="page-metric">
+                      <p className="text-3xl font-bold text-text-primary dark:text-text-on-dark">{item.value}</p>
+                      <p className="mt-2 text-xs font-semibold uppercase tracking-[0.24em] text-text-muted dark:text-text-on-dark-muted">
+                        {item.label}
+                      </p>
+                    </div>
                   ))}
                 </div>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-3">
-                {[
-                  { value: "500+", label: "Einsätze" },
-                  { value: "10", label: "Mitarbeiter" },
-                  { value: "48h", label: "Reaktionszeit" },
-                ].map((item) => (
-                  <div key={item.label} className="premium-panel px-5 py-4">
-                    <p className="text-3xl font-bold text-text-primary dark:text-text-on-dark">{item.value}</p>
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.24em] text-text-muted dark:text-text-on-dark-muted">
-                      {item.label}
-                    </p>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
@@ -231,22 +248,22 @@ export default async function HomePage() {
           <div className="mb-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
               <p className="section-eyebrow">Unsere Leistungen</p>
-              <h2 className="section-title mt-4">Alles aus einer Hand. Klarer. Ruhiger. Wertiger.</h2>
+              <h2 className="section-title mt-4">Ein klarer Premium-Auftritt für jede Leistung.</h2>
               <p className="section-copy mt-4">
-                Die neue Oberfläche ordnet jede Leistung wie ein hochwertiges Produkt ein. Weniger Lärm, mehr Vertrauen, klarere Entscheidungen.
+                Jede Leistung wird wie ein hochwertiges Produkt inszeniert: eindeutige Preise, starke Bildsprache und direkte Wege zur Anfrage.
               </p>
             </div>
-            <div className="premium-panel max-w-md p-5">
+            <div className="page-info-card-light max-w-md p-5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-brand-gold">Leistungsbild</p>
               <p className="mt-3 text-sm leading-7 text-text-body dark:text-text-on-dark-muted">
-                SEEL verbindet Umzug, Reinigung und Entsorgung zu einem stimmigen Auftritt für Berlin und Brandenburg.
+                SEEL verbindet Umzug, Reinigung und Entsorgung zu einem konsistenten Auftritt für Berlin, Brandenburg und flexible Einsätze.
               </p>
             </div>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {services.map((service, index) => (
-              <Link key={service.href} href={service.href} className={index === 0 ? "md:col-span-2 xl:col-span-1" : ""}>
+            {services.map((service) => (
+              <Link key={service.href} href={service.href}>
                 <article className="glass-card group h-full overflow-hidden">
                   <div className="relative h-[240px] overflow-hidden">
                     <Image
@@ -302,11 +319,11 @@ export default async function HomePage() {
           </div>
 
           <div className="grid gap-4">
-            <div className="premium-panel p-6 md:p-8">
+            <div className="page-info-card-light p-6 md:p-8">
               <p className="section-eyebrow">Warum SEEL?</p>
-              <h2 className="section-title mt-4">Eine Samsung-artige Ruhe statt typischer Umzugshektik.</h2>
+              <h2 className="section-title mt-4">Ruhige Führung statt typischer Umzugshektik.</h2>
               <p className="section-copy mt-4">
-                Die Marke soll modern, konzentriert und technisch präzise wirken. Deshalb setzen wir auf klare Hierarchien, gläserne Flächen und kontrollierte Bewegungen statt visuellem Chaos.
+                Die Marke soll modern, konzentriert und präzise wirken. Deshalb setzen wir auf klare Hierarchien, starke Kontraste und kontrollierte Bewegungen statt visuellem Chaos.
               </p>
               <Link href="/unternehmen" className="btn-secondary-glass mt-6 gap-2">
                 Mehr über uns <ArrowRight size={16} />
@@ -341,13 +358,13 @@ export default async function HomePage() {
               <p className="section-eyebrow">Echte Einsätze</p>
               <h2 className="section-title mt-4">Reale Bilder. Stärker inszeniert.</h2>
               <p className="section-copy mt-4">
-                Der neue Auftritt zeigt echte Arbeit wie ein kuratiertes Portfolio. Nicht als Bilderwand, sondern als sichtbaren Qualitätsbeweis.
+                Die Galerie wirkt wie ein kuratiertes Portfolio: echte Einsätze, ruhigeres Raster und klarere Kontraste als sichtbarer Qualitätsbeweis.
               </p>
             </div>
-            <div className="premium-panel p-5">
+            <div className="page-info-card-light p-5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-brand-gold">Galerie Preview</p>
               <p className="mt-3 text-sm leading-7 text-text-body dark:text-text-on-dark-muted">
-                Echte Aufnahmen aus Umzug, Reinigung und Entsorgung mit ruhigerem Raster, stärkerem Fokus und hochwertigerem Kontrast.
+                Bilder aus Umzug, Reinigung und Entsorgung mit klarerem Fokus, besserer Lesbarkeit und einer ruhigen Premium-Bildsprache.
               </p>
             </div>
           </div>
@@ -367,7 +384,7 @@ export default async function HomePage() {
                   <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-brand-teal-light">Portfolio Wall</p>
                   <p className="mt-3 text-3xl font-semibold">Keine Stockfotos. Keine Füllbilder.</p>
                   <p className="mt-3 max-w-lg text-sm leading-7 text-white/72">
-                    Die Galerie wird als echter Nachweis für Qualität, Sauberkeit und strukturiertes Arbeiten inszeniert.
+                    Die Galerie bleibt ein echter Nachweis für Qualität, Sauberkeit und kontrollierte Abläufe.
                   </p>
                 </div>
               </div>
@@ -411,25 +428,12 @@ export default async function HomePage() {
               <h2 className="section-title mt-4">Erfahrungen aus echten Einsätzen.</h2>
             </div>
             <div className="hidden rounded-full border border-border/70 bg-white/70 px-4 py-2 text-sm font-semibold text-text-body shadow-[0_12px_28px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-border-dark dark:bg-white/5 dark:text-text-on-dark-muted md:inline-flex">
-              5 echte Stimmen
+              3 aktuelle Stimmen
             </div>
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            {[
-              {
-                text: "Pünktlich, freundlich und professionell. Unser Umzug lief absolut reibungslos.",
-                author: "Thomas K., Privatumzug Berlin-Mitte · Mai 2025",
-              },
-              {
-                text: "Tolle Organisation, transparente Preise. Buchen wir definitiv wieder.",
-                author: "Sandra M., Endreinigung Berlin-Prenzlauer Berg · März 2025",
-              },
-              {
-                text: "Express-Entrümpelung in 4 Stunden erledigt. Sehr empfehlenswert.",
-                author: "Bau GmbH Berlin, Gewerbekunde · Februar 2025",
-              },
-            ].map((review) => (
+            {reviews.map((review) => (
               <article key={review.author} className="glass-card p-6">
                 <div className="flex gap-1 text-brand-gold">
                   {Array.from({ length: 5 }).map((_, index) => (
@@ -448,21 +452,21 @@ export default async function HomePage() {
 
       <section className="pb-20">
         <div className="mx-auto max-w-[1240px] px-4 md:px-6 xl:px-0">
-          <div className="premium-panel-dark overflow-hidden px-8 py-10 sm:px-10 sm:py-12">
+          <div className="page-hero-shell overflow-hidden px-8 py-10 sm:px-10 sm:py-12">
             <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-brand-teal-light">Bereit für Ihren nächsten Einsatz?</p>
+                <p className="page-kicker">Bereit für Ihren nächsten Einsatz?</p>
                 <h2 className="mt-4 text-4xl font-semibold text-white sm:text-5xl">Angebot in unter 2 Minuten.</h2>
                 <p className="mt-4 max-w-2xl text-base leading-8 text-white/72">
-                  Transparent, verbindlich und kostenlos. Der neue Auftritt ist schöner – die Anfrage bleibt genauso direkt und funktional.
+                  Transparent, verbindlich und kostenlos. Die neue Oberfläche bleibt ruhig, modern und trotzdem direkt zur Anfrage.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3 lg:justify-end">
                 <Link href="/buchen" className="btn-primary-glass gap-2 px-6 py-3.5">
                   Jetzt buchen <ArrowRight size={16} />
                 </Link>
-                <a href={`tel:${CONTACT.PRIMARY_PHONE}`} className="rounded-full border border-white/12 bg-white/6 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10">
-                  <PhoneCall size={16} className="mr-2 inline-flex" />
+                <a href={`tel:${CONTACT.PRIMARY_PHONE}`} className="btn-secondary-glass gap-2 px-6 py-3.5">
+                  <PhoneCall size={16} />
                   {CONTACT.PRIMARY_PHONE_DISPLAY}
                 </a>
               </div>

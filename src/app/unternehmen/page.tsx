@@ -75,19 +75,44 @@ export default function UnternehmenPage() {
   return (
     <main className="px-4 pb-14 pt-28 md:px-8 md:pt-32">
       <div className="mx-auto max-w-[1200px]">
-        <section className="premium-panel-dark overflow-hidden px-6 py-10 md:px-10 md:py-12">
-          <p className="font-ui text-xs uppercase tracking-[0.3em] text-brand-teal-light">Unternehmen</p>
-          <h1 className="mt-4 font-display text-4xl font-bold md:text-5xl">Vertrauen entsteht durch Struktur.</h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-white/80">
-            {company.name} arbeitet seit 2025 in Berlin mit einem klaren Anspruch: Premium-Ausführung, kurze Wege und saubere Planung.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <a href="#ausschreibung" className="rounded-pill bg-brand-teal px-5 py-3 text-sm font-semibold text-white">
-              Projekt anfragen
-            </a>
-            <a href={`tel:${contact.primaryPhone}`} className="rounded-pill border border-white/15 px-5 py-3 text-sm font-semibold text-white">
-              {contact.primaryPhoneDisplay}
-            </a>
+        <section className="page-hero-shell">
+          <div className="page-hero-grid">
+            <div>
+              <p className="page-kicker">Unternehmen</p>
+              <h1 className="page-title max-w-[11ch]">Vertrauen entsteht durch Struktur.</h1>
+              <p className="page-copy">
+                {company.name} arbeitet seit 2025 in Berlin mit einem klaren Anspruch: Premium-Ausführung, kurze Wege und saubere Planung für Privat- und Geschäftskunden.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a href="#ausschreibung" className="btn-primary-glass px-5 py-3 text-sm font-semibold text-white">
+                  Projekt anfragen
+                </a>
+                <a href={`tel:${contact.primaryPhone}`} className="btn-secondary-glass px-5 py-3 text-sm font-semibold">
+                  {contact.primaryPhoneDisplay}
+                </a>
+              </div>
+              <div className="page-chip-row">
+                <span className="page-chip">~10 Mitarbeitende</span>
+                <span className="page-chip">Berlin seit 2025</span>
+                <span className="page-chip">Privat bis Gewerbe</span>
+              </div>
+            </div>
+
+            <div className="page-info-card p-4 sm:p-5">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {[
+                  { label: "Standort", value: company.city },
+                  { label: "Telefon", value: contact.primaryPhoneDisplay },
+                  { label: "Servicegebiet", value: contact.serviceRegion },
+                  { label: "Öffnungszeiten", value: contact.availability },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-[22px] border border-white/10 bg-white/7 p-4 text-white">
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-white/46">{item.label}</p>
+                    <p className="mt-2 text-base font-semibold leading-7">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -101,7 +126,7 @@ export default function UnternehmenPage() {
               ].map((item) => {
                 const Icon = item.icon;
                 return (
-                  <div key={item.title} className="glass-card p-5">
+                  <div key={item.title} className="page-info-card-light p-5">
                     <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-brand-teal/10 text-brand-teal">
                       <Icon size={20} />
                     </div>
@@ -112,7 +137,7 @@ export default function UnternehmenPage() {
               })}
             </div>
 
-            <div className="glass-strong rounded-[30px] p-6">
+            <div className="page-info-card-light rounded-[30px] p-6">
               <p className="font-ui text-xs uppercase tracking-[0.28em] text-brand-teal">Unsere Haltung</p>
               <h2 className="mt-3 text-3xl font-bold text-text-primary dark:text-text-on-dark">Drei Säulen, auf denen SEEL arbeitet.</h2>
               <div className="mt-6 grid gap-4 md:grid-cols-3">
@@ -131,7 +156,7 @@ export default function UnternehmenPage() {
               </div>
             </div>
 
-            <div className="glass-strong rounded-[30px] p-6">
+            <div className="page-info-card-light rounded-[30px] p-6">
               <p className="font-ui text-xs uppercase tracking-[0.28em] text-brand-teal">Timeline</p>
               <div className="mt-6 space-y-4">
                 {timeline.map((entry) => (
@@ -145,16 +170,16 @@ export default function UnternehmenPage() {
           </div>
 
           <aside className="lg:sticky lg:top-24 lg:h-fit">
-            <div className="premium-panel-dark p-6">
-              <p className="font-ui text-xs uppercase tracking-[0.28em] text-brand-teal">Direktkontakt</p>
-              <p className="mt-4 text-sm leading-7 text-text-body dark:text-text-on-dark-muted">
+            <div className="page-info-card p-6">
+              <p className="font-ui text-xs uppercase tracking-[0.28em] text-brand-teal-light">Direktkontakt</p>
+              <p className="mt-4 text-sm leading-7 text-white/70">
                 Für Rückfragen, Ausschreibungen und gewerbliche Projekte erreichen Sie uns direkt.
               </p>
               <div className="mt-5 space-y-3">
-                <a href={`tel:${contact.primaryPhone}`} className="block rounded-pill border border-border px-4 py-3 text-sm font-semibold text-text-primary transition hover:border-brand-teal hover:text-brand-teal dark:border-border-dark dark:text-text-on-dark">
+                <a href={`tel:${contact.primaryPhone}`} className="btn-secondary-glass w-full justify-center">
                   {contact.primaryPhoneDisplay}
                 </a>
-                <a href={`mailto:${contact.email}`} className="block rounded-pill border border-border px-4 py-3 text-sm font-semibold text-text-primary transition hover:border-brand-teal hover:text-brand-teal dark:border-border-dark dark:text-text-on-dark">
+                <a href={`mailto:${contact.email}`} className="btn-secondary-glass w-full justify-center">
                   {contact.email}
                 </a>
               </div>
@@ -162,7 +187,7 @@ export default function UnternehmenPage() {
           </aside>
         </section>
 
-        <section id="ausschreibung" className="glass-strong mt-8 rounded-[32px] p-6 md:p-8">
+        <section id="ausschreibung" className="page-info-card-light mt-8 rounded-[32px] p-6 md:p-8">
           {submitted ? (
             <div className="rounded-[24px] bg-brand-teal/8 p-8 text-center">
               <h2 className="text-2xl font-bold text-text-primary dark:text-text-on-dark">Projektanfrage erhalten</h2>
@@ -219,7 +244,7 @@ export default function UnternehmenPage() {
                 </span>
               </label>
 
-              <button type="button" onClick={submitTender} disabled={loading} className="mt-6 rounded-pill bg-brand-teal px-6 py-3 text-sm font-semibold text-white disabled:opacity-50">
+              <button type="button" onClick={submitTender} disabled={loading} className="mt-6 btn-primary-glass px-6 py-3 text-sm font-semibold text-white disabled:opacity-50">
                 {loading ? "Wird gesendet..." : <>Ausschreibung absenden <ArrowRight size={16} className="ml-2 inline-flex" /></>}
               </button>
             </>

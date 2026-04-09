@@ -161,12 +161,12 @@ export default function Navbar() {
           )}
         >
           <Link href="/" className="flex min-w-0 items-center gap-3 rounded-[22px] px-2 py-1.5 transition-colors hover:bg-white/8">
-            <LogoImage size={38} />
+            <LogoImage size={34} />
             <div className="min-w-0">
-              <p className="font-display text-[0.96rem] font-bold tracking-[0.22em] text-white md:text-base">
+              <p className="font-display text-[0.92rem] font-bold tracking-[0.22em] text-white md:text-base">
                 SEEL
               </p>
-              <p className="truncate text-[9px] uppercase tracking-[0.34em] text-white/52">
+              <p className="truncate text-[8px] uppercase tracking-[0.34em] text-white/44">
                 Transport & Reinigung
               </p>
             </div>
@@ -181,7 +181,7 @@ export default function Navbar() {
                     className={cn(
                       "inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all",
                       pathname.startsWith("/leistungen")
-                        ? "bg-[linear-gradient(135deg,rgba(19,222,196,0.18),rgba(126,167,255,0.14))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]"
+                        ? "bg-[linear-gradient(135deg,rgba(18,215,198,0.24),rgba(111,121,255,0.22))] text-white shadow-[0_12px_32px_rgba(18,215,198,0.18),inset_0_1px_0_rgba(255,255,255,0.14)]"
                         : "text-white/78 hover:bg-white/8 hover:text-white"
                     )}
                   >
@@ -252,7 +252,7 @@ export default function Navbar() {
                   className={cn(
                     "rounded-full px-4 py-2.5 text-sm font-semibold transition-all",
                     pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
-                      ? "bg-[linear-gradient(135deg,rgba(19,222,196,0.18),rgba(126,167,255,0.14))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]"
+                      ? "bg-[linear-gradient(135deg,rgba(18,215,198,0.24),rgba(111,121,255,0.22))] text-white shadow-[0_12px_32px_rgba(18,215,198,0.18),inset_0_1px_0_rgba(255,255,255,0.14)]"
                       : "text-white/78 hover:bg-white/8 hover:text-white"
                   )}
                 >
@@ -274,7 +274,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setDrawerOpen((current) => !current)}
-              className="inline-flex h-12 w-12 items-center justify-center rounded-[18px] border border-white/12 bg-white/6 text-white backdrop-blur-xl transition-all hover:bg-white/10"
+              className="inline-flex h-12 w-12 items-center justify-center rounded-[18px] border border-white/12 bg-white/7 text-white backdrop-blur-xl transition-all hover:bg-white/12"
               aria-label={drawerOpen ? "Menü schließen" : "Menü öffnen"}
             >
               <span className="relative flex h-5 w-5 items-center justify-center">
@@ -312,7 +312,7 @@ export default function Navbar() {
 
       <aside
         className={cn(
-          "fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-l border-white/10 bg-[linear-gradient(180deg,rgba(5,12,22,0.94)_0%,rgba(6,15,28,0.98)_100%)] px-5 pb-6 pt-5 text-white shadow-[0_32px_96px_rgba(0,0,0,0.42)] transition-transform duration-300 lg:hidden",
+          "fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-l border-white/10 bg-[linear-gradient(180deg,rgba(5,12,22,0.97)_0%,rgba(6,15,28,0.995)_100%)] px-5 pb-6 pt-5 text-white shadow-[0_32px_96px_rgba(0,0,0,0.42)] transition-transform duration-300 lg:hidden",
           drawerOpen ? "translate-x-0" : "translate-x-full"
         )}
       >
@@ -370,7 +370,7 @@ export default function Navbar() {
                 className={cn(
                   "block rounded-[22px] px-4 py-4 text-xl font-semibold transition-all",
                   pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
-                    ? "bg-white/12 text-brand-teal"
+                    ? "bg-[linear-gradient(135deg,rgba(18,215,198,0.2),rgba(111,121,255,0.2))] text-white"
                     : "text-white hover:bg-white/8"
                 )}
               >

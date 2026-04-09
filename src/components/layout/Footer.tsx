@@ -38,13 +38,13 @@ export default function Footer() {
   const addressLines = [company.addressLine1, company.addressLine2, `${company.city}, ${company.country}`].filter(Boolean);
 
   return (
-    <footer className="relative z-10 overflow-hidden bg-[#050b15] text-text-on-dark">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_14%_18%,rgba(0,229,186,0.14),transparent_26%),radial-gradient(circle_at_86%_20%,rgba(125,211,252,0.14),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_40%)]" />
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/16 to-transparent" />
+    <footer className="relative z-10 overflow-hidden bg-[#040915] text-text-on-dark">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_16%,rgba(18,215,198,0.16),transparent_26%),radial-gradient(circle_at_88%_18%,rgba(111,121,255,0.16),transparent_24%),radial-gradient(circle_at_50%_100%,rgba(255,146,121,0.08),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_36%)]" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/18 to-transparent" />
 
       <div className="relative mx-auto max-w-[1240px] px-4 py-16 md:px-6 xl:px-0">
         <div className="grid gap-6 lg:grid-cols-[1.15fr_0.75fr_0.75fr_0.95fr]">
-          <div className="premium-panel-dark p-6 sm:p-7">
+          <div className="page-info-card p-6 sm:p-7">
             <div className="flex items-center gap-3">
               <LogoImage size={46} />
               <div>
@@ -60,14 +60,14 @@ export default function Footer() {
                 href={buildWhatsappUrl(contact.whatsappNumber)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/6 px-4 py-2.5 text-sm font-semibold text-white/84 transition hover:bg-white/10 hover:text-brand-teal-light"
+                className="btn-secondary-glass gap-2 px-4 py-2.5"
               >
                 <WhatsAppIcon className="h-4 w-4 fill-current" />
                 WhatsApp
               </a>
               <a
                 href={`tel:${contact.primaryPhone}`}
-                className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/6 px-4 py-2.5 text-sm font-semibold text-white/84 transition hover:bg-white/10 hover:text-brand-teal-light"
+                className="btn-secondary-glass gap-2 px-4 py-2.5"
               >
                 <Phone size={14} />
                 Anrufen
@@ -75,7 +75,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="glass-card p-6 text-text-on-dark">
+          <div className="page-info-card p-6 text-text-on-dark">
             <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-brand-teal-light">Leistungen</p>
             <div className="mt-5 space-y-3 text-sm text-white/70">
               {SERVICE_LINKS.map((link) => (
@@ -86,7 +86,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="glass-card p-6 text-text-on-dark">
+          <div className="page-info-card p-6 text-text-on-dark">
             <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-brand-teal-light">Schnellzugriff</p>
             <div className="mt-5 space-y-3 text-sm text-white/70">
               {QUICK_LINKS.map((link) => (
@@ -108,7 +108,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="premium-panel-dark p-6 sm:p-7">
+          <div className="page-info-card p-6 sm:p-7">
             <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-brand-teal-light">Kontakt</p>
             <div className="mt-5 space-y-4 text-sm text-white/70">
               <div className="flex items-start gap-3">
