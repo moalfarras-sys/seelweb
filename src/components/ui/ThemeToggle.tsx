@@ -19,23 +19,24 @@ export function ThemeToggle() {
       onClick={() => mounted && setTheme(isDark ? "light" : "dark")}
       aria-label={isDark ? "Zum hellen Modus wechseln" : "Zum dunklen Modus wechseln"}
       className={cn(
-        "relative inline-flex h-12 w-[98px] items-center rounded-full border px-1.5 transition-all duration-300",
-        "border-border/80 bg-white/70 text-text-body shadow-[0_16px_38px_rgba(15,23,42,0.08)] backdrop-blur-2xl",
-        "dark:border-border-dark dark:bg-surface-dark-card/72 dark:text-text-on-dark-muted dark:shadow-[0_18px_42px_rgba(0,0,0,0.28)]"
+        "relative inline-flex h-[52px] w-[104px] items-center rounded-full border px-1.5 transition-all duration-300",
+        "border-white/12 bg-[linear-gradient(180deg,rgba(10,17,30,0.82)_0%,rgba(10,17,30,0.64)_100%)] text-white/68 shadow-[0_18px_40px_rgba(4,8,18,0.24)] backdrop-blur-[22px]",
+        "dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(8,14,26,0.88)_0%,rgba(8,14,26,0.72)_100%)] dark:text-white/68"
       )}
       disabled={!mounted}
     >
       <span
         className={cn(
-          "pointer-events-none absolute top-1.5 h-9 w-9 rounded-full bg-[linear-gradient(135deg,#00c5a0_0%,#00e5ba_100%)] shadow-[0_0_28px_rgba(0,197,160,0.22)] transition-transform duration-300",
-          isDark ? "translate-x-[48px]" : "translate-x-0"
+          "pointer-events-none absolute top-[5px] h-[40px] w-[40px] rounded-full shadow-[0_0_30px_rgba(19,222,196,0.24)] transition-transform duration-300",
+          "bg-[linear-gradient(135deg,#13dec4_0%,#17bfe1_52%,#7ea7ff_100%)]",
+          isDark ? "translate-x-[54px]" : "translate-x-0"
         )}
       />
       <span className="relative z-10 flex w-full items-center justify-between px-1.5 text-[11px] font-ui font-semibold uppercase tracking-[0.24em]">
-        <span className={cn("flex h-6 w-6 items-center justify-center rounded-full transition-colors", !isDark && "text-white")}>
+        <span className={cn("flex h-7 w-7 items-center justify-center rounded-full transition-colors", !isDark && "text-white")}>
           <Sun size={14} />
         </span>
-        <span className={cn("flex h-6 w-6 items-center justify-center rounded-full transition-colors", isDark && "text-white")}>
+        <span className={cn("flex h-7 w-7 items-center justify-center rounded-full transition-colors", isDark && "text-white")}>
           <Moon size={14} />
         </span>
       </span>

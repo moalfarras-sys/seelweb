@@ -156,17 +156,17 @@ export default function Navbar() {
       <div className="fixed inset-x-0 top-0 z-50 px-3 pt-3 md:px-5 md:pt-4 xl:px-6">
         <nav
           className={cn(
-            "nav-glass mx-auto flex max-w-[1240px] items-center justify-between rounded-[30px] px-3 py-2 md:px-4",
-            scrolled ? "shadow-[0_24px_64px_rgba(15,23,42,0.14)]" : "shadow-[0_16px_44px_rgba(15,23,42,0.08)]"
+            "nav-glass mx-auto flex max-w-[1240px] items-center justify-between rounded-[30px] px-3 py-2.5 md:px-4",
+            scrolled ? "shadow-[0_26px_72px_rgba(4,9,20,0.28)]" : "shadow-[0_18px_48px_rgba(4,9,20,0.2)]"
           )}
         >
-          <Link href="/" className="flex min-w-0 items-center gap-3 rounded-[22px] px-2 py-1.5 transition-colors hover:bg-white/30 dark:hover:bg-white/5">
-            <LogoImage size={42} />
+          <Link href="/" className="flex min-w-0 items-center gap-3 rounded-[22px] px-2 py-1.5 transition-colors hover:bg-white/8">
+            <LogoImage size={38} />
             <div className="min-w-0">
-              <p className="font-display text-[15px] font-bold tracking-[0.2em] text-text-primary dark:text-text-on-dark md:text-base">
+              <p className="font-display text-[0.96rem] font-bold tracking-[0.22em] text-white md:text-base">
                 SEEL
               </p>
-              <p className="truncate text-[10px] uppercase tracking-[0.34em] text-text-muted dark:text-text-on-dark-muted">
+              <p className="truncate text-[9px] uppercase tracking-[0.34em] text-white/52">
                 Transport & Reinigung
               </p>
             </div>
@@ -181,8 +181,8 @@ export default function Navbar() {
                     className={cn(
                       "inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all",
                       pathname.startsWith("/leistungen")
-                        ? "bg-brand-teal/12 text-brand-teal shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]"
-                        : "text-text-body hover:bg-white/40 hover:text-text-primary dark:text-text-on-dark-muted dark:hover:bg-white/6 dark:hover:text-text-on-dark"
+                        ? "bg-[linear-gradient(135deg,rgba(19,222,196,0.18),rgba(126,167,255,0.14))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]"
+                        : "text-white/78 hover:bg-white/8 hover:text-white"
                     )}
                   >
                     {item.label}
@@ -252,8 +252,8 @@ export default function Navbar() {
                   className={cn(
                     "rounded-full px-4 py-2.5 text-sm font-semibold transition-all",
                     pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
-                      ? "bg-brand-teal/12 text-brand-teal shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]"
-                      : "text-text-body hover:bg-white/40 hover:text-text-primary dark:text-text-on-dark-muted dark:hover:bg-white/6 dark:hover:text-text-on-dark"
+                      ? "bg-[linear-gradient(135deg,rgba(19,222,196,0.18),rgba(126,167,255,0.14))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]"
+                      : "text-white/78 hover:bg-white/8 hover:text-white"
                   )}
                 >
                   {item.label}
@@ -274,7 +274,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setDrawerOpen((current) => !current)}
-              className="inline-flex h-12 w-12 items-center justify-center rounded-[18px] border border-border bg-white/70 text-text-primary backdrop-blur-xl transition-all hover:bg-white dark:border-border-dark dark:bg-surface-dark-card/80 dark:text-text-on-dark"
+              className="inline-flex h-12 w-12 items-center justify-center rounded-[18px] border border-white/12 bg-white/6 text-white backdrop-blur-xl transition-all hover:bg-white/10"
               aria-label={drawerOpen ? "Menü schließen" : "Menü öffnen"}
             >
               <span className="relative flex h-5 w-5 items-center justify-center">
