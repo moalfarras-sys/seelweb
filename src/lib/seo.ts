@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 const SITE_NAME = "SEEL Transport & Reinigung";
-const BASE_URL = "https://seeltransport.de";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || "https://seeltransport.de";
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.jpg`;
 
 function absoluteUrl(path: string) {

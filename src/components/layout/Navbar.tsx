@@ -116,6 +116,25 @@ export default function Navbar() {
     };
   }, [drawerOpen]);
 
+  useEffect(() => {
+    setDrawerOpen(false);
+    setMegaOpen(false);
+    setMobileServicesOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setDrawerOpen(false);
+        setMegaOpen(false);
+        setMobileServicesOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const openMega = () => {
     clearTimeout(closeTimer.current);
     setMegaOpen(true);
@@ -251,7 +270,26 @@ export default function Navbar() {
               className="inline-flex h-12 w-12 items-center justify-center rounded-[18px] border border-border bg-white/70 text-text-primary backdrop-blur-xl transition-all hover:bg-white dark:border-border-dark dark:bg-surface-dark-card/80 dark:text-text-on-dark"
               aria-label={drawerOpen ? "Menü schließen" : "Menü öffnen"}
             >
-              {drawerOpen ? <X size={20} /> : <ChevronDown size={18} className="-rotate-90" />}
+              <span className="relative flex h-5 w-5 items-center justify-center">
+                <span
+                  className={cn(
+                    "absolute h-[2px] w-5 rounded-full bg-current transition-all duration-300",
+                    drawerOpen ? "translate-y-0 rotate-45" : "-translate-y-[6px]"
+                  )}
+                />
+                <span
+                  className={cn(
+                    "absolute h-[2px] w-5 rounded-full bg-current transition-all duration-300",
+                    drawerOpen ? "opacity-0" : "opacity-100"
+                  )}
+                />
+                <span
+                  className={cn(
+                    "absolute h-[2px] w-5 rounded-full bg-current transition-all duration-300",
+                    drawerOpen ? "translate-y-0 -rotate-45" : "translate-y-[6px]"
+                  )}
+                />
+              </span>
             </button>
           </div>
         </nav>

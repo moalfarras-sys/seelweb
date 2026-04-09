@@ -73,7 +73,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Umzug Berlin | SEEL Transport & Reinigung",
     description: "Umzug, Transport, Reinigung und Entrümpelung aus einer Hand.",
-    url: "https://seeltransport.de",
+    url: BASE_URL,
     siteName: "SEEL Transport & Reinigung",
     locale: "de_DE",
     type: "website",
@@ -125,7 +125,7 @@ export default async function RootLayout({
       <head>
         <meta charSet="utf-8" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="alternate" hrefLang="de" href="https://seeltransport.de/" />
+        <link rel="alternate" hrefLang="de" href={`${BASE_URL}/`} />
         <meta name="mobile-web-app-capable" content="yes" />
         <Script id="local-business-schema" type="application/ld+json" strategy="beforeInteractive">
           {JSON.stringify(localBusinessSchema)}
