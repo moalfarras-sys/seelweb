@@ -1,15 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ArrowRight,
   Building2,
   ChevronDown,
+  Clock3,
   Sparkles,
-  SunMedium,
   Trash2,
   Truck,
   WandSparkles,
@@ -30,49 +29,49 @@ const services = [
   {
     href: "/leistungen/umzug-berlin",
     label: "Privat- & Firmenumzug",
-    description: "Strukturierte Umzüge in Berlin, Brandenburg und bundesweit.",
+    description: "Planbare Umzüge mit festen Ansprechpartnern und sauberem Ablauf.",
     icon: Truck,
   },
   {
     href: "/leistungen/expressumzug",
     label: "Expressumzug",
-    description: "Kurzfristige Einsätze mit priorisierter Disposition.",
+    description: "Kurzfristige Einsätze mit priorisierter Disposition und klarer Zeitstruktur.",
     icon: Sparkles,
   },
   {
     href: "/leistungen/firmenumzug",
     label: "Büro- & Gewerbeumzug",
-    description: "Saubere Projektplanung für Büros, Agenturen und Praxen.",
+    description: "Projektlogik für Teams, Büros, Praxen und laufende Betriebsflächen.",
     icon: Building2,
   },
   {
     href: "/leistungen/reinigung",
     label: "Reinigung",
-    description: "Regelmäßige Reinigung und Endreinigung aus einer Hand.",
+    description: "Regelmäßige Reinigung und Endreinigung mit dokumentiertem Ergebnis.",
     icon: WandSparkles,
   },
   {
     href: "/leistungen/entruempelung",
     label: "Entrümpelung",
-    description: "Räumung, Sortierung und fachgerechte Entsorgung.",
+    description: "Räumung, Sortierung und fachgerechte Entsorgung aus einer Hand.",
     icon: Trash2,
   },
   {
     href: "/leistungen/schulumzug",
     label: "Schulumzug",
-    description: "Ferienfenster, Etappenplanung und klare Übergaben.",
-    icon: SunMedium,
+    description: "Ferienfenster, Etappenplanung und koordinierte Übergaben.",
+    icon: Clock3,
   },
 ];
 
-function LogoImage({ size = 40 }: { size?: number }) {
+function LogoImage({ size = 42 }: { size?: number }) {
   const [useFallback, setUseFallback] = useState(false);
 
   if (useFallback) {
     return (
       <div
-        className="flex items-center justify-center rounded-[14px] bg-brand-navy px-3 font-display text-sm font-bold tracking-[0.2em] text-white"
-        style={{ width: size * 1.65, height: size }}
+        className="flex items-center justify-center rounded-[18px] bg-brand-navy px-3 text-sm font-bold tracking-[0.24em] text-white shadow-[0_14px_34px_rgba(11,22,40,0.22)]"
+        style={{ width: size * 1.78, height: size }}
       >
         SEEL
       </div>
@@ -80,13 +79,14 @@ function LogoImage({ size = 40 }: { size?: number }) {
   }
 
   return (
-    <Image
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
       src="/images/logo-new.png"
       alt="SEEL Transport & Reinigung Logo"
-      width={size * 1.65}
+      width={Math.round(size * 1.78)}
       height={size}
-      className="h-auto w-auto"
-      priority
+      className="h-auto w-auto object-contain"
+      loading="eager"
       onError={() => setUseFallback(true)}
     />
   );
@@ -97,16 +97,16 @@ export { LogoImage };
 export default function Navbar() {
   const pathname = usePathname();
   const closeTimer = useRef<ReturnType<typeof setTimeout>>();
-  const [scrolled, setScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 18);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const handleScroll = () => setScrolled(window.scrollY > 12);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
@@ -122,70 +122,73 @@ export default function Navbar() {
   };
 
   const closeMega = () => {
-    closeTimer.current = setTimeout(() => setMegaOpen(false), 160);
+    closeTimer.current = setTimeout(() => setMegaOpen(false), 180);
   };
 
   return (
     <>
-      <nav
-        className={cn(
-          "sticky top-0 z-50 border-b transition-all duration-300",
-          scrolled
-            ? "border-border/60 bg-white/92 shadow-sm backdrop-blur-xl dark:border-border-dark dark:bg-surface-dark/92"
-            : "border-border/40 bg-white/86 backdrop-blur-xl dark:border-border-dark/70 dark:bg-surface-dark/84"
-        )}
-      >
-        <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 md:px-6 xl:px-0">
-          <Link href="/" className="flex min-w-0 items-center gap-3">
-            <LogoImage size={40} />
+      <div className="fixed inset-x-0 top-0 z-50 px-3 pt-3 md:px-5 md:pt-4 xl:px-6">
+        <nav
+          className={cn(
+            "nav-glass mx-auto flex max-w-[1240px] items-center justify-between rounded-[30px] px-3 py-2 md:px-4",
+            scrolled ? "shadow-[0_24px_64px_rgba(15,23,42,0.14)]" : "shadow-[0_16px_44px_rgba(15,23,42,0.08)]"
+          )}
+        >
+          <Link href="/" className="flex min-w-0 items-center gap-3 rounded-[22px] px-2 py-1.5 transition-colors hover:bg-white/30 dark:hover:bg-white/5">
+            <LogoImage size={42} />
             <div className="min-w-0">
-              <p className="font-display text-base font-bold tracking-[0.12em] text-text-primary dark:text-text-on-dark md:text-lg">
+              <p className="font-display text-[15px] font-bold tracking-[0.2em] text-text-primary dark:text-text-on-dark md:text-base">
                 SEEL
               </p>
-              <p className="truncate text-[11px] uppercase tracking-[0.28em] text-text-muted dark:text-text-on-dark-muted">
+              <p className="truncate text-[10px] uppercase tracking-[0.34em] text-text-muted dark:text-text-on-dark-muted">
                 Transport & Reinigung
               </p>
             </div>
           </Link>
 
-          <div className="hidden items-center gap-1 lg:flex">
+          <div className="hidden items-center gap-1.5 lg:flex">
             {navigation.map((item) =>
               item.mega ? (
                 <div key={item.href} className="relative" onMouseEnter={openMega} onMouseLeave={closeMega}>
                   <button
                     type="button"
                     className={cn(
-                      "inline-flex items-center gap-1 rounded-pill px-4 py-2 text-sm font-semibold transition-all duration-200",
+                      "inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all",
                       pathname.startsWith("/leistungen")
-                        ? "bg-brand-teal/12 text-brand-teal"
-                        : "text-text-body hover:text-brand-teal dark:text-text-on-dark-muted dark:hover:text-brand-teal"
+                        ? "bg-brand-teal/12 text-brand-teal shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]"
+                        : "text-text-body hover:bg-white/40 hover:text-text-primary dark:text-text-on-dark-muted dark:hover:bg-white/6 dark:hover:text-text-on-dark"
                     )}
                   >
                     {item.label}
-                    <ChevronDown size={16} className={cn("transition-transform duration-200", megaOpen && "rotate-180")} />
+                    <ChevronDown size={15} className={cn("transition-transform duration-300", megaOpen && "rotate-180")} />
                   </button>
 
                   <div
                     className={cn(
-                      "absolute left-1/2 top-full mt-4 w-[720px] -translate-x-1/2 rounded-[28px] border border-border/70 bg-white p-5 shadow-[0_24px_70px_rgba(11,22,40,0.12)] transition-all duration-300 dark:border-border-dark dark:bg-surface-dark-card",
+                      "dropdown-glass absolute left-1/2 top-full mt-4 w-[760px] -translate-x-1/2 p-5 transition-all duration-300",
                       megaOpen ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"
                     )}
                   >
-                    <div className="mb-4 flex items-end justify-between gap-6 border-b border-border/70 pb-4 dark:border-border-dark">
+                    <div className="mb-5 grid gap-5 border-b border-border/70 pb-5 dark:border-border-dark lg:grid-cols-[1fr_260px]">
                       <div>
-                        <p className="font-ui text-xs font-semibold uppercase tracking-[0.3em] text-brand-teal">
-                          Leistungen
-                        </p>
-                        <p className="mt-2 max-w-sm text-sm text-text-body dark:text-text-on-dark-muted">
-                          Umzug, Reinigung und Entrümpelung mit klarer Planung, festen Zeitfenstern und kurzen Wegen.
+                        <p className="text-xs font-semibold uppercase tracking-[0.34em] text-brand-teal">Leistungen</p>
+                        <h3 className="mt-3 font-display text-2xl font-bold text-text-primary dark:text-text-on-dark">
+                          Umzug, Reinigung und Entrümpelung in einer klaren Oberfläche.
+                        </h3>
+                        <p className="mt-3 max-w-xl text-sm leading-7 text-text-body dark:text-text-on-dark-muted">
+                          Berlin, Brandenburg und deutschlandweite Einsätze mit Premium-Auftritt, sauberer Planung und einer schnellen Anfrageführung.
                         </p>
                       </div>
-                      <Link
-                        href="/leistungen"
-                        className="rounded-pill border border-border px-4 py-2 text-sm font-semibold text-text-primary transition hover:border-brand-teal hover:text-brand-teal dark:border-border-dark dark:text-text-on-dark"
-                      >
-                        Alle Leistungen
-                      </Link>
+                      <div className="premium-panel rounded-[28px] p-5">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-brand-gold">Schnellstart</p>
+                        <p className="mt-3 text-lg font-semibold text-text-primary dark:text-text-on-dark">In unter 2 Minuten anfragen</p>
+                        <p className="mt-2 text-sm leading-6 text-text-body dark:text-text-on-dark-muted">
+                          Für feste Termine, Expressfälle oder kombinierte Leistungen.
+                        </p>
+                        <Link href="/buchen" className="btn-primary-glass mt-5 w-full gap-2">
+                          Jetzt buchen <ArrowRight size={15} />
+                        </Link>
+                      </div>
                     </div>
 
                     <div className="grid gap-3 md:grid-cols-2">
@@ -195,17 +198,17 @@ export default function Navbar() {
                           <Link
                             key={service.href}
                             href={service.href}
-                            className="group rounded-[20px] border border-border/70 bg-surface p-4 transition-all duration-300 hover:-translate-y-1 hover:border-brand-teal/40 hover:shadow-[var(--shadow-hover)] dark:border-border-dark dark:bg-surface-dark"
+                            className="glass-card group p-4"
                           >
                             <div className="flex items-start gap-3">
-                              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-brand-teal/10 text-brand-teal">
+                              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] bg-brand-teal/12 text-brand-teal">
                                 <Icon size={20} />
                               </div>
                               <div>
                                 <p className="text-sm font-semibold text-text-primary transition group-hover:text-brand-teal dark:text-text-on-dark">
                                   {service.label}
                                 </p>
-                                <p className="mt-1 text-xs leading-5 text-text-muted dark:text-text-on-dark-muted">
+                                <p className="mt-1 text-xs leading-6 text-text-muted dark:text-text-on-dark-muted">
                                   {service.description}
                                 </p>
                               </div>
@@ -221,10 +224,10 @@ export default function Navbar() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "rounded-pill px-4 py-2 text-sm font-semibold transition-all duration-200",
+                    "rounded-full px-4 py-2.5 text-sm font-semibold transition-all",
                     pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
-                      ? "bg-brand-teal/12 text-brand-teal"
-                      : "text-text-body hover:text-brand-teal dark:text-text-on-dark-muted dark:hover:text-brand-teal"
+                      ? "bg-brand-teal/12 text-brand-teal shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]"
+                      : "text-text-body hover:bg-white/40 hover:text-text-primary dark:text-text-on-dark-muted dark:hover:bg-white/6 dark:hover:text-text-on-dark"
                   )}
                 >
                   {item.label}
@@ -235,10 +238,7 @@ export default function Navbar() {
 
           <div className="hidden items-center gap-3 lg:flex">
             <ThemeToggle />
-            <Link
-              href="/buchen"
-              className="inline-flex items-center gap-2 rounded-button bg-brand-teal px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:brightness-110 hover:shadow-[0_0_24px_rgba(0,197,160,0.28)]"
-            >
+            <Link href="/buchen" className="btn-primary-glass gap-2 px-5 py-3">
               Jetzt buchen <ArrowRight size={15} />
             </Link>
           </div>
@@ -248,21 +248,18 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setDrawerOpen((current) => !current)}
-              className="relative inline-flex h-11 w-11 items-center justify-center rounded-button border border-border bg-white text-text-primary shadow-sm dark:border-border-dark dark:bg-surface-dark-card dark:text-text-on-dark"
+              className="inline-flex h-12 w-12 items-center justify-center rounded-[18px] border border-border bg-white/70 text-text-primary backdrop-blur-xl transition-all hover:bg-white dark:border-border-dark dark:bg-surface-dark-card/80 dark:text-text-on-dark"
               aria-label={drawerOpen ? "Menü schließen" : "Menü öffnen"}
             >
-              <span className="sr-only">Menü</span>
-              <span className={cn("absolute h-0.5 w-5 rounded-full bg-current transition-all", drawerOpen ? "rotate-45" : "-translate-y-1.5")} />
-              <span className={cn("absolute h-0.5 w-5 rounded-full bg-current transition-all", drawerOpen ? "opacity-0" : "opacity-100")} />
-              <span className={cn("absolute h-0.5 w-5 rounded-full bg-current transition-all", drawerOpen ? "-rotate-45" : "translate-y-1.5")} />
+              {drawerOpen ? <X size={20} /> : <ChevronDown size={18} className="-rotate-90" />}
             </button>
           </div>
-        </div>
-      </nav>
+        </nav>
+      </div>
 
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-brand-navy/50 backdrop-blur-sm transition-opacity duration-300 lg:hidden",
+          "fixed inset-0 z-40 bg-brand-navy/48 backdrop-blur-md transition-opacity duration-300 lg:hidden",
           drawerOpen ? "opacity-100" : "pointer-events-none opacity-0"
         )}
         onClick={() => setDrawerOpen(false)}
@@ -270,26 +267,22 @@ export default function Navbar() {
 
       <aside
         className={cn(
-          "fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col bg-white px-6 pb-6 pt-5 shadow-2xl transition-transform duration-300 dark:bg-surface-dark",
+          "fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-l border-white/10 bg-[linear-gradient(180deg,rgba(5,12,22,0.94)_0%,rgba(6,15,28,0.98)_100%)] px-5 pb-6 pt-5 text-white shadow-[0_32px_96px_rgba(0,0,0,0.42)] transition-transform duration-300 lg:hidden",
           drawerOpen ? "translate-x-0" : "translate-x-full"
         )}
       >
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3" onClick={() => setDrawerOpen(false)}>
-            <LogoImage size={36} />
+            <LogoImage size={38} />
             <div>
-              <p className="font-display text-base font-bold tracking-[0.12em] text-text-primary dark:text-text-on-dark">
-                SEEL
-              </p>
-              <p className="text-[11px] uppercase tracking-[0.28em] text-text-muted dark:text-text-on-dark-muted">
-                Transport & Reinigung
-              </p>
+              <p className="font-display text-base font-bold tracking-[0.18em]">SEEL</p>
+              <p className="text-[10px] uppercase tracking-[0.32em] text-white/55">Transport & Reinigung</p>
             </div>
           </Link>
           <button
             type="button"
             onClick={() => setDrawerOpen(false)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-surface text-text-primary dark:bg-surface-dark-card dark:text-text-on-dark"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/8 text-white transition hover:bg-white/12"
             aria-label="Schließen"
           >
             <X size={18} />
@@ -299,26 +292,26 @@ export default function Navbar() {
         <div className="mt-8 flex-1 space-y-2 overflow-y-auto">
           {navigation.map((item) =>
             item.mega ? (
-              <div key={item.href} className="rounded-[24px] border border-border/70 bg-surface p-2 dark:border-border-dark dark:bg-surface-dark-card">
+              <div key={item.href} className="rounded-[24px] border border-white/10 bg-white/6 p-2 backdrop-blur-xl">
                 <button
                   type="button"
                   onClick={() => setMobileServicesOpen((current) => !current)}
-                  className="flex w-full items-center justify-between px-3 py-3 text-left text-xl font-semibold text-text-primary dark:text-text-on-dark"
+                  className="flex w-full items-center justify-between px-3 py-3 text-left text-xl font-semibold"
                 >
                   {item.label}
                   <ChevronDown size={18} className={cn("transition-transform duration-300", mobileServicesOpen && "rotate-180")} />
                 </button>
                 {mobileServicesOpen && (
-                  <div className="space-y-1 px-2 pb-2">
+                  <div className="space-y-1 px-1 pb-2">
                     {services.map((service) => (
                       <Link
                         key={service.href}
                         href={service.href}
                         onClick={() => setDrawerOpen(false)}
-                        className="block rounded-[18px] px-3 py-3 text-sm text-text-body transition hover:bg-white hover:text-brand-teal dark:text-text-on-dark-muted dark:hover:bg-surface-dark-elevated"
+                        className="block rounded-[20px] px-3 py-3 transition hover:bg-white/8"
                       >
-                        <span className="block font-semibold">{service.label}</span>
-                        <span className="mt-1 block text-xs leading-5 opacity-80">{service.description}</span>
+                        <span className="block text-sm font-semibold">{service.label}</span>
+                        <span className="mt-1 block text-xs leading-6 text-white/58">{service.description}</span>
                       </Link>
                     ))}
                   </div>
@@ -330,10 +323,10 @@ export default function Navbar() {
                 href={item.href}
                 onClick={() => setDrawerOpen(false)}
                 className={cn(
-                  "block rounded-[20px] px-4 py-4 text-xl font-semibold transition-all duration-200",
+                  "block rounded-[22px] px-4 py-4 text-xl font-semibold transition-all",
                   pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
-                    ? "bg-brand-teal/10 text-brand-teal"
-                    : "text-text-primary hover:bg-surface hover:text-brand-teal dark:text-text-on-dark dark:hover:bg-surface-dark-card dark:hover:text-brand-teal"
+                    ? "bg-white/12 text-brand-teal"
+                    : "text-white hover:bg-white/8"
                 )}
               >
                 {item.label}
@@ -342,16 +335,16 @@ export default function Navbar() {
           )}
         </div>
 
-        <Link
-          href="/buchen"
-          onClick={() => setDrawerOpen(false)}
-          className="mt-6 inline-flex items-center justify-center gap-2 rounded-button bg-brand-teal px-6 py-4 text-base font-semibold text-white transition-all duration-200 hover:brightness-110"
-        >
-          Jetzt buchen <ArrowRight size={18} />
-        </Link>
-        <p className="mt-4 text-center text-xs uppercase tracking-[0.28em] text-text-muted dark:text-text-on-dark-muted">
-          Premium. Modern. Berlin.
-        </p>
+        <div className="premium-panel-dark mt-6 p-5">
+          <p className="text-[11px] uppercase tracking-[0.34em] text-brand-teal-light">Berlin · Brandenburg</p>
+          <p className="mt-3 text-xl font-semibold">Premium. Präzise. Schnell anfragbar.</p>
+          <p className="mt-3 text-sm leading-7 text-white/68">
+            Für Umzug, Reinigung, Entrümpelung und kurzfristige Einsätze mit einem konsistenten Premium-Auftritt.
+          </p>
+          <Link href="/buchen" onClick={() => setDrawerOpen(false)} className="btn-primary-glass mt-5 w-full gap-2">
+            Jetzt buchen <ArrowRight size={16} />
+          </Link>
+        </div>
       </aside>
     </>
   );

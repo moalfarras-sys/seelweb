@@ -21,6 +21,9 @@ const QUICK_LINKS = [
   { href: "/unternehmen", label: "Unternehmen" },
   { href: "/kontakt", label: "Kontakt" },
   { href: "/galerie", label: "Galerie" },
+];
+
+const LEGAL_LINKS = [
   { href: "/agb", label: "AGB" },
   { href: "/impressum", label: "Impressum" },
   { href: "/datenschutz", label: "Datenschutz" },
@@ -35,35 +38,36 @@ export default function Footer() {
   const addressLines = [company.addressLine1, company.addressLine2, `${company.city}, ${company.country}`].filter(Boolean);
 
   return (
-    <footer className="relative z-10 overflow-hidden bg-brand-navy text-text-on-dark">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,197,160,0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(201,168,76,0.12),transparent_24%)]" />
+    <footer className="relative z-10 overflow-hidden bg-[#050b15] text-text-on-dark">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_14%_18%,rgba(0,229,186,0.14),transparent_26%),radial-gradient(circle_at_86%_20%,rgba(125,211,252,0.14),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_40%)]" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/16 to-transparent" />
 
-      <div className="relative mx-auto max-w-[1200px] px-4 py-16 md:px-6 xl:px-0">
-        <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-4">
-          <div>
+      <div className="relative mx-auto max-w-[1240px] px-4 py-16 md:px-6 xl:px-0">
+        <div className="grid gap-6 lg:grid-cols-[1.15fr_0.75fr_0.75fr_0.95fr]">
+          <div className="premium-panel-dark p-6 sm:p-7">
             <div className="flex items-center gap-3">
-              <LogoImage size={48} />
+              <LogoImage size={46} />
               <div>
-                <p className="font-display text-xl font-bold tracking-[0.12em]">SEEL</p>
-                <p className="text-[11px] uppercase tracking-[0.28em] text-text-on-dark-muted">Transport & Reinigung</p>
+                <p className="font-display text-xl font-bold tracking-[0.18em] text-white">SEEL</p>
+                <p className="text-[11px] uppercase tracking-[0.34em] text-white/52">Transport & Reinigung</p>
               </div>
             </div>
-            <p className="mt-5 max-w-xs text-sm leading-7 text-text-on-dark-muted">
-              Ihr Umzug. Unsere Präzision. Berlin-basiert, zuverlässig geplant und sauber ausgeführt.
+            <p className="mt-5 max-w-sm text-sm leading-7 text-white/68">
+              Ihr Umzug. Unsere Präzision. Premium organisiert für Berlin, Brandenburg und deutschlandweite Einsätze mit klarer Kommunikation und ruhiger Durchführung.
             </p>
-            <div className="mt-5 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               <a
                 href={buildWhatsappUrl(contact.whatsappNumber)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-pill border border-white/10 px-4 py-2 text-sm text-text-on-dark-muted transition hover:text-brand-teal"
+                className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/6 px-4 py-2.5 text-sm font-semibold text-white/84 transition hover:bg-white/10 hover:text-brand-teal-light"
               >
                 <WhatsAppIcon className="h-4 w-4 fill-current" />
                 WhatsApp
               </a>
               <a
                 href={`tel:${contact.primaryPhone}`}
-                className="inline-flex items-center gap-2 rounded-pill border border-white/10 px-4 py-2 text-sm text-text-on-dark-muted transition hover:text-brand-teal"
+                className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/6 px-4 py-2.5 text-sm font-semibold text-white/84 transition hover:bg-white/10 hover:text-brand-teal-light"
               >
                 <Phone size={14} />
                 Anrufen
@@ -71,68 +75,74 @@ export default function Footer() {
             </div>
           </div>
 
-          <div>
-            <h3 className="font-ui text-sm font-semibold uppercase tracking-[0.24em] text-text-on-dark">Leistungen</h3>
-            <div className="mt-4 space-y-3 text-sm text-text-on-dark-muted">
+          <div className="glass-card p-6 text-text-on-dark">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-brand-teal-light">Leistungen</p>
+            <div className="mt-5 space-y-3 text-sm text-white/70">
               {SERVICE_LINKS.map((link) => (
-                <Link key={link.href} href={link.href} className="block transition hover:text-brand-teal">
+                <Link key={link.href} href={link.href} className="block transition hover:text-brand-teal-light">
                   {link.label}
                 </Link>
               ))}
             </div>
           </div>
 
-          <div>
-            <h3 className="font-ui text-sm font-semibold uppercase tracking-[0.24em] text-text-on-dark">Schnellzugriff</h3>
-            <div className="mt-4 space-y-3 text-sm text-text-on-dark-muted">
+          <div className="glass-card p-6 text-text-on-dark">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-brand-teal-light">Schnellzugriff</p>
+            <div className="mt-5 space-y-3 text-sm text-white/70">
               {QUICK_LINKS.map((link) => (
-                <Link key={link.href} href={link.href} className="block transition hover:text-brand-teal">
+                <Link key={link.href} href={link.href} className="block transition hover:text-brand-teal-light">
                   {link.label}
                 </Link>
               ))}
-              <CookieSettingsButton />
+            </div>
+            <div className="mt-5 border-t border-white/10 pt-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-brand-gold">Rechtliches</p>
+              <div className="mt-4 space-y-3 text-sm text-white/70">
+                {LEGAL_LINKS.map((link) => (
+                  <Link key={link.href} href={link.href} className="block transition hover:text-brand-teal-light">
+                    {link.label}
+                  </Link>
+                ))}
+                <CookieSettingsButton />
+              </div>
             </div>
           </div>
 
-          <div>
-            <h3 className="font-ui text-sm font-semibold uppercase tracking-[0.24em] text-text-on-dark">Kontakt</h3>
-            <div className="mt-4 space-y-4 text-sm text-text-on-dark-muted">
+          <div className="premium-panel-dark p-6 sm:p-7">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-brand-teal-light">Kontakt</p>
+            <div className="mt-5 space-y-4 text-sm text-white/70">
               <div className="flex items-start gap-3">
-                <MapPin size={16} className="mt-0.5 shrink-0 text-brand-teal" />
+                <MapPin size={16} className="mt-1 shrink-0 text-brand-teal-light" />
                 <div className="space-y-0.5">
                   {addressLines.map((line) => (
                     <p key={line}>{line}</p>
                   ))}
                 </div>
               </div>
-              <a href={`tel:${contact.primaryPhone}`} className="flex items-center gap-3 transition hover:text-brand-teal">
-                <Phone size={16} className="shrink-0 text-brand-teal" />
+              <a href={`tel:${contact.primaryPhone}`} className="flex items-center gap-3 transition hover:text-brand-teal-light">
+                <Phone size={16} className="shrink-0 text-brand-teal-light" />
                 {contact.primaryPhoneDisplay}
               </a>
-              <a href={`mailto:${contact.email}`} className="flex items-center gap-3 transition hover:text-brand-teal">
-                <Mail size={16} className="shrink-0 text-brand-teal" />
+              <a href={`mailto:${contact.email}`} className="flex items-center gap-3 transition hover:text-brand-teal-light">
+                <Mail size={16} className="shrink-0 text-brand-teal-light" />
                 {contact.email}
               </a>
               <div className="flex items-start gap-3">
-                <Clock3 size={16} className="mt-0.5 shrink-0 text-brand-teal" />
+                <Clock3 size={16} className="mt-1 shrink-0 text-brand-teal-light" />
                 <span>Mo–So 07:00–20:00 · Notfälle 24/7</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col gap-3 text-sm text-text-on-dark-muted md:flex-row md:items-center md:justify-between">
+        <div className="mt-10 flex flex-col gap-4 border-t border-white/8 pt-6 text-sm text-white/50 md:flex-row md:items-center md:justify-between">
           <p>© 2026 SEEL Transport & Reinigung · USt-IdNr.: DE454962817</p>
           <div className="flex flex-wrap items-center gap-4">
-            <Link href="/agb" className="transition hover:text-brand-teal">
-              AGB
-            </Link>
-            <Link href="/impressum" className="transition hover:text-brand-teal">
-              Impressum
-            </Link>
-            <Link href="/datenschutz" className="transition hover:text-brand-teal">
-              Datenschutz
-            </Link>
+            {LEGAL_LINKS.map((link) => (
+              <Link key={link.href} href={link.href} className="transition hover:text-brand-teal-light">
+                {link.label}
+              </Link>
+            ))}
           </div>
         </div>
       </div>

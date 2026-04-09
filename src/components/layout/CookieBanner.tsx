@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { Cookie } from "lucide-react";
+import { Cookie, ShieldCheck } from "lucide-react";
 
 type ConsentState = {
   necessary: boolean;
@@ -43,43 +43,50 @@ export function CookieBanner() {
 
   return (
     <AnimatePresence>
-      {open && (
+      {open ? (
         <motion.div
-          initial={{ opacity: 0, y: 32 }}
+          initial={{ opacity: 0, y: 28 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 24 }}
-          transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-          className="fixed bottom-4 left-4 right-4 z-[70] mx-auto max-w-2xl sm:bottom-6"
+          exit={{ opacity: 0, y: 20 }}
+          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          className="fixed inset-x-0 bottom-4 z-[70] px-4 sm:bottom-6"
         >
-          <div className="rounded-[24px] border border-border bg-white/95 p-4 shadow-[0_18px_50px_rgba(11,22,40,0.14)] backdrop-blur-xl dark:border-border-dark dark:bg-surface-dark-card/95">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mx-auto max-w-[860px] rounded-[28px] border border-white/12 bg-[linear-gradient(180deg,rgba(5,12,22,0.88)_0%,rgba(7,15,28,0.78)_100%)] p-4 text-white shadow-[0_28px_80px_rgba(0,0,0,0.34)] backdrop-blur-3xl sm:p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-teal/10 text-brand-teal">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[18px] bg-white/8 text-brand-teal-light">
                   <Cookie size={18} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-text-primary dark:text-text-on-dark">Cookie-Einstellungen</p>
-                  <p className="mt-1 text-xs leading-5 text-text-muted dark:text-text-on-dark-muted">
-                    Wir nutzen nur die notwendigen Cookies standardmäßig. Details finden Sie in der{" "}
-                    <Link href="/datenschutz" className="font-semibold text-brand-teal">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold">Cookie-Einstellungen</p>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/6 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/65">
+                      <ShieldCheck size={12} />
+                      Datenschutz zuerst
+                    </span>
+                  </div>
+                  <p className="mt-2 max-w-xl text-xs leading-6 text-white/68 sm:text-sm">
+                    Standardmäßig bleiben nur notwendige Cookies aktiv. Details finden Sie in der{" "}
+                    <Link href="/datenschutz" className="font-semibold text-brand-teal-light">
                       Datenschutzerklärung
                     </Link>
                     .
                   </p>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2 sm:justify-end">
+
+              <div className="flex flex-wrap gap-2 lg:justify-end">
                 <button
                   type="button"
                   onClick={() => saveConsent({ ...DEFAULT_CONSENT, analytics: true, marketing: true })}
-                  className="rounded-pill bg-brand-teal px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110"
+                  className="btn-primary-glass px-4 py-2.5"
                 >
                   Alle akzeptieren
                 </button>
                 <button
                   type="button"
                   onClick={() => saveConsent(DEFAULT_CONSENT)}
-                  className="rounded-pill border border-border px-4 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface dark:border-border-dark dark:text-text-on-dark dark:hover:bg-surface-dark-elevated"
+                  className="rounded-full border border-white/12 bg-white/6 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
                 >
                   Nur notwendige
                 </button>
@@ -87,7 +94,7 @@ export function CookieBanner() {
             </div>
           </div>
         </motion.div>
-      )}
+      ) : null}
     </AnimatePresence>
   );
 }
@@ -100,7 +107,7 @@ export function CookieSettingsButton() {
         localStorage.removeItem("cookie-consent");
         window.location.reload();
       }}
-      className="text-left text-sm text-text-on-dark-muted transition hover:text-brand-teal"
+      className="text-left text-sm text-white/70 transition hover:text-brand-teal-light"
     >
       Cookie-Einstellungen
     </button>
