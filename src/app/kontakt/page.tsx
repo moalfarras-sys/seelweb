@@ -72,9 +72,9 @@ export default function KontaktPage() {
   }
 
   return (
-    <main className="px-4 pb-14 pt-10 md:px-8">
+    <main className="px-4 pb-14 pt-28 md:px-8 md:pt-32">
       <div className="mx-auto max-w-[1200px]">
-        <section className="overflow-hidden rounded-[36px] bg-[linear-gradient(135deg,#081220_0%,#0B1628_48%,#152238_100%)] px-6 py-10 text-white md:px-10">
+        <section className="premium-panel-dark overflow-hidden px-6 py-10 md:px-10 md:py-12">
           <p className="font-ui text-xs uppercase tracking-[0.3em] text-brand-teal-light">Kontakt</p>
           <h1 className="mt-4 font-display text-4xl font-bold md:text-5xl">Direkte Anfrage statt unnötiger Umwege.</h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-white/80">
@@ -101,7 +101,7 @@ export default function KontaktPage() {
             ].map((item) => {
               const Icon = item.icon;
               const card = (
-                <div className="rounded-[24px] border border-border bg-white p-5 shadow-[var(--shadow-card)] dark:border-border-dark dark:bg-surface-dark-card">
+                <div className="glass-card p-5">
                   <div className="flex items-start gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-brand-teal/10 text-brand-teal">
                       <Icon size={20} />
@@ -123,7 +123,7 @@ export default function KontaktPage() {
               );
             })}
 
-            <div className="rounded-[24px] border border-border bg-white p-5 shadow-[var(--shadow-card)] dark:border-border-dark dark:bg-surface-dark-card">
+            <div className="glass-card p-5">
               <div className="flex items-start gap-3">
                 <ShieldCheck size={18} className="mt-1 text-brand-teal" />
                 <div>
@@ -137,7 +137,7 @@ export default function KontaktPage() {
           </div>
 
           <div className="space-y-6">
-            <div className="rounded-[30px] border border-border bg-white p-6 shadow-[var(--shadow-card)] dark:border-border-dark dark:bg-surface-dark-card md:p-8">
+            <div className="glass-strong rounded-[30px] p-6 md:p-8">
               {submitted ? (
                 <div className="rounded-[24px] bg-brand-teal/8 p-8 text-center">
                   <h2 className="text-2xl font-bold text-text-primary dark:text-text-on-dark">Nachricht gesendet</h2>
@@ -186,7 +186,7 @@ export default function KontaktPage() {
               )}
             </div>
 
-            <div className="overflow-hidden rounded-[30px] border border-border bg-white shadow-[var(--shadow-card)] dark:border-border-dark dark:bg-surface-dark-card">
+            <div className="glass-card overflow-hidden rounded-[30px] p-0">
               <iframe
                 title="SEEL Transport & Reinigung Karte"
                 src="https://www.google.com/maps?q=Forster%20Stra%C3%9Fe%205%2C%2012627%20Berlin&z=13&output=embed"

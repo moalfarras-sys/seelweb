@@ -73,9 +73,9 @@ export default function UnternehmenPage() {
   }
 
   return (
-    <main className="px-4 pb-14 pt-10 md:px-8">
+    <main className="px-4 pb-14 pt-28 md:px-8 md:pt-32">
       <div className="mx-auto max-w-[1200px]">
-        <section className="overflow-hidden rounded-[36px] bg-[linear-gradient(135deg,#081220_0%,#0B1628_48%,#152238_100%)] px-6 py-10 text-white md:px-10">
+        <section className="premium-panel-dark overflow-hidden px-6 py-10 md:px-10 md:py-12">
           <p className="font-ui text-xs uppercase tracking-[0.3em] text-brand-teal-light">Unternehmen</p>
           <h1 className="mt-4 font-display text-4xl font-bold md:text-5xl">Vertrauen entsteht durch Struktur.</h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-white/80">
@@ -101,7 +101,7 @@ export default function UnternehmenPage() {
               ].map((item) => {
                 const Icon = item.icon;
                 return (
-                  <div key={item.title} className="rounded-[24px] border border-border bg-white p-5 shadow-[var(--shadow-card)] dark:border-border-dark dark:bg-surface-dark-card">
+                  <div key={item.title} className="glass-card p-5">
                     <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-brand-teal/10 text-brand-teal">
                       <Icon size={20} />
                     </div>
@@ -112,14 +112,14 @@ export default function UnternehmenPage() {
               })}
             </div>
 
-            <div className="rounded-[30px] border border-border bg-white p-6 shadow-[var(--shadow-card)] dark:border-border-dark dark:bg-surface-dark-card">
+            <div className="glass-strong rounded-[30px] p-6">
               <p className="font-ui text-xs uppercase tracking-[0.28em] text-brand-teal">Unsere Haltung</p>
               <h2 className="mt-3 text-3xl font-bold text-text-primary dark:text-text-on-dark">Drei Säulen, auf denen SEEL arbeitet.</h2>
               <div className="mt-6 grid gap-4 md:grid-cols-3">
                 {values.map((value) => {
                   const Icon = value.icon;
                   return (
-                    <div key={value.title} className="rounded-[24px] bg-surface p-5 dark:bg-surface-dark">
+                    <div key={value.title} className="glass-card p-5">
                       <div className="flex h-11 w-11 items-center justify-center rounded-[16px] bg-brand-teal/10 text-brand-teal">
                         <Icon size={18} />
                       </div>
@@ -131,11 +131,11 @@ export default function UnternehmenPage() {
               </div>
             </div>
 
-            <div className="rounded-[30px] border border-border bg-white p-6 shadow-[var(--shadow-card)] dark:border-border-dark dark:bg-surface-dark-card">
+            <div className="glass-strong rounded-[30px] p-6">
               <p className="font-ui text-xs uppercase tracking-[0.28em] text-brand-teal">Timeline</p>
               <div className="mt-6 space-y-4">
                 {timeline.map((entry) => (
-                  <div key={entry.title} className="grid gap-3 rounded-[22px] bg-surface p-5 dark:bg-surface-dark md:grid-cols-[180px_minmax(0,1fr)]">
+                  <div key={entry.title} className="glass-card grid gap-3 p-5 md:grid-cols-[180px_minmax(0,1fr)]">
                     <p className="text-sm font-semibold text-brand-teal">{entry.title}</p>
                     <p className="text-sm leading-7 text-text-body dark:text-text-on-dark-muted">{entry.text}</p>
                   </div>
@@ -145,7 +145,7 @@ export default function UnternehmenPage() {
           </div>
 
           <aside className="lg:sticky lg:top-24 lg:h-fit">
-            <div className="rounded-[30px] border border-border bg-white p-6 shadow-[var(--shadow-card)] dark:border-border-dark dark:bg-surface-dark-card">
+            <div className="premium-panel-dark p-6">
               <p className="font-ui text-xs uppercase tracking-[0.28em] text-brand-teal">Direktkontakt</p>
               <p className="mt-4 text-sm leading-7 text-text-body dark:text-text-on-dark-muted">
                 Für Rückfragen, Ausschreibungen und gewerbliche Projekte erreichen Sie uns direkt.
@@ -162,7 +162,7 @@ export default function UnternehmenPage() {
           </aside>
         </section>
 
-        <section id="ausschreibung" className="mt-8 rounded-[32px] border border-border bg-white p-6 shadow-[var(--shadow-card)] dark:border-border-dark dark:bg-surface-dark-card md:p-8">
+        <section id="ausschreibung" className="glass-strong mt-8 rounded-[32px] p-6 md:p-8">
           {submitted ? (
             <div className="rounded-[24px] bg-brand-teal/8 p-8 text-center">
               <h2 className="text-2xl font-bold text-text-primary dark:text-text-on-dark">Projektanfrage erhalten</h2>
