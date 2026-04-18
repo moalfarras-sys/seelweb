@@ -12,22 +12,136 @@ export async function GET(request: NextRequest) {
     }
 
     const showDeleted = request.nextUrl.searchParams.get("showDeleted") === "true";
+    const view = request.nextUrl.searchParams.get("view") ?? "full";
+    const where = showDeleted ? {} : { deletedAt: null };
+
+    if (view === "dashboard") {
+      const orders = await prisma.order.findMany({
+        where,
+        select: {
+          id: true,
+          orderNumber: true,
+          status: true,
+          totalPrice: true,
+          scheduledAt: true,
+          createdAt: true,
+          customer: { select: { id: true, name: true } },
+          service: { select: { nameDe: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      return NextResponse.json(orders);
+    }
+
+    if (view === "invoice-create") {
+      const orders = await prisma.order.findMany({
+        where,
+        select: {
+          id: true,
+          orderNumber: true,
+          totalPrice: true,
+          customer: { select: { name: true } },
+          service: { select: { nameDe: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      return NextResponse.json(orders);
+    }
+
+    if (view === "documents") {
+      const orders = await prisma.order.findMany({
+        where,
+        select: {
+          id: true,
+          orderNumber: true,
+          scheduledAt: true,
+          timeSlot: true,
+          totalPrice: true,
+          distanceKm: true,
+          breakdownJson: true,
+          customer: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              company: true,
+            },
+          },
+          service: { select: { nameDe: true } },
+          fromAddress: {
+            select: {
+              street: true,
+              houseNumber: true,
+              zip: true,
+              city: true,
+            },
+          },
+          toAddress: {
+            select: {
+              street: true,
+              houseNumber: true,
+              zip: true,
+              city: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      return NextResponse.json(orders);
+    }
 
     const orders = await prisma.order.findMany({
-      where: showDeleted ? {} : { deletedAt: null },
-      include: {
-        customer: true,
-        service: true,
-        fromAddress: true,
-        toAddress: true,
+      where,
+      select: {
+        id: true,
+        orderNumber: true,
+        status: true,
+        createdAt: true,
+        scheduledAt: true,
+        timeSlot: true,
+        notes: true,
+        deletedAt: true,
+        customer: {
+          select: {
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+        service: {
+          select: {
+            nameDe: true,
+            category: true,
+          },
+        },
         offer: {
-          include: {
-            contracts: true,
+          select: {
+            id: true,
+            offerNumber: true,
+            token: true,
+            status: true,
+            totalPrice: true,
+            contracts: {
+              select: {
+                id: true,
+                token: true,
+                status: true,
+                contractNumber: true,
+                signedAt: true,
+              },
+            },
           },
         },
         invoices: {
-          include: {
-            contract: true,
+          select: {
+            id: true,
+            invoiceNumber: true,
+            contractId: true,
+            totalAmount: true,
           },
         },
       },
@@ -50,13 +164,6 @@ export async function GET(request: NextRequest) {
         offerContracts.map((contract) => contract.id)
       );
 
-      const invoiceItems = order.invoices.map((invoice) => ({
-        id: invoice.id,
-        invoiceNumber: invoice.invoiceNumber,
-        contractId: invoice.contractId,
-        totalAmount: invoice.totalAmount,
-      }));
-
       return {
         ...order,
         isDeleted: Boolean(order.deletedAt),
@@ -69,7 +176,7 @@ export async function GET(request: NextRequest) {
                 status: offer.status,
                 totalPrice: offer.totalPrice,
                 contracts: offerContracts,
-                invoices: invoiceItems.filter((invoice) =>
+                invoices: order.invoices.filter((invoice) =>
                   invoice.contractId ? offerInvoiceIds.has(invoice.contractId) : true
                 ),
               },

@@ -1,3 +1,5 @@
+const backendOrigin = process.env.BACKEND_ORIGIN || "http://187.77.82.124";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
@@ -15,6 +17,16 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      {
+        source: "/preise",
+        destination: "/buchen",
+        permanent: true,
+      },
+      {
+        source: "/leistungen/reinigung-buero",
+        destination: "/leistungen/bueroreinigung",
+        permanent: true,
+      },
       {
         source: "/leistungen-mobeltransporte",
         destination: "/leistungen",
@@ -36,6 +48,16 @@ const nextConfig = {
         permanent: true,
       },
     ];
+  },
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: "/api/:path*",
+          destination: `${backendOrigin}/api/:path*`,
+        },
+      ],
+    };
   },
 };
 

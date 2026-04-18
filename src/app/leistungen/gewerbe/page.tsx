@@ -6,57 +6,57 @@ import { getPrices, formatPricePerHour } from "@/lib/getPrices";
 import { buildFaqSchema, buildMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Büro- & Gewerbeumzug Berlin – Firmenumzug mit System",
+  title: "Gewerbeumzug Berlin – Für Praxen, Läden und laufende Betriebe",
   description:
-    "Professioneller Büro- und Gewerbeumzug in Berlin für Unternehmen, Kanzleien, Agenturen und Praxen. Projektplanung, IT-Handling und minimale Ausfallzeit von SEEL Transport.",
+    "Gewerbeumzug in Berlin für Praxen, Studios, Läden, Kanzleien und gemischt genutzte Flächen. Etappenplanung, sensible Ausstattung und saubere Übergaben von SEEL Transport.",
   path: "/leistungen/gewerbe",
 });
 
 const benefits = [
-  "Minimale Ausfallzeit durch abgestimmte Projektplanung",
-  "Transport von IT-Equipment, Servern und sensiblen Geräten",
-  "Etappenweise Verlagerung im laufenden Betrieb möglich",
-  "Demontage und Montage von Büromöbeln und Arbeitsstationen",
-  "Feste Ansprechpartner und dokumentierter Ablaufplan",
-  "Optional mit Übergabereinigung oder Entsorgung alter Möbel",
+  "Geeignet für Praxen, Studios, Einzelhandel und kleinere Betriebsflächen",
+  "Abschnittsweise Verlagerung bei laufendem Tagesgeschäft möglich",
+  "Sicherer Umgang mit Inventar, Technik und sensiblen Arbeitsbereichen",
+  "Koordination von Zugängen, Ladezonen und Übergaben mit Hausverwaltung",
+  "Kombinierbar mit Entrümpelung, Entsorgung und Abschlussreinigung",
+  "Fester Ansprechpartner von Vor-Ort-Termin bis Abschluss",
 ];
 
 const includedServices = [
-  "Vorabbegehung und Projektplanung",
-  "Pack- und Transportkonzept",
-  "Arbeitsplatz- und Möbelverlagerung",
-  "IT- und Technikhandling (Monitore, Rechner, Drucker)",
-  "Etagen- und Zugangsplanung",
-  "Halteverbotszone vor beiden Standorten",
-  "Archiv- und Aktentransport",
-  "Optionale Nachreinigung beider Objekte",
+  "Vor-Ort-Begehung mit Ablaufskizze",
+  "Transport von Einrichtung, Geräten und Arbeitsmaterial",
+  "Absicherung sensibler Zonen und Laufwege",
+  "Teilumzüge in Etappen oder außerhalb der Stoßzeiten",
+  "Demontage und Wiederaufbau ausgewählter Möbel",
+  "Organisation von Ladezone und Zugängen",
+  "Optionaler Abtransport alter Ausstattung",
+  "Übergabe- oder Grundreinigung nach dem Umzug",
 ];
 
 const faqItems = [
   {
     question: "Wie reduzieren Sie Ausfallzeiten im laufenden Betrieb?",
     answer:
-      "Wir planen Etappen, Zeitfenster und Möbellogistik vorab, damit kritische Arbeitsbereiche schnell wieder einsatzbereit sind. Auf Wunsch verlagern wir abteilungsweise oder am Wochenende.",
+      "Wir planen Etappen, Zeitfenster und Laufwege vorab, damit Empfang, Praxisräume oder Verkaufsflächen nur so kurz wie nötig betroffen sind. Auf Wunsch arbeiten wir vor Öffnung, nach Betrieb oder in einzelnen Abschnitten.",
   },
   {
-    question: "Transportieren Sie auch IT-Equipment und Server?",
+    question: "Welche Gewerbeflächen betreuen Sie?",
     answer:
-      "Ja. Monitore, Rechner, Drucker, Server und sensible Ausstattung werden geordnet erfasst, geschützt verpackt und sicher verlagert. Wir arbeiten eng mit Ihrem IT-Team zusammen.",
+      "Wir betreuen unter anderem Praxen, Kanzleien, Studios, kleine Büros, Ladenflächen, Agenturen und gemischt genutzte Objekte. Der Ablauf wird an Betrieb, Inventar und Zugänge angepasst.",
   },
   {
-    question: "Kann nach dem Umzug eine Reinigung erfolgen?",
+    question: "Kann der Gewerbeumzug mit Reinigung oder Entsorgung kombiniert werden?",
     answer:
-      "Ja. Auf Wunsch kombinieren wir den Gewerbeumzug mit einer Reinigungsleistung für Übergabe, Teilflächen oder das alte Objekt. So erhalten Sie alles aus einer Hand.",
+      "Ja. Gerade bei Praxis- oder Ladenflächen kombinieren wir Umzug, Entsorgung und Übergabereinigung häufig in einem abgestimmten Ablauf. Das spart Abstimmung mit mehreren Dienstleistern.",
   },
   {
-    question: "Wie kurzfristig können Sie einen Gewerbeumzug durchführen?",
+    question: "Wie kurzfristig können Sie einen Gewerbeumzug übernehmen?",
     answer:
-      "Reguläre Gewerbeumzüge planen wir mit einem Vorlauf von 2–4 Wochen. Bei dringenden Projekten finden wir kurzfristige Lösungen — kontaktieren Sie uns direkt für eine Einschätzung.",
+      "Planbare Gewerbeumzüge stimmen wir idealerweise frühzeitig ab. Wenn Flächen kurzfristig übergeben werden müssen, prüfen wir Express- oder Etappenlösungen und geben schnell Rückmeldung zur Machbarkeit.",
   },
   {
-    question: "Welche Unternehmen betreuen Sie?",
+    question: "Was unterscheidet diese Seite vom Firmenumzug?",
     answer:
-      "Wir betreuen Unternehmen jeder Größe — von Einzelpraxen und Kanzleien über Agenturen und Start-ups bis hin zu mittelständischen Betrieben. Jeder Umzug wird individuell geplant.",
+      "Der Firmenumzug fokussiert sich stärker auf klassische Büro- und Teamstrukturen mit Projektmeilensteinen. Der Gewerbeumzug ist breiter auf Praxen, Läden, Studios und kleinere Betriebsflächen mit gemischten Anforderungen ausgerichtet.",
   },
 ];
 
@@ -81,14 +81,14 @@ export default async function GewerbePage() {
       <section className="bg-[linear-gradient(135deg,#0d1724_0%,#112132_52%,#173832_100%)] py-20 md:py-28">
         <div className="mx-auto max-w-5xl px-4 text-center md:px-8">
           <p className="inline-flex rounded-full border border-emerald-200/20 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-200 backdrop-blur-xl">
-            Für Unternehmen & Gewerbe
+            Für laufende Betriebe & sensible Flächen
           </p>
           <h1 className="mt-6 text-4xl font-bold text-white md:text-5xl">
-            Büro- & Gewerbeumzug Berlin
+            Gewerbeumzug Berlin
           </h1>
           <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-slate-300">
-            Für Unternehmen, Kanzleien, Agenturen und Praxen organisieren wir Gewerbeumzüge mit
-            fester Projektplanung, klaren Zeitfenstern und möglichst geringer Unterbrechung Ihres Betriebs.
+            Für Praxen, Studios, Ladenflächen, Kanzleien und kleinere Unternehmensstandorte organisieren wir
+            Gewerbeumzüge mit klarer Einsatzplanung, geschützten Laufwegen und möglichst kurzer Unterbrechung Ihres Tagesgeschäfts.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
             <Link
@@ -208,11 +208,11 @@ export default async function GewerbePage() {
       <section className="bg-[linear-gradient(135deg,#0d1724_0%,#112132_52%,#173832_100%)] py-20">
         <div className="mx-auto max-w-4xl px-4 text-center md:px-8">
           <h2 className="text-3xl font-bold text-white md:text-4xl">
-            Ihr Gewerbeumzug — professionell geplant
+            Gewerbeumzug mit sauberem Betriebsablauf
           </h2>
           <p className="mt-5 text-lg text-white/75">
-            Lassen Sie uns gemeinsam Ihren Umzug planen. Kontaktieren Sie uns für ein
-            unverbindliches Angebot und eine individuelle Beratung.
+            Wir planen Ihren Umzug so, dass Übergabe, Transport und Anschlussarbeiten ineinandergreifen.
+            Senden Sie uns Eckdaten zu Fläche, Inventar und Zeitfenster für ein belastbares Angebot.
           </p>
           <div className="mt-8 flex justify-center gap-4">
             <Link

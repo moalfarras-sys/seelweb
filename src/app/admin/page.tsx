@@ -49,7 +49,7 @@ export default function AdminDashboard() {
     async function load() {
       try {
         const [ordersRes, customersRes] = await Promise.all([
-          fetch("/api/admin/buchungen"),
+          fetch("/api/admin/buchungen?view=dashboard"),
           fetch("/api/admin/kunden"),
         ]);
 

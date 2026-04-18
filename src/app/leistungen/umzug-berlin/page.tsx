@@ -86,18 +86,23 @@ export default async function UmzugBerlinPage() {
         {JSON.stringify(buildFaqSchema(faqItems))}
       </Script>
 
-      <section className="bg-[linear-gradient(135deg,#0d1724_0%,#112132_52%,#173832_100%)] py-20 md:py-28">
+      <section className="hero-led-section kinetic-hero bg-[linear-gradient(135deg,#0d1724_0%,#112132_52%,#173832_100%)] py-20 md:py-28">
         <div className="mx-auto max-w-5xl px-4 text-center md:px-8">
           <p className="inline-flex rounded-full border border-emerald-200/20 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-200 backdrop-blur-xl">
             Ihre Umzugsfirma in Berlin
           </p>
-          <h1 className="mt-6 text-4xl font-bold text-white md:text-5xl">
+          <h1 className="headline-prism mt-6 text-4xl font-bold md:text-5xl">
             Umzugsfirma Berlin – Schnell, Sicher, Zuverlässig
           </h1>
-          <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-slate-300">
+          <p className="hero-body mx-auto mt-5 max-w-3xl text-white/85 dark:text-white/85">
             Seit über 10 Jahren begleiten wir Umzüge in Berlin mit eingespielten Prozessen, Ortskenntnis
             und verlässlicher Kommunikation. Mehr als 500 Einsätze haben unsere Abläufe für die Hauptstadt geschärft.
           </p>
+          <div className="hero-metrics justify-center">
+            <span className="hero-metric">Berlin Experten</span>
+            <span className="hero-metric">Halteverbotszonen</span>
+            <span className="hero-metric">Express moglich</span>
+          </div>
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
             <Link
               href="/buchen?service=MOVING"

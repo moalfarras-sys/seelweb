@@ -89,28 +89,42 @@ export default function UnternehmenPage() {
 
   return (
     <>
-      <section className="gradient-navy relative overflow-hidden py-28 md:py-36">
+      <section className="hero-led-section kinetic-hero gradient-navy relative overflow-hidden py-28 md:py-36">
+        <div className="hero-light-sweep" />
+        <div className="cine-grid absolute inset-0 opacity-35" />
         <div className="absolute inset-0 opacity-[0.10]">
           <div className="absolute inset-0 bg-[url('/images/corporate-hallway-cleaning.png')] bg-cover bg-center" />
         </div>
-        <div className="relative mx-auto max-w-7xl px-4 md:px-8">
+        <div className="hero-film absolute inset-0 z-0" />
+        <div className="relative z-10 mx-auto max-w-7xl px-4 md:px-8">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-end"
           >
-            <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/5 px-5 py-2.5 text-sm text-cyan-200">
+            <div className="hero-copy-flow hero-subtle-parallax">
+              <span className="hero-badge-glow inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/5 px-5 py-2.5 text-sm text-cyan-200">
                 <Building2 size={16} />
                 Für Unternehmen & Institutionen
               </span>
-              <h1 className="font-display mt-6 text-4xl font-semibold text-white md:text-6xl">
+              <h1
+                className="headline-prism hero-title-strong font-display mt-6 text-4xl font-semibold md:text-6xl"
+                style={{ color: "#f8fdff", WebkitTextFillColor: "#f8fdff" }}
+              >
                 Gewerbliche Einsätze mit ruhiger Planung und sauberer Angebotsstruktur.
               </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-white/82">
+              <p
+                className="hero-body mt-6 max-w-2xl text-white/90 dark:text-white/90"
+                style={{ color: "rgba(248, 253, 255, 0.92)" }}
+              >
                 {company.name} begleitet Firmen, Schulen und öffentliche Einrichtungen mit strukturierten Angeboten für Umzug, Reinigung und Entsorgung in {contact.serviceRegion}.
               </p>
+              <div className="hero-metrics">
+                <span className="hero-metric">Ausschreibungen sauber</span>
+                <span className="hero-metric">Klare Kalkulation</span>
+                <span className="hero-metric">Institutionen & Gewerbe</span>
+              </div>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a href="#ausschreibung" className="btn-primary-glass gap-2">
                   Ausschreibung einreichen <ArrowRight size={18} />
@@ -146,8 +160,8 @@ export default function UnternehmenPage() {
           <ScrollReveal className="mb-16 text-center">
             <div className="accent-line mx-auto" />
             <span className="section-eyebrow">Vorteile</span>
-            <h2 className="font-display mt-4 text-3xl font-semibold text-slate-900 dark:text-white md:text-5xl">Was Unternehmen wirklich brauchen</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-slate-600 dark:text-white/55">
+            <h2 className="section-title mt-4 text-center">Was Unternehmen wirklich brauchen</h2>
+            <p className="section-copy mx-auto mt-4 max-w-2xl text-center">
               Kein Sales-Sprech, sondern saubere Zusammenarbeit mit nachvollziehbaren Abläufen.
             </p>
           </ScrollReveal>
@@ -178,8 +192,8 @@ export default function UnternehmenPage() {
           <ScrollReveal className="mb-16 text-center">
             <div className="accent-line mx-auto" />
             <span className="section-eyebrow text-cyan-200">Branchen</span>
-            <h2 className="font-display mt-4 text-3xl font-semibold text-white md:text-5xl">Bereiche, die wir betreuen</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-white/65">
+            <h2 className="section-title mt-4 text-center text-white">Bereiche, die wir betreuen</h2>
+            <p className="hero-body mx-auto mt-4 max-w-2xl text-center text-white/80 dark:text-white/80">
               Von kleinen Büros bis zu Institutionen mit abgestimmter Einsatzplanung.
             </p>
           </ScrollReveal>

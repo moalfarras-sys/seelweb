@@ -93,41 +93,49 @@ export default async function LeistungenPage() {
 
   return (
     <>
-      <section className="gradient-navy relative overflow-hidden py-28 md:py-36">
+      <section className="hero-led-section kinetic-hero gradient-navy relative overflow-hidden py-28 md:py-36">
         <div className="absolute inset-0 opacity-[0.10]">
-          <Image src="/images/moving-truck-hero.png" alt="" fill className="object-cover object-center" />
+          <Image src="/images/moving-truck-hero.png" alt="" fill className="image-cinematic object-cover object-center" />
         </div>
-        <div className="relative mx-auto max-w-7xl px-4 md:px-8">
+        <div className="hero-light-sweep" />
+        <div className="cine-grid absolute inset-0 opacity-35" />
+        <div className="hero-copy-flow relative mx-auto max-w-7xl px-4 md:px-8">
           <p className="section-eyebrow text-cyan-200/80">Leistungen</p>
-          <h1 className="font-display mt-4 max-w-4xl text-4xl font-bold text-white md:text-6xl">
+          <h1 className="headline-prism hero-kicker hero-title-strong font-display mt-4 max-w-4xl text-4xl font-bold md:text-6xl">
             Servicefelder für Berlin, Brandenburg und darüber hinaus
           </h1>
-          <p className="mt-6 max-w-3xl text-lg leading-8 text-white/65">
+          <p className="hero-body mt-6 max-w-3xl text-white/80 dark:text-white/80">
             Alle Leistungen sind auf schnelle Orientierung, klare Preise und verlässliche Kommunikation ausgelegt.
             So finden Kundinnen und Kunden sofort den passenden Einsatzbereich.
           </p>
+          <div className="hero-metrics">
+            <span className="hero-metric">Klar gegliedert</span>
+            <span className="hero-metric">Express bis Gewerbe</span>
+            <span className="hero-metric">Direkt buchbar</span>
+          </div>
         </div>
       </section>
 
-      <section className="section-padding">
+      <section className="section-spotlight section-padding">
         <div className="mx-auto max-w-7xl space-y-10 px-4 md:px-8">
           {sections.map((section, index) => (
             <article
               key={section.id}
               id={section.id}
-              className="premium-panel grid items-center gap-8 overflow-hidden rounded-[36px] lg:grid-cols-2"
+              className="premium-panel card-interactive scroll-reveal grid items-center gap-8 overflow-hidden rounded-[36px] lg:grid-cols-2"
+              style={{ transitionDelay: `${index * 80}ms` }}
             >
               <div className={index % 2 === 1 ? "order-2 lg:order-1" : ""}>
                 <div className="relative h-80">
-                  <Image src={section.image} alt={section.alt} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
+                  <Image src={section.image} alt={section.alt} fill className="image-cinematic object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,8,18,0.04)_0%,rgba(2,8,18,0.58)_100%)]" />
                   <span className="price-badge absolute left-5 top-5">{section.price}</span>
                 </div>
               </div>
               <div className={`p-8 md:p-10 ${index % 2 === 1 ? "order-1 lg:order-2" : ""}`}>
                 <p className="text-xs uppercase tracking-[0.3em] text-sky-700 dark:text-cyan-300">Klar strukturierter Bereich</p>
-                <h2 className="font-display mt-4 text-3xl font-bold text-slate-900 dark:text-white">{section.title}</h2>
-                <p className="mt-4 text-sm leading-8 text-slate-600 dark:text-white/55">{section.description}</p>
+                <h2 className="section-title mt-4 text-3xl md:text-4xl">{section.title}</h2>
+                <p className="section-copy mt-4 text-sm md:text-base">{section.description}</p>
                 <p className="mt-5 text-sm font-semibold text-sky-700 dark:text-cyan-300">{section.price} · Mindestabnahme 2 Stunden</p>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   {section.bullets.map((bullet) => (
@@ -147,7 +155,7 @@ export default async function LeistungenPage() {
         </div>
       </section>
 
-      <section className="pb-12">
+      <section className="section-spotlight pb-12">
         <div className="mx-auto max-w-7xl px-4 md:px-8">
           <div className="premium-panel rounded-[30px] p-6">
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-white/45">Alle Leistungen</p>
@@ -166,12 +174,12 @@ export default async function LeistungenPage() {
         </div>
       </section>
 
-      <section className="pb-24">
+      <section className="section-spotlight pb-24">
         <div className="mx-auto max-w-5xl px-4 md:px-8">
           <div className="premium-panel rounded-[36px] p-10 text-center md:p-14">
             <p className="section-eyebrow">Direkt online anfragen</p>
-            <h2 className="font-display mt-4 text-3xl font-bold text-slate-900 dark:text-white md:text-5xl">Jetzt strukturiert weitergehen</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-slate-600 dark:text-white/55">
+            <h2 className="section-title mt-4 text-center">Jetzt strukturiert weitergehen</h2>
+            <p className="section-copy mx-auto mt-4 max-w-2xl text-center">
               Nutzen Sie den Buchungsprozess für eine schnelle Preisorientierung oder senden Sie uns Ihre Festpreisanfrage über das Kontaktformular.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">

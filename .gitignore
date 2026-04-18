@@ -55,7 +55,10 @@ headers.txt
 build-check.log
 output/
 screenshots/
-data/
+data/*
+!data/site-content.json
 tmp/
 *.jpeg
 !public/**/*.jpeg
+
+.vercel

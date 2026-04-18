@@ -77,7 +77,7 @@ export default async function ExpressumzugPage() {
               Wenn es schnell gehen muss, organisiert unser Team den kompletten Ablauf kurzfristig, verlässlich und mit klar ausgewiesenem Expresspreis.
             </p>
             <Link
-              href="/buchen?service=express"
+              href="/buchen?service=EXPRESS_MOVING"
               className="mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-4 font-semibold text-white shadow-lg shadow-amber-500/25 transition-all hover:from-amber-600 hover:to-orange-600"
             >
               Expressumzug buchen <ArrowRight size={18} />
@@ -173,7 +173,7 @@ export default async function ExpressumzugPage() {
             Express-Service für dringende Umzüge mit verlässlicher Umsetzung und transparentem Preismodell.
           </p>
           <Link
-            href="/buchen?service=express"
+            href="/buchen?service=EXPRESS_MOVING"
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-10 py-4 font-semibold text-white shadow-lg shadow-amber-500/25 transition-all hover:from-amber-600 hover:to-orange-600"
           >
             Expressumzug anfragen <ArrowRight size={20} />

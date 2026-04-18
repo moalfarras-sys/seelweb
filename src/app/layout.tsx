@@ -99,14 +99,20 @@ export default async function RootLayout({
           {JSON.stringify(localBusinessSchema)}
         </Script>
       </head>
-      <body className={`antialiased ${displayFont.variable}`}>
+      <body className={`antialiased ${displayFont.variable} ${isAdmin ? "admin-site" : "public-site"}`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <SiteContentProvider value={siteContent}>
+            {!isAdmin && <div className="site-aurora" />}
+            {!isAdmin && <div className="site-grid-overlay" />}
+            {!isAdmin && <div className="site-noise" />}
+            {!isAdmin && <div className="site-spotlight" />}
+            {!isAdmin && <div className="site-beam site-beam-1" />}
+            {!isAdmin && <div className="site-beam site-beam-2" />}
             {!isAdmin && <div className="bg-blob-1" />}
             {!isAdmin && <div className="bg-blob-2" />}
             {!isAdmin && <div className="bg-blob-3" />}
             {!isAdmin && <Navbar />}
-            <main className="relative z-10 min-h-screen">{children}</main>
+            <main className="relative z-10 min-h-screen page-shell">{children}</main>
             {!isAdmin && <Footer />}
             {!isAdmin && <WhatsAppButton />}
             {!isAdmin && <CookieBanner />}
@@ -118,17 +124,14 @@ export default async function RootLayout({
                 (async function() {
                   if (!('serviceWorker' in navigator)) return;
                   try {
-                    var isDev = ${process.env.NODE_ENV === "development" ? "true" : "false"};
-                    if (isDev) {
-                      var regs = await navigator.serviceWorker.getRegistrations();
-                      await Promise.all(regs.map(function(r) { return r.unregister(); }));
-                      if ('caches' in window) {
-                        var keys = await caches.keys();
-                        await Promise.all(keys.map(function(k) { return caches.delete(k); }));
-                      }
-                      return;
+                    var regs = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(regs.map(function(r) { return r.unregister(); }));
+                    if ('caches' in window) {
+                      var keys = await caches.keys();
+                      await Promise.all(keys.map(function(k) {
+                        return /^seel-v|^workbox/i.test(k) ? caches.delete(k) : Promise.resolve(false);
+                      }));
                     }
-                    await navigator.serviceWorker.register('/sw.js?v=20260404-1');
                   } catch (e) {}
                 })();
               `}</Script>
@@ -150,6 +153,46 @@ export default async function RootLayout({
                       io.observe(el);
                     });
                   }).observe(document.body, { childList: true, subtree: true });
+                })();
+              `}</Script>
+              <Script id="ambient-motion" strategy="afterInteractive">{`
+                (function() {
+                  var root = document.documentElement;
+                  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                  root.style.setProperty('--pointer-x', window.innerWidth / 2 + 'px');
+                  root.style.setProperty('--pointer-y', window.innerHeight * 0.24 + 'px');
+                  root.style.setProperty('--pointer-rx', '0');
+                  root.style.setProperty('--pointer-ry', '0');
+                  root.style.setProperty('--scroll-y', '0px');
+                  root.classList.add('ux-ready');
+
+                  var raf = 0;
+                  function applyPointer(x, y) {
+                    root.style.setProperty('--pointer-x', x + 'px');
+                    root.style.setProperty('--pointer-y', y + 'px');
+                    root.style.setProperty('--pointer-rx', ((x / window.innerWidth) - 0.5).toFixed(4));
+                    root.style.setProperty('--pointer-ry', ((y / window.innerHeight) - 0.5).toFixed(4));
+                  }
+
+                  function handleMouseMove(event) {
+                    if (reduceMotion) return;
+                    if (raf) cancelAnimationFrame(raf);
+                    raf = requestAnimationFrame(function() {
+                      applyPointer(event.clientX, event.clientY);
+                    });
+                  }
+
+                  function handleScroll() {
+                    root.style.setProperty('--scroll-y', window.scrollY.toFixed(1) + 'px');
+                  }
+
+                  window.addEventListener('mousemove', handleMouseMove, { passive: true });
+                  window.addEventListener('scroll', handleScroll, { passive: true });
+                  window.addEventListener('resize', function() {
+                    applyPointer(window.innerWidth / 2, window.innerHeight * 0.24);
+                    handleScroll();
+                  });
+                  handleScroll();
                 })();
               `}</Script>
             </>
