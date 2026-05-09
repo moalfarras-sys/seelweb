@@ -3,6 +3,30 @@ import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const hostname = (request.headers.get("host")?.split(":")[0] ?? request.nextUrl.hostname).toLowerCase();
+  const forwardedProto = request.headers.get("x-forwarded-proto");
+  const protocol = forwardedProto ?? request.nextUrl.protocol.replace(":", "");
+  const isProduction = process.env.NODE_ENV === "production";
+  const isCanonicalHost = hostname === "seeltransport.de";
+  const isWwwHost = hostname === "www.seeltransport.de";
+
+  if (isProduction && (isWwwHost || (isCanonicalHost && protocol !== "https"))) {
+    const canonicalUrl = request.nextUrl.clone();
+    canonicalUrl.protocol = "https:";
+    canonicalUrl.hostname = "seeltransport.de";
+    canonicalUrl.port = "";
+    return NextResponse.redirect(canonicalUrl, 301);
+  }
+
+  if (pathname.startsWith("/2024/") || pathname === "/2024" || pathname.startsWith("/2025/") || pathname === "/2025") {
+    return NextResponse.redirect(new URL("/", request.url), 301);
+  }
+
+  if (pathname !== "/" && pathname.endsWith("/")) {
+    const normalizedUrl = request.nextUrl.clone();
+    normalizedUrl.pathname = pathname.replace(/\/+$/, "");
+    return NextResponse.redirect(normalizedUrl, 301);
+  }
 
   if (
     pathname === "/admin/manifest.webmanifest" ||
