@@ -416,20 +416,28 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // --- Idempotency: stable key (explicit header or derived from payload) ---
-    const idempotencyKey =
-      (req.headers.get("idempotency-key") || "").trim() ||
-      createHash("sha256")
-        .update(
-          JSON.stringify({
-            email: customer.email,
-            scheduledAt,
-            timeSlot: timeSlot || "",
-            fp: aggregate.quoteFingerprint,
-            total: aggregate.total,
-          })
-        )
-        .digest("hex");
+    // --- Idempotency ---
+    // Preferred: client sends a random UUID per submission attempt (stable across
+    // double-click / timeout-retry, new for an intentional new booking). If absent,
+    // we fall back to a short-term payload fingerprint so naive double-submits are
+    // still deduped. Keys are stored on the Order (cleaned up with the order — no
+    // unbounded key store).
+    const explicitKey = (req.headers.get("idempotency-key") || "").trim();
+    if (explicitKey && !/^[A-Za-z0-9_-]{8,200}$/.test(explicitKey)) {
+      return errorResponse(400, "INVALID_IDEMPOTENCY_KEY", "Ungültiger Idempotency-Key.", requestId);
+    }
+    const payloadFingerprint = createHash("sha256")
+      .update(
+        JSON.stringify({
+          email: customer.email,
+          scheduledAt,
+          timeSlot: timeSlot || "",
+          fp: aggregate.quoteFingerprint,
+          total: aggregate.total,
+        })
+      )
+      .digest("hex");
+    const idempotencyKey = explicitKey || payloadFingerprint;
 
     const buildReplay = (o: {
       orderNumber: string;
@@ -449,9 +457,18 @@ export async function POST(req: NextRequest) {
         idempotent: true,
       });
 
-    // Replay an already-processed identical request without creating a duplicate.
+    // Already processed with this key?
     const existingByKey = await prisma.order.findUnique({ where: { idempotencyKey }, include: { offer: true } });
     if (existingByKey) {
+      // Same key + SAME booking data => safe replay (double-click / retry).
+      const sameData =
+        existingByKey.quoteFingerprint === aggregate.quoteFingerprint &&
+        (existingByKey.timeSlot || "") === (timeSlot || "") &&
+        existingByKey.scheduledAt?.toISOString().slice(0, 10) === selectedDate.toISOString().slice(0, 10);
+      if (!sameData) {
+        // Same key + DIFFERENT data => conflict, do NOT silently overwrite/replay.
+        return errorResponse(409, "IDEMPOTENCY_CONFLICT", "Dieser Idempotency-Key wurde bereits mit anderen Daten verwendet.", requestId);
+      }
       return buildReplay(existingByKey);
     }
 
