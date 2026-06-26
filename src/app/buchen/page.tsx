@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { DayPicker } from "react-day-picker";
 import { de } from "date-fns/locale";
@@ -16,7 +16,6 @@ import {
   EXPRESS_MOVE_HOURLY_PRICE,
   EXPRESS_MOVE_NOTE,
   STANDARD_MOVE_HOURLY_PRICE,
-  STANDARD_MOVE_DETAILS,
   formatPricePerCubicMeter,
   formatPricePerHour,
 } from "@/lib/service-pricing";
@@ -244,6 +243,9 @@ export default function BuchenPage() {
   const [slotError, setSlotError] = useState("");
   const [slotNotice, setSlotNotice] = useState("");
   const [publicPrices, setPublicPrices] = useState<PublicPrices>(PUBLIC_BOOKING_PRICES);
+  // Idempotency key for the current booking attempt: stable across double-click /
+  // retry / timeout, regenerated only after success or an intentional new booking.
+  const idempotencyKeyRef = useRef<string | null>(null);
 
   const doneTracking = done?.trackingNumber || done?.orderNumber || "";
 
@@ -398,6 +400,7 @@ export default function BuchenPage() {
       }
     }, 400);
     return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isStep2Valid, quotePayload, discountCode, customerEmail, customerPhone, selectedDate]);
 
   useEffect(() => {
@@ -531,19 +534,27 @@ export default function BuchenPage() {
         quotedTotal: finalQuote.total,
         quoteFingerprint: finalQuote.quoteFingerprint,
       };
+      // Reuse the same key for retries of THIS attempt (double-click, timeout, network retry).
+      if (!idempotencyKeyRef.current) idempotencyKeyRef.current = crypto.randomUUID();
       const res = await fetch("/api/buchung", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKeyRef.current },
         body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
         const errorId = data.requestId ? ` (Fehler-ID: ${data.requestId})` : "";
-        setSubmitError(`${data.error || "Buchung fehlgeschlagen"}${errorId}`);
+        const message =
+          data.code === "IDEMPOTENCY_CONFLICT"
+            ? "Diese Anfrage wurde bereits mit anderen Daten gesendet. Bitte laden Sie die Seite neu und versuchen Sie es erneut."
+            : `${data.error || "Buchung fehlgeschlagen"}${errorId}`;
+        setSubmitError(message);
         return;
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
       const booking = data as BookingResult;
+      // New booking after this one gets a fresh idempotency key.
+      idempotencyKeyRef.current = null;
       setDone(booking);
       if (paymentMethod === "PAYPAL" && booking.paypalRedirectUrl) {
         window.location.href = booking.paypalRedirectUrl;
