@@ -6,6 +6,8 @@ import { sendEmail } from "@/lib/email";
 import { createOfferFromOrder, nextTrackingNumber } from "@/lib/workflow";
 import { Prisma, type ServiceCategory } from "@prisma/client";
 import { calculateAggregatePricing } from "@/lib/pricing/rules";
+import { getAppBaseUrl } from "@/lib/app-url";
+import { escapeHtml } from "@/lib/escape-html";
 
 const JSON_UTF8_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
@@ -190,7 +192,7 @@ function formatCustomerSummary(data: {
       </div>
       <div style="padding:26px;">
         <h2 style="margin:0 0 12px;color:#0f2550;">Ihr Angebot</h2>
-        <p style="margin:0 0 16px;color:#4b5563;line-height:1.6;">Sehr geehrte/r ${data.customerName}, vielen Dank für Ihre Anfrage. Wir haben Ihr Angebot vorbereitet.</p>
+        <p style="margin:0 0 16px;color:#4b5563;line-height:1.6;">Sehr geehrte/r ${escapeHtml(data.customerName)}, vielen Dank für Ihre Anfrage. Wir haben Ihr Angebot vorbereitet.</p>
         <table style="width:100%;border-collapse:collapse;background:#f8fafc;border-radius:10px;overflow:hidden;margin:12px 0 20px;">
           <tr><td style="padding:10px 14px;color:#64748b;font-size:13px;">Trackingnummer</td><td style="padding:10px 14px;text-align:right;font-family:monospace;color:#0d9ea0;font-weight:700;">${data.trackingNumber}</td></tr>
           <tr><td style="padding:10px 14px;color:#64748b;font-size:13px;">Angebotsnummer</td><td style="padding:10px 14px;text-align:right;font-family:monospace;color:#0d9ea0;font-weight:700;">${data.offerNumber}</td></tr>
@@ -208,10 +210,34 @@ function formatCustomerSummary(data: {
   </html>`;
 }
 
+// Best-effort in-memory rate limit (per serverless instance). For strong,
+// cross-instance protection this should be backed by a shared store.
+const BOOKING_HITS = new Map<string, { count: number; ts: number }>();
+const BOOKING_RL_WINDOW_MS = 60_000;
+const BOOKING_RL_MAX = 6; // max booking attempts per IP per minute
+function bookingRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const cur = BOOKING_HITS.get(ip);
+  if (!cur || now - cur.ts > BOOKING_RL_WINDOW_MS) {
+    BOOKING_HITS.set(ip, { count: 1, ts: now });
+    return false;
+  }
+  cur.count += 1;
+  return cur.count > BOOKING_RL_MAX;
+}
+
+const MAX_NOTES_LEN = 2000;
+const MAX_NAME_LEN = 200;
+
 export async function POST(req: NextRequest) {
   const requestId = req.headers.get("x-request-id") || crypto.randomUUID();
 
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    if (bookingRateLimited(ip)) {
+      return errorResponse(429, "RATE_LIMITED", "Zu viele Anfragen. Bitte versuchen Sie es in Kürze erneut.", requestId);
+    }
+
     const body = await req.json();
     const {
       customer,
@@ -223,10 +249,24 @@ export async function POST(req: NextRequest) {
       discountCode,
       quotedTotal,
       quoteFingerprint,
+      website, // honeypot — must stay empty
     } = body;
+
+    // Honeypot: real users never fill this hidden field; bots do.
+    if (typeof website === "string" && website.trim() !== "") {
+      // Pretend success to not tip off the bot, but create nothing.
+      return NextResponse.json({ success: true, orderNumber: "", trackingNumber: "", offerNumber: "" });
+    }
 
     if (!customer?.name || !customer?.email || !customer?.phone) {
       return errorResponse(400, "VALIDATION_ERROR", "Kundeninformationen unvollständig", requestId);
+    }
+
+    if (typeof customer.name === "string" && customer.name.length > MAX_NAME_LEN) {
+      return errorResponse(400, "VALIDATION_ERROR", "Name ist zu lang.", requestId);
+    }
+    if (typeof notes === "string" && notes.length > MAX_NOTES_LEN) {
+      return errorResponse(400, "VALIDATION_ERROR", "Notiz ist zu lang.", requestId);
     }
 
     if (!scheduledAt) {
@@ -236,6 +276,13 @@ export async function POST(req: NextRequest) {
     const selectedDate = new Date(scheduledAt);
     if (Number.isNaN(selectedDate.getTime())) {
       return errorResponse(400, "VALIDATION_ERROR", "Ungültiges Datum", requestId);
+    }
+
+    // Reject bookings in the past (compare on day granularity).
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    if (selectedDate < todayStart) {
+      return errorResponse(400, "VALIDATION_ERROR", "Das gewählte Datum liegt in der Vergangenheit.", requestId);
     }
 
     const incomingServices: IncomingServicePayload[] = Array.isArray(services) ? services : [];
@@ -547,7 +594,7 @@ export async function POST(req: NextRequest) {
 
     const agbPdf = generateAgbPDF();
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "http://localhost:3000";
+    const baseUrl = getAppBaseUrl();
     const offerUrl = `${baseUrl}/angebot/${offer.token}`;
 
     await sendEmail({
@@ -603,7 +650,7 @@ export async function POST(req: NextRequest) {
     await sendEmail({
       to: CONTACT.EMAIL,
       subject: `Neues Angebot ${offer.offerNumber} - ${dbCustomer.name}`,
-      html: `<p>Neues Angebot erstellt.</p><p>Tracking: <strong>${trackingNumber}</strong></p><p>Kunde: ${dbCustomer.name} (${dbCustomer.email})</p>`,
+      html: `<p>Neues Angebot erstellt.</p><p>Tracking: <strong>${escapeHtml(trackingNumber)}</strong></p><p>Kunde: ${escapeHtml(dbCustomer.name)} (${escapeHtml(dbCustomer.email)})</p>`,
       attachments: offerPdf
         ? [
             {

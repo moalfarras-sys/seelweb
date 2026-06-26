@@ -18,17 +18,14 @@ type TrackingPayload = {
   trackingNumber: string;
   orderNumber: string;
   status: string;
-  customer: { name: string; email: string };
-  service: { category: string; name: string };
+  service: { name: string };
   scheduledAt: string | null;
   timeSlot: string | null;
-  price: { subtotal: number; discountAmount: number; total: number };
-  offer: null | { number: string; status: string; token: string; pdfUrl: string; pageUrl: string };
-  contract: null | { number: string; status: string; token: string; pageUrl: string };
+  offer: null | { number: string; status: string };
+  contract: null | { number: string; status: string };
   timeline: Array<{ key: string; label: string; at: string }>;
+  lastUpdate?: string | null;
 };
-
-const fmt = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" });
 
 const STATUS_META: Record<string, { label: string; className: string }> = {
   ANFRAGE: { label: "Anfrage eingegangen", className: "bg-amber-100 text-amber-800" },
@@ -167,8 +164,8 @@ export default function TrackPage() {
                   <p className="font-medium text-navy-800 dark:text-white">{data.service.name}</p>
                 </div>
                 <div>
-                  <p className="text-silver-500">Gesamt</p>
-                  <p className="font-medium text-navy-800 dark:text-white">{fmt.format(data.price.total)}</p>
+                  <p className="text-silver-500">Auftragsnummer</p>
+                  <p className="font-medium text-navy-800 dark:text-white">{data.orderNumber}</p>
                 </div>
                 <div>
                   <p className="text-silver-500">Termin</p>
@@ -186,26 +183,20 @@ export default function TrackPage() {
             <section className="bg-white dark:bg-navy-800/70 border border-gray-100 dark:border-navy-700/50 rounded-2xl p-6 space-y-3">
               <h2 className="font-semibold text-navy-800 dark:text-white">Dokumente</h2>
               {data.offer && (
-                <div className="flex items-center justify-between border border-gray-100 dark:border-navy-700/50 rounded-xl p-3">
-                  <div className="flex items-center gap-2 text-sm text-navy-800 dark:text-white">
-                    <FileText size={16} className="text-teal-500" />
-                    Angebot {data.offer.number} ({data.offer.status})
-                  </div>
-                  <div className="flex gap-2">
-                    <a href={data.offer.pdfUrl} className="px-3 py-1.5 rounded-lg bg-teal-600 text-white text-xs font-semibold">PDF</a>
-                    <a href={data.offer.pageUrl} className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-navy-600 text-xs font-semibold text-navy-800 dark:text-silver-200">Oeffnen</a>
-                  </div>
+                <div className="flex items-center gap-2 border border-gray-100 dark:border-navy-700/50 rounded-xl p-3 text-sm text-navy-800 dark:text-white">
+                  <FileText size={16} className="text-teal-500" />
+                  Angebot {data.offer.number} ({data.offer.status})
                 </div>
               )}
               {data.contract && (
-                <div className="flex items-center justify-between border border-gray-100 dark:border-navy-700/50 rounded-xl p-3">
-                  <div className="flex items-center gap-2 text-sm text-navy-800 dark:text-white">
-                    <FileCheck2 size={16} className="text-teal-500" />
-                    Vertrag {data.contract.number} ({data.contract.status})
-                  </div>
-                  <a href={data.contract.pageUrl} className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-navy-600 text-xs font-semibold text-navy-800 dark:text-silver-200">Oeffnen</a>
+                <div className="flex items-center gap-2 border border-gray-100 dark:border-navy-700/50 rounded-xl p-3 text-sm text-navy-800 dark:text-white">
+                  <FileCheck2 size={16} className="text-teal-500" />
+                  Vertrag {data.contract.number} ({data.contract.status})
                 </div>
               )}
+              <p className="text-xs text-slate-500">
+                Ihr Angebot und Vertrag öffnen Sie sicher über den persönlichen Link in Ihrer Bestätigungs-E-Mail.
+              </p>
             </section>
 
             <section className="bg-white dark:bg-navy-800/70 border border-gray-100 dark:border-navy-700/50 rounded-2xl p-6">

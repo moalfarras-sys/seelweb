@@ -35,7 +35,7 @@ function intervalsOverlap(a: Interval, b: Interval) {
   return a.start < b.end && b.start < a.end;
 }
 
-function getWorkHours(_date: Date) {
+function getWorkHours() {
   // Business operates 24/7, every day of the week.
   return { start: 0, end: 24 * 60 };
 }
@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Ungültiges Datum" }, { status: 400 });
     }
 
-    const work = getWorkHours(selectedDate);
+    const work = getWorkHours();
     if (!work) {
       return NextResponse.json({ success: true, date: dateStr, durationMin, slots: [], fullyBooked: true });
     }

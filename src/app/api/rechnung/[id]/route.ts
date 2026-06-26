@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { generateInvoicePDF } from "@/lib/pdf";
+import { getSession } from "@/lib/auth";
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_req: NextRequest, { params }: Params) {
+  // Invoices contain customer PII + financial data → admin session required.
+  const session = await getSession();
+  if (!session.isLoggedIn) {
+    return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
+  }
+
   const { id } = await params;
 
   const invoice = await prisma.invoice.findUnique({
@@ -59,6 +66,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `inline; filename="Rechnung-${invoice.invoiceNumber}.pdf"`,
+      "Cache-Control": "private, no-store, max-age=0",
+      "X-Robots-Tag": "noindex, nofollow",
     },
   });
 }

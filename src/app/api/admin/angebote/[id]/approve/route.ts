@@ -5,6 +5,7 @@ import { getInternalNotificationBcc, sendEmail } from "@/lib/email";
 import { buildContractSignatureEmail, getContractSignatureSubject } from "@/lib/contract-email";
 import { toContractSummary } from "@/lib/contracts";
 import { createContractFromOffer } from "@/lib/workflow";
+import { getAppBaseUrl } from "@/lib/app-url";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -43,7 +44,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
       },
     });
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "http://localhost:3000";
+    const baseUrl = getAppBaseUrl();
     const signUrl = `${baseUrl}/vertrag/${pendingContract.token}`;
     const internalBcc = getInternalNotificationBcc(offer.customer.email);
 

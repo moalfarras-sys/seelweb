@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Calculator, Download, Loader2, Plus, Receipt, Trash2, Upload, Wallet } from "lucide-react";
+import { Calculator, Download, Loader2, Plus, Receipt, Trash2, Upload } from "lucide-react";
 import {
   EXPENSE_CATEGORY_OPTIONS,
   EXPENSE_DOCUMENT_TYPE_OPTIONS,

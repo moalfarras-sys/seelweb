@@ -179,7 +179,7 @@ function normalizeContact(contact: PublicSiteContent["contact"]) {
   };
 }
 
-function normalizeHomepage(homepage: PublicSiteContent["homepage"], contact: PublicSiteContent["contact"]) {
+function normalizeHomepage(homepage: PublicSiteContent["homepage"]) {
   const heroBadge = cleanText(homepage.heroBadge);
   return {
     ...homepage,
@@ -200,7 +200,7 @@ function normalizeHomepage(homepage: PublicSiteContent["homepage"], contact: Pub
 function normalizeSettings(settings: PublicSiteContent): PublicSiteContent {
   const company = normalizeCompany(settings.company);
   const contact = normalizeContact(settings.contact);
-  const homepage = normalizeHomepage(settings.homepage, contact);
+  const homepage = normalizeHomepage(settings.homepage);
   return {
     ...settings,
     company,

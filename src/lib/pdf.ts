@@ -730,7 +730,6 @@ export async function generateSignedContractPDF(data: ContractPDFData): Promise<
 
   const tableX = contentLeft;
   const tableWidth = 118;
-  const summaryWidth = 58;
 
   if (data.items?.length) {
     doc.setFillColor(...NAVY);
