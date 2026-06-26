@@ -123,7 +123,7 @@ test.describe("Booking flow hardening", () => {
     await page.goto("/buchen");
     await expect(page.getByRole("heading", { name: /Intelligente Buchung|Online buchen/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /Wohnungsreinigung/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /Umzug/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Umzug Standardumzug/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Live-Preis/i })).toBeVisible();
     await expect(page.getByText(/Services konfigurieren, um Preis zu sehen\./i)).toBeVisible();
   });

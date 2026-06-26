@@ -1,8 +1,9 @@
 import path from "path";
 import { config } from "dotenv";
 
-// Load .env from project root so Prisma CLI gets DATABASE_URL / DIRECT_URL
+// Load local env files so Prisma CLI gets DATABASE_URL / DIRECT_URL.
 config({ path: path.resolve(process.cwd(), ".env") });
+config({ path: path.resolve(process.cwd(), ".env.local"), override: true });
 
 import { defineConfig } from "prisma/config";
 

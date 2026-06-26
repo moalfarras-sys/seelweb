@@ -23,9 +23,9 @@ export default function Footer() {
         <div className="cine-grid absolute inset-0 opacity-20" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-4 py-20 md:px-8">
+      <div className="relative mx-auto max-w-7xl px-4 py-12 md:py-20 md:px-8">
         <div className="mb-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-[34px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(15,23,42,0.86)_0%,rgba(15,23,42,0.72)_100%)] p-8 text-white shadow-[0_28px_84px_rgba(0,0,0,0.40)] backdrop-blur-xl">
+          <div className="rounded-2xl md:rounded-[34px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(15,23,42,0.86)_0%,rgba(15,23,42,0.72)_100%)] p-5 md:p-8 text-white shadow-[0_28px_84px_rgba(0,0,0,0.40)] backdrop-blur-xl">
             <div className="flex items-center gap-4">
               <Image
                 src="/images/logo.jpeg"
@@ -60,8 +60,8 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="rounded-[34px] border border-white/[0.06] bg-white/[0.03] p-8 backdrop-blur-2xl">
-            <p className="text-[11px] uppercase tracking-[0.34em] text-cyan-200/70">Kontaktfenster</p>
+          <div className="rounded-2xl md:rounded-[34px] border border-white/[0.06] bg-white/[0.03] p-5 md:p-8 backdrop-blur-2xl">
+            <p className="text-xs sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.34em] text-cyan-200/70">Kontaktfenster</p>
             <div className="mt-5 space-y-4 text-sm text-white/60">
               <div className="flex items-start gap-3">
                 <MapPin size={16} className="mt-0.5 text-cyan-300/80" />

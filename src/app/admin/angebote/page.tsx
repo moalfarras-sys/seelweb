@@ -79,6 +79,7 @@ export default function AngebotePage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "ok" | "err" } | null>(null);
+  const [loadError, setLoadError] = useState("");
   const [messageSubject, setMessageSubject] = useState("Rückfrage zu Ihrem Angebot");
   const [messageBody, setMessageBody] = useState("");
   const [showContact, setShowContact] = useState(false);
@@ -97,12 +98,20 @@ export default function AngebotePage() {
 
   const fetchOffers = useCallback(async () => {
     setLoading(true);
+    setLoadError("");
     try {
       const res = await fetch("/api/admin/angebote");
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Angebote konnten nicht geladen werden.");
+      }
       const data = await res.json();
       setOffers(data);
       setSelectedId((prev) => prev || (data.length > 0 ? data[0].id : null));
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "Angebote konnten nicht geladen werden.");
+      setOffers([]);
+      setSelectedId(null);
     } finally {
       setLoading(false);
     }
@@ -239,6 +248,36 @@ export default function AngebotePage() {
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="h-96 bg-gray-200 dark:bg-navy-700 rounded-2xl" />
           <div className="lg:col-span-2 h-96 bg-gray-200 dark:bg-navy-700 rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-navy-800 dark:text-white">Angebote</h1>
+          <p className="text-silver-500 dark:text-silver-400 text-sm mt-1">
+            Angebote verwalten, freigeben und zur digitalen Unterschrift senden.
+          </p>
+        </div>
+        <div className="rounded-3xl border border-red-200 bg-red-50 px-5 py-6 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <AlertCircle size={18} className="mt-0.5 shrink-0" />
+              <div>
+                <p className="font-semibold">Angebote konnten nicht geladen werden.</p>
+                <p className="mt-1 text-red-600/80 dark:text-red-200/80">{loadError}</p>
+              </div>
+            </div>
+            <button
+              onClick={fetchOffers}
+              className="inline-flex items-center justify-center rounded-2xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700"
+            >
+              Erneut versuchen
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -642,4 +681,3 @@ export default function AngebotePage() {
     </div>
   );
 }
-

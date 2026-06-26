@@ -62,21 +62,21 @@ export default function Navbar() {
       </div>
 
       <nav className="nav-glass sticky top-0 z-50">
-        <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-4 md:px-8">
+        <div className="mx-auto flex h-16 md:h-24 max-w-7xl items-center justify-between px-4 md:px-8">
           <Link href="/" className="group flex items-center gap-4">
-            <div className="relative overflow-hidden rounded-[24px] border border-white/20 bg-white/[0.14] p-1 shadow-[0_18px_44px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:bg-white/[0.05]">
+            <div className="relative overflow-hidden rounded-[18px] md:rounded-[24px] border border-white/20 bg-white/[0.14] p-1 shadow-[0_18px_44px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:bg-white/[0.05]">
               <Image
                 src="/images/logo.jpeg"
                 alt="SEEL Transport & Reinigung Logo"
                 width={52}
                 height={52}
-                className="rounded-[18px] transition-transform duration-500 group-hover:scale-[1.04]"
-                style={{ height: "auto" }}
+                className="h-10 w-10 md:h-[52px] md:w-[52px] rounded-[14px] md:rounded-[18px] transition-transform duration-500 group-hover:scale-[1.04]"
+                style={{ width: "auto", height: "auto" }}
               />
             </div>
             <div>
-              <p className="font-display text-xl font-bold tracking-[0.12em] text-slate-900 dark:text-white">SEEL</p>
-              <p className="text-[0.65rem] uppercase tracking-[0.42em] text-slate-500 dark:text-white/40">
+              <p className="font-display text-lg font-bold tracking-[0.12em] text-slate-900 dark:text-white md:text-xl">SEEL</p>
+              <p className="text-[0.6rem] uppercase tracking-[0.25em] text-slate-500 dark:text-white/40 sm:text-[0.65rem] sm:tracking-[0.42em]">
                 Transport & Reinigung
               </p>
             </div>
@@ -175,9 +175,9 @@ export default function Navbar() {
       </nav>
 
       {mobileOpen && (
-        <div className="dropdown-glass fixed inset-x-3 top-[calc(6rem+1px)] z-40 max-h-[82vh] overflow-y-auto rounded-[28px] px-4 py-4 lg:hidden">
+          <div className="dropdown-glass fixed inset-x-3 top-[calc(4rem+1px)] md:top-[calc(6rem+1px)] z-40 max-h-[82vh] overflow-y-auto rounded-[28px] px-4 py-4 lg:hidden">
           <div className="mb-4 rounded-[24px] border border-white/[0.08] bg-[#040a14] px-4 py-5 text-white">
-            <p className="text-[11px] uppercase tracking-[0.3em] text-cyan-200/70">Schnellkontakt</p>
+              <p className="text-[0.65rem] sm:text-[11px] uppercase tracking-[0.25em] sm:tracking-[0.3em] text-cyan-200/70">Schnellkontakt</p>
             <p className="mt-3 text-sm font-semibold">{contact.primaryPhoneDisplay}</p>
             <p className="mt-1 text-xs text-white/55">{contact.availability}</p>
           </div>

@@ -49,11 +49,11 @@ export function CookieBanner() {
     <AnimatePresence>
       {show && (
         <motion.div initial={{ y : 100, opacity: 0 }} animate={{ y : 0, opacity: 1 }} exit={{ y : 100, opacity: 0 }} transition={{ duration : 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="fixed bottom-0 left-0 right-0 z-[60] glass-strong p-4 md:p-6 border-t border-white/10"
+          className="fixed inset-x-0 bottom-0 z-[60] w-screen max-w-full overflow-x-clip glass-strong p-4 md:p-6 border-t border-white/10"
         >
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-              <div className="flex-1">
+          <div className="mx-auto w-full max-w-7xl">
+            <div className="flex min-w-0 flex-col items-start gap-4 md:flex-row md:items-center">
+              <div className="min-w-0 flex-1">
                 <p className="text-sm text-navy-800 dark:text-white font-medium mb-1 flex items-center gap-2">
                   <Cookie size={16} className="text-teal-500" />
                   Cookie-Einstellungen
@@ -66,23 +66,23 @@ export function CookieBanner() {
                   </Link>.
                 </p>
               </div>
-              <div className="flex flex-wrap gap-3 shrink-0">
+              <div className="grid w-full grid-cols-1 gap-3 sm:w-auto sm:grid-cols-3 md:shrink-0">
                 <button
                   onClick={() => setShowDetails(!showDetails)}
-                  className="px-4 py-2 text-sm border border-silver-300 dark:border-navy-600 rounded-xl hover:bg-gray-50 dark:hover:bg-navy-700 transition-colors text-navy-700 dark:text-silver-200 flex items-center gap-1.5"
+                  className="inline-flex min-w-0 items-center justify-center gap-1.5 rounded-xl border border-silver-300 px-4 py-2 text-sm text-navy-700 transition-colors hover:bg-gray-50 dark:border-navy-600 dark:text-silver-200 dark:hover:bg-navy-700"
                 >
                   <Settings size={14} />
                   Einstellungen
                 </button>
                 <button
                   onClick={declineAll}
-                  className="px-4 py-2 text-sm border border-silver-300 dark:border-navy-600 rounded-xl hover:bg-gray-50 dark:hover:bg-navy-700 transition-colors text-navy-700 dark:text-silver-200"
+                  className="min-w-0 rounded-xl border border-silver-300 px-4 py-2 text-sm text-navy-700 transition-colors hover:bg-gray-50 dark:border-navy-600 dark:text-silver-200 dark:hover:bg-navy-700"
                 >
                   Ablehnen
                 </button>
                 <button
                   onClick={acceptAll}
-                  className="px-6 py-2 text-sm bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-all font-medium shadow-md shadow-teal-500/25 btn-shine"
+                  className="btn-shine min-w-0 rounded-xl bg-teal-500 px-4 py-2 text-sm font-medium text-white shadow-md shadow-teal-500/25 transition-all hover:bg-teal-600 sm:px-6"
                 >
                   Alle akzeptieren
                 </button>

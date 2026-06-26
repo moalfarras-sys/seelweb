@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "next build && node scripts/prepare-standalone.mjs",
-    "start": "node .next/standalone/server.js",
+    "build": "next build",
+    "start": "next start",
     "lint": "next lint",
     "test:e2e": "playwright test",
+    "db:migrate": "npx prisma migrate deploy",
     "db:push": "npx prisma db push",
     "db:seed": "npx tsx prisma/seed.ts",
     "db:migrate:regions": "npx tsx scripts/migrate_region_defaults.ts",

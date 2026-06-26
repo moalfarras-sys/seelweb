@@ -102,7 +102,7 @@ export default function KontaktPage() {
 
   return (
     <>
-      <section className="hero-led-section kinetic-hero gradient-navy relative overflow-hidden py-28 md:py-36">
+      <section className="hero-led-section kinetic-hero gradient-navy relative overflow-hidden py-16 md:py-36">
         <div className="hero-light-sweep" />
         <div className="cine-grid absolute inset-0 opacity-35" />
         <div className="absolute inset-0 opacity-[0.10]">
@@ -131,7 +131,7 @@ export default function KontaktPage() {
                 <span className="hero-metric">Klare Ruckmeldung</span>
               </div>
             </div>
-            <div className="glass-dark rounded-[32px] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.30)]">
+            <div className="glass-dark rounded-2xl md:rounded-[32px] p-5 md:p-6 shadow-[0_24px_70px_rgba(0,0,0,0.30)]">
               <div className="grid gap-4 md:grid-cols-3">
                 {[
                   { label: "Servicegebiet", value: contact.serviceRegion },
@@ -204,7 +204,7 @@ export default function KontaktPage() {
             </div>
           </div>
 
-          <div className="premium-panel rounded-[34px] p-6 md:p-8">
+          <div className="premium-panel rounded-2xl md:rounded-[34px] p-5 md:p-8">
             {submitted ? (
               <div className="rounded-[28px] bg-sky-50 p-8 text-center dark:bg-sky-500/10">
                 <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">Nachricht gesendet</h2>

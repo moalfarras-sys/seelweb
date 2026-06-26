@@ -191,6 +191,43 @@ export async function calculatePricingFromDbRules(
 
   if (!region) throw new Error("SERVICE_AREA_NOT_SUPPORTED");
 
+  if (effectiveCategory === "DISPOSAL") {
+    const volumeM3 = Math.max(input.volumeM3 ?? 0, 1);
+    const subtotal = Number((pricingSettings.publicDisposalEur * volumeM3).toFixed(2));
+    const netto = subtotal;
+    const mwst = pricingSettings.vatEnabled ? Number((netto * MWST).toFixed(2)) : 0;
+    const total = Number((netto + mwst).toFixed(2));
+
+    return {
+      subtotal,
+      netto,
+      mwst,
+      total,
+      lines: [
+        {
+          label: "Richtpreis Entrümpelung",
+          amount: subtotal,
+          detail: `${volumeM3.toFixed(2)} m³ × ${pricingSettings.publicDisposalEur.toFixed(2)} EUR`,
+        },
+        {
+          label: "Hinweis",
+          amount: 0,
+          detail: "Finalpreis nach Volumen, Etage, Aufzug, Laufweg, Zugang und Entsorgungsart.",
+        },
+        { label: "Nettobetrag", amount: netto },
+        { label: pricingSettings.vatEnabled ? "MwSt. (19%)" : "MwSt. (deaktiviert)", amount: mwst },
+        { label: "Gesamtbetrag", amount: total },
+      ],
+      surchargesTotal: 0,
+      extrasTotal: 0,
+      regionId: region.id,
+      regionName: region.regionName,
+      effectiveCategory,
+      estimateLabelEnabled: pricingSettings.estimateLabelEnabled,
+      appliedKmPriceEur: null,
+    };
+  }
+
   const candidateRules = await prisma.priceRule.findMany({
     where: {
       enabled: true,
@@ -318,26 +355,7 @@ export async function calculatePricingFromDbRules(
     const trigger = (surcharge.triggerJson ?? {}) as Record<string, unknown>;
     if (!triggerMatches(trigger, input)) continue;
     const formula = (surcharge.formulaJson ?? {}) as Record<string, unknown>;
-    let amount = evalFormula(formula, input);
-    const triggerKey = String(trigger.key ?? "");
-
-    if (
-      effectiveCategory === "MOVING" &&
-      publicHourlyRate > 0 &&
-      pricingSettings.publicMovingExpressSurchargePct > 0 &&
-      ((triggerKey === "express24h" && input.express24h) || (triggerKey === "express48h" && input.express48h))
-    ) {
-      const hours = Math.max(input.hours ?? 0, 1);
-      const workers = input.workers && input.workers > 0 ? input.workers : 1;
-      amount = Number(
-        (
-          getPublicHourlyRate(pricingSettings, "MOVING") *
-          hours *
-          workers *
-          (pricingSettings.publicMovingExpressSurchargePct / 100)
-        ).toFixed(2)
-      );
-    }
+    const amount = evalFormula(formula, input);
 
     if (amount <= 0) continue;
     surchargesTotal += amount;

@@ -5,11 +5,12 @@ import Script from "next/script";
 import { ArrowRight, Check, Zap, Clock, Shield, Truck, AlertTriangle } from "lucide-react";
 import { getPrices, formatPricePerHour } from "@/lib/getPrices";
 import { buildFaqSchema, buildMetadata } from "@/lib/seo";
+import { EXPRESS_MOVE_DETAILS, EXPRESS_MOVE_NOTE, EXPRESS_MOVE_PLANNING, STANDARD_MOVE_LABEL } from "@/lib/service-pricing";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Expressumzug Berlin – Kurzfristig und zuverlässig",
+  title: "Expressumzug Berlin – ab 99 €/Std. kurzfristig planbar",
   description:
-    "Expressumzug in Berlin mit schneller Disposition, klaren Prioritätszuschlägen und verlässlicher Durchführung innerhalb kurzer Vorlaufzeiten.",
+    "Expressumzug in Berlin ab 99 €/Std. inklusive 2 Mitarbeiter und Fahrzeug. Kurzfristige Termine mit priorisierter Einsatzplanung und transparenter Bestätigung.",
   path: "/leistungen/expressumzug",
 });
 
@@ -20,20 +21,18 @@ const features = [
   "Erfahrenes Express-Team",
   "Verpackungsmaterial auf Wunsch",
   "Moderne Fahrzeuge mit Hebebühne",
-  "Möbelmontage und Demontage",
+  "Möbelmontage und Demontage auf Wunsch",
   "Halteverbotszone auf Wunsch",
 ];
 
 export default async function ExpressumzugPage() {
   const prices = await getPrices();
   const expressPrice = formatPricePerHour(prices.umzugExpress);
-  const standardPrice = formatPricePerHour(prices.umzugStandard).replace("ab ", "");
-  const surchargeLabel = `+${prices.umzugExpressSurchargePct.toLocaleString("de-DE")} %`;
 
   const faqs = [
     {
       q: "Was kostet ein Expressumzug?",
-      a: `Expressumzüge starten bei ${expressPrice.replace("ab ", "")}. Der reguläre Umzugspreis liegt bei ${standardPrice}; dazu kommt ein transparenter Prioritätszuschlag von ${surchargeLabel}.`,
+      a: "Expressumzüge starten bei 99 €/Std. inklusive 2 Mitarbeiter und Fahrzeug. Der genaue Preis richtet sich nach Umfang, Etage, Laufweg, Termin und Einsatzdauer.",
     },
     {
       q: "Wie kurzfristig können Sie starten?",
@@ -41,7 +40,7 @@ export default async function ExpressumzugPage() {
     },
     {
       q: "Ist Express auch am Wochenende möglich?",
-      a: "Ja. Wochenend- und Abendtermine sind möglich und werden vorab transparent im Angebot ausgewiesen.",
+      a: "Ja. Wochenend- und Abendtermine sind möglich und werden vorab transparent bestätigt.",
     },
     {
       q: "Leidet die Qualität unter der kurzen Vorlaufzeit?",
@@ -74,13 +73,13 @@ export default async function ExpressumzugPage() {
             </span>
             <h1 className="mb-4 text-4xl font-bold text-white md:text-5xl">Expressumzug in Berlin</h1>
             <p className="mx-auto max-w-2xl text-lg text-silver-300">
-              Wenn es schnell gehen muss, organisiert unser Team den kompletten Ablauf kurzfristig, verlässlich und mit klar ausgewiesenem Expresspreis.
+              Wenn es schnell gehen muss, organisiert unser Team den kompletten Ablauf kurzfristig, verlässlich und mit transparent bestätigten Startpreisen.
             </p>
             <Link
               href="/buchen?service=EXPRESS_MOVING"
               className="mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-4 font-semibold text-white shadow-lg shadow-amber-500/25 transition-all hover:from-amber-600 hover:to-orange-600"
             >
-              Expressumzug buchen <ArrowRight size={18} />
+              Expressumzug anfragen <ArrowRight size={18} />
             </Link>
           </div>
         </div>
@@ -93,7 +92,7 @@ export default async function ExpressumzugPage() {
             {[
               { icon: Clock, title: "Innerhalb von 24 bis 48 Stunden", desc: "Kurzfristige Umzüge ohne lange Wartezeit." },
               { icon: Truck, title: "Volle Leistung", desc: "Gleiche Qualität wie regulär, nur priorisiert disponiert." },
-              { icon: Shield, title: "Versichert", desc: "Transportversicherung gemäß HGB § 451e inklusive." },
+              { icon: Shield, title: "Versichert", desc: "Transportversicherung gemäß HGB §451e inklusive." },
             ].map((b) => {
               const Icon = b.icon;
               return (
@@ -133,15 +132,15 @@ export default async function ExpressumzugPage() {
                 <AlertTriangle className="text-amber-300" size={22} />
               </div>
               <div className="min-w-0">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-amber-300/80">Expresszuschlag</p>
-                <p className="mb-4 text-2xl font-bold text-white">Klare Preislogik ohne Überraschungen</p>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-amber-300/80">Expressumzug ab 99 €/Std.</p>
+                <p className="mb-4 text-2xl font-bold text-white">Klare Preislogik ohne Prozentaufschlag</p>
                 <ul className="space-y-3 text-base leading-8 text-white/80">
-                  <li>Regulärer Umzugspreis: ab {standardPrice}</li>
-                  <li>Prioritätszuschlag: {surchargeLabel}</li>
-                  <li>Expresspreis: {expressPrice}</li>
+                  <li>Regulärer Umzug: {STANDARD_MOVE_LABEL}</li>
+                  <li>Expressumzug: {expressPrice}</li>
+                  <li>{EXPRESS_MOVE_DETAILS} · {EXPRESS_MOVE_PLANNING}</li>
                 </ul>
                 <p className="mt-4 text-sm leading-7 text-white/70">
-                  Der Expresspreis basiert auf dem regulären Umzugstarif und enthält den priorisierten Zuschlag für kurzfristige Disposition, schnelle Rückmeldung und bevorzugte Einsatzplanung.
+                  {EXPRESS_MOVE_NOTE} Abend-, Wochenend- oder sehr kurzfristige Termine werden vorab transparent bestätigt.
                 </p>
               </div>
             </div>
@@ -169,9 +168,7 @@ export default async function ExpressumzugPage() {
       <section className="gradient-navy section-padding">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="mb-4 text-3xl font-bold text-white">Schnell umziehen ohne Kompromisse</h2>
-          <p className="mb-8 text-silver-300">
-            Express-Service für dringende Umzüge mit verlässlicher Umsetzung und transparentem Preismodell.
-          </p>
+          <p className="mb-8 text-silver-300">Express-Service für dringende Umzüge mit verlässlicher Umsetzung und transparentem Preismodell.</p>
           <Link
             href="/buchen?service=EXPRESS_MOVING"
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-10 py-4 font-semibold text-white shadow-lg shadow-amber-500/25 transition-all hover:from-amber-600 hover:to-orange-600"

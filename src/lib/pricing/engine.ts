@@ -20,7 +20,6 @@ export interface PricingConfig {
   minimumHours: number;
   weekendMultiplier: number;
   holidayMultiplier: number;
-  expressMultiplier?: number;
 }
 
 export interface PricingInput {
@@ -65,24 +64,24 @@ export interface PriceBreakdown {
 
 const MWST_RATE = 0.19;
 const FLOOR_SURCHARGE = 30;
-const KM_RATE = 1.80;
-const M3_RATE = 35;
+const KM_RATE = 1.8;
+const M3_RATE = 60;
 
 export const DEFAULT_CONFIGS: Record<ServiceType, PricingConfig> = {
-  HOME_CLEANING:    { hourlyRate: 36, minimumHours: 2, weekendMultiplier: 1.25, holidayMultiplier: 1.5 },
-  MOVE_OUT_CLEANING:{ hourlyRate: 38, minimumHours: 3, weekendMultiplier: 1.25, holidayMultiplier: 1.5 },
-  OFFICE_CLEANING:  { hourlyRate: 34, minimumHours: 2, weekendMultiplier: 1.0,  holidayMultiplier: 1.5 },
-  MOVING:           { hourlyRate: 45, minimumHours: 2, weekendMultiplier: 1.3,  holidayMultiplier: 1.5 },
-  EXPRESS_MOVING:   { hourlyRate: 65, minimumHours: 2, weekendMultiplier: 1.3,  holidayMultiplier: 1.5, expressMultiplier: 1.4 },
-  DISPOSAL:         { hourlyRate: 42, minimumHours: 1, weekendMultiplier: 1.3,  holidayMultiplier: 1.5 },
+  HOME_CLEANING: { hourlyRate: 36, minimumHours: 2, weekendMultiplier: 1.25, holidayMultiplier: 1.5 },
+  MOVE_OUT_CLEANING: { hourlyRate: 38, minimumHours: 3, weekendMultiplier: 1.25, holidayMultiplier: 1.5 },
+  OFFICE_CLEANING: { hourlyRate: 34, minimumHours: 2, weekendMultiplier: 1.0, holidayMultiplier: 1.5 },
+  MOVING: { hourlyRate: 79, minimumHours: 2, weekendMultiplier: 1.3, holidayMultiplier: 1.5 },
+  EXPRESS_MOVING: { hourlyRate: 99, minimumHours: 2, weekendMultiplier: 1.3, holidayMultiplier: 1.5 },
+  DISPOSAL: { hourlyRate: 60, minimumHours: 1, weekendMultiplier: 1.3, holidayMultiplier: 1.5 },
 };
 
 export const DEFAULT_EXTRAS: ExtraItem[] = [
-  { code: "WINDOW",  name: "Fensterreinigung",    timeAddMin: 30, extraFee: 0, selected: false },
-  { code: "OVEN",    name: "Backofen reinigen",    timeAddMin: 30, extraFee: 0, selected: false },
-  { code: "FRIDGE",  name: "Kühlschrank reinigen", timeAddMin: 30, extraFee: 0, selected: false },
+  { code: "WINDOW", name: "Fensterreinigung", timeAddMin: 30, extraFee: 0, selected: false },
+  { code: "OVEN", name: "Backofen reinigen", timeAddMin: 30, extraFee: 0, selected: false },
+  { code: "FRIDGE", name: "Kühlschrank reinigen", timeAddMin: 30, extraFee: 0, selected: false },
   { code: "CABINET", name: "Küchenschränke innen", timeAddMin: 45, extraFee: 0, selected: false },
-  { code: "IRONING", name: "Bügeln",              timeAddMin: 30, extraFee: 0, selected: false, customMinutes: 30 },
+  { code: "IRONING", name: "Bügeln", timeAddMin: 30, extraFee: 0, selected: false, customMinutes: 30 },
 ];
 
 export function calculatePrice(input: PricingInput): PriceBreakdown {
@@ -117,10 +116,7 @@ export function calculatePrice(input: PricingInput): PriceBreakdown {
     multiplier = config.weekendMultiplier;
   }
 
-  // Express surcharge on top of base rate
-  const expressMultiplier = config.expressMultiplier ?? 1;
-
-  const baseRate = config.hourlyRate * workers * expressMultiplier;
+  const baseRate = config.hourlyRate * workers;
   const effectiveRate = baseRate * multiplier;
   const baseLabourCost = totalHours * baseRate;
   const labourCost = totalHours * effectiveRate;
@@ -128,19 +124,11 @@ export function calculatePrice(input: PricingInput): PriceBreakdown {
   items.unshift({
     label: workers > 1 ? `Arbeitszeit (${workers} Mitarbeiter)` : "Arbeitszeit",
     amount: baseLabourCost,
-    detail: workers > 1
-      ? `${totalHours} Std. × ${config.hourlyRate.toFixed(2)} €/Std. × ${workers} × Expresszuschlag`
-      : `${totalHours} Std. × ${baseRate.toFixed(2)} €/Std.`,
+    detail:
+      workers > 1
+        ? `${totalHours} Std. × ${config.hourlyRate.toFixed(2)} €/Std. × ${workers}`
+        : `${totalHours} Std. × ${baseRate.toFixed(2)} €/Std.`,
   });
-
-  if (expressMultiplier > 1) {
-    const expressFee = totalHours * config.hourlyRate * workers * (expressMultiplier - 1);
-    items.push({
-      label: "Expresszuschlag (40%)",
-      amount: expressFee,
-      detail: "Prioritätsbuchung innerhalb 24–48h",
-    });
-  }
 
   let weekendSurcharge = 0;
   if (multiplier > 1) {
@@ -156,34 +144,37 @@ export function calculatePrice(input: PricingInput): PriceBreakdown {
   const isDisposal = input.serviceType === "DISPOSAL";
   const isMoving = input.serviceType === "MOVING" || input.serviceType === "EXPRESS_MOVING";
 
-  if (isMoving || isDisposal) {
-    if (input.volumeM3 && input.volumeM3 > 0) {
-      const vol = input.volumeM3 * M3_RATE;
-      movingSurcharges += vol;
-      items.push({
-        label: isDisposal ? "Entsorgungsvolumen" : "Ladevolumen",
-        amount: vol,
-        detail: `${input.volumeM3} m³ × ${M3_RATE} €`,
-      });
-    }
-    if (isMoving && input.distanceKm && input.distanceKm > 0) {
+  if (isDisposal) {
+    const volume = Math.max(input.volumeM3 ?? 0, 1);
+    movingSurcharges = volume * M3_RATE;
+    items.push({
+      label: "Richtpreis Entrümpelung",
+      amount: movingSurcharges,
+      detail: `${volume} m³ × ${M3_RATE} €`,
+    });
+  } else if (isMoving) {
+    if (input.distanceKm && input.distanceKm > 0) {
       const dist = input.distanceKm * KM_RATE;
       movingSurcharges += dist;
       items.push({ label: "Entfernung", amount: dist, detail: `${input.distanceKm} km × ${KM_RATE} €` });
     }
     if (input.floorFrom && input.floorFrom > 0 && !input.hasElevatorFrom) {
-      const s = input.floorFrom * FLOOR_SURCHARGE;
-      movingSurcharges += s;
+      const surcharge = input.floorFrom * FLOOR_SURCHARGE;
+      movingSurcharges += surcharge;
       items.push({
-        label: isDisposal ? "Stockwerkzuschlag" : "Stockwerk (Beladung)",
-        amount: s,
+        label: "Stockwerk (Beladung)",
+        amount: surcharge,
         detail: `${input.floorFrom}. OG × ${FLOOR_SURCHARGE} €`,
       });
     }
-    if (isMoving && input.floorTo && input.floorTo > 0 && !input.hasElevatorTo) {
-      const s = input.floorTo * FLOOR_SURCHARGE;
-      movingSurcharges += s;
-      items.push({ label: "Stockwerk (Entladung)", amount: s, detail: `${input.floorTo}. OG × ${FLOOR_SURCHARGE} €` });
+    if (input.floorTo && input.floorTo > 0 && !input.hasElevatorTo) {
+      const surcharge = input.floorTo * FLOOR_SURCHARGE;
+      movingSurcharges += surcharge;
+      items.push({
+        label: "Stockwerk (Entladung)",
+        amount: surcharge,
+        detail: `${input.floorTo}. OG × ${FLOOR_SURCHARGE} €`,
+      });
     }
   }
 
@@ -191,7 +182,7 @@ export function calculatePrice(input: PricingInput): PriceBreakdown {
     items.push({ label: "Extras Gebühr", amount: extrasFee });
   }
 
-  const subtotal = baseLabourCost + weekendSurcharge + extrasFee + movingSurcharges;
+  const subtotal = isDisposal ? movingSurcharges : baseLabourCost + weekendSurcharge + extrasFee + movingSurcharges;
 
   let discount = 0;
   if (input.discountPercent && input.discountPercent > 0) {

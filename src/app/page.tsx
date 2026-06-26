@@ -10,6 +10,15 @@ import Gallery from "@/components/Gallery";
 import { getPublicServicePriceLabel, getPublicServicePrices } from "@/lib/public-service-pricing";
 import { getHomepageGalleryItems, getPublicGalleryItems, getPublicSiteSettings } from "@/lib/site-content";
 import { CONTACT } from "@/config/contact";
+import {
+  ENTRUEMPELUNG_LABEL,
+  ENTRUEMPELUNG_SHORT_DETAILS,
+  EXPRESS_MOVE_DETAILS,
+  EXPRESS_MOVE_LABEL,
+  EXPRESS_MOVE_PLANNING,
+  STANDARD_MOVE_DETAILS,
+  STANDARD_MOVE_LABEL,
+} from "@/lib/service-pricing";
 
 export const metadata: Metadata = buildMetadata({
   title: "Umzüge, Reinigung und Entrümpelung",
@@ -34,6 +43,11 @@ const faqItems = [
   {
     question: "Kann ich Reinigung und Umzug kombinieren?",
     answer: "Ja. Viele Kundinnen und Kunden kombinieren Umzug, Endreinigung und Entrümpelung in einem abgestimmten Ablauf.",
+  },
+  {
+    question: "Was kostet eine Entrümpelung?",
+    answer:
+      "Entrümpelungen starten bei 60 €/m³. Der endgültige Preis hängt vom Volumen, der Etage, dem Aufzug, dem Laufweg und der Art der Entsorgung ab. Sie erhalten vorab ein transparentes Angebot mit allen Positionen.",
   },
 ];
 
@@ -91,24 +105,20 @@ export default async function HomePage() {
       alt: "SEEL Transport Umzugsteam beim Möbeltransport in Berlin",
       description: "Strukturierte Umzüge mit erfahrenem Team, festen Zeitfenstern und optionaler Montage.",
       href: "/leistungen/umzug-berlin",
-      price: getPublicServicePriceLabel(prices, "umzug-berlin"),
+      price: STANDARD_MOVE_LABEL,
+      details: STANDARD_MOVE_DETAILS,
       image: "/images/umzug-1.jpeg",
+      cta: "Umzug anfragen",
     },
     {
       title: "Expressumzug",
       alt: "Kurzfristiger Expressumzug von SEEL Transport in Berlin",
-      description: "Kurzfristige Umzüge mit priorisierter Disposition, klarem Expresspreis und schneller Rückmeldung.",
+      description: "Kurzfristige Umzüge ab 99 €/Std. mit priorisierter Disposition und schneller Rückmeldung.",
       href: "/leistungen/expressumzug",
-      price: getPublicServicePriceLabel(prices, "expressumzug"),
+      price: EXPRESS_MOVE_LABEL,
+      details: `${EXPRESS_MOVE_DETAILS} · ${EXPRESS_MOVE_PLANNING}`,
       image: "/images/Express.jpeg",
-    },
-    {
-      title: "Büro- und Gewerbeumzug",
-      alt: "Professioneller Büroservice von SEEL in Berlin",
-      description: "Projektplanung für Unternehmen, Kanzleien, Praxen und Agenturen mit minimaler Ausfallzeit.",
-      href: "/leistungen/gewerbe",
-      price: getPublicServicePriceLabel(prices, "gewerbe"),
-      image: "/images/corporate-hallway-cleaning.png",
+      cta: "Expressumzug anfragen",
     },
     {
       title: "Reinigung & Endreinigung",
@@ -116,15 +126,19 @@ export default async function HomePage() {
       description: "Wohnung, Büro und Übergabe aus einer Hand mit klaren Leistungslisten und sauberer Dokumentation.",
       href: "/leistungen/reinigung",
       price: getPublicServicePriceLabel(prices, "reinigung"),
+      details: prices.minimumHoursLabel,
       image: "/images/cleaning-team-office.png",
+      cta: "Reinigung anfragen",
     },
     {
       title: "Entrümpelung",
       alt: "SEEL Transport Entrümpelung und Entsorgung in Berlin",
       description: "Schnelle Räumung, saubere Trennung und fachgerechte Entsorgung mit klarer Abstimmung.",
       href: "/leistungen/entruempelung",
-      price: getPublicServicePriceLabel(prices, "entruempelung"),
+      price: ENTRUEMPELUNG_LABEL,
+      details: ENTRUEMPELUNG_SHORT_DETAILS,
       image: "/images/waste-disposal-van.png",
+      cta: "Entrümpelung anfragen",
     },
   ];
 
@@ -225,7 +239,7 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-5">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {services.map((service, i) => (
               <Link
                 key={service.href}
@@ -233,7 +247,7 @@ export default async function HomePage() {
                 className="premium-panel card-interactive group overflow-hidden rounded-[30px] scroll-reveal"
                 style={{ transitionDelay: `${i * 80}ms` }}
               >
-                <div className="relative h-72 overflow-hidden">
+                <div className="relative h-52 overflow-hidden sm:h-64 md:h-72">
                   <Image
                     src={service.image}
                     alt={service.alt}
@@ -251,8 +265,9 @@ export default async function HomePage() {
                 </div>
                 <div className="p-6">
                   <p className="text-sm leading-7 text-slate-600 dark:text-white/58">{service.description}</p>
+                  <p className="mt-3 text-sm font-semibold text-sky-700 dark:text-cyan-300">{service.details}</p>
                   <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-sky-700 transition-all duration-300 group-hover:gap-3 dark:text-cyan-300">
-                    Mehr erfahren <ArrowRight size={14} />
+                    {service.cta} <ArrowRight size={14} />
                   </span>
                 </div>
               </Link>
@@ -330,14 +345,14 @@ export default async function HomePage() {
 
       <section className="section-spotlight pb-28 pt-10">
         <div className="mx-auto max-w-6xl px-4 md:px-8">
-          <div className="relative overflow-hidden rounded-[42px] border border-white/[0.08] px-8 py-16 text-white shadow-[0_34px_110px_rgba(2,8,18,0.34)] md:px-14">
+          <div className="relative overflow-hidden rounded-2xl md:rounded-[42px] border border-white/[0.08] px-6 py-12 text-white shadow-[0_34px_110px_rgba(2,8,18,0.34)] md:px-14 md:py-16">
             <div className="absolute inset-0 bg-[linear-gradient(135deg,#04111d_0%,#082035_36%,#0a2a3f_72%,#0b3445_100%)]" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.16),transparent_26%),radial-gradient(circle_at_bottom_left,rgba(20,184,166,0.14),transparent_30%)]" />
             <div className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:28px_28px]" />
 
             <div className="relative z-10 md:flex md:items-center md:justify-between md:gap-12">
               <div className="mb-8 md:mb-0">
-                <p className="text-[11px] uppercase tracking-[0.34em] text-cyan-200/70">Finale Anfrage</p>
+                <p className="text-xs sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.34em] text-cyan-200/70">Finale Anfrage</p>
                 <h2 className="section-title mt-4 text-white">{settings.homepage.finalCtaTitle}</h2>
                 <p className="hero-body mt-4 max-w-xl text-white/80 dark:text-white/80">{settings.homepage.finalCtaDescription}</p>
               </div>

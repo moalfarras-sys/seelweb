@@ -1,5 +1,10 @@
-﻿import type { PricingSettings } from "@prisma/client";
+import type { PricingSettings } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import {
+  ENTRUEMPELUNG_PRICE_PER_M3,
+  EXPRESS_MOVE_HOURLY_PRICE,
+  STANDARD_MOVE_HOURLY_PRICE,
+} from "@/lib/service-pricing";
 
 export type PricingSettingsSnapshot = {
   kmPriceEur: number;
@@ -33,13 +38,13 @@ export const DEFAULT_PRICING_SETTINGS: PricingSettingsSnapshot = {
   baseHomeCleaningEur: 0,
   baseMoveOutCleaningEur: 0,
   baseOfficeCleaningEur: 0,
-  publicMovingStandardEur: 59,
-  publicMovingExpressEur: 75,
-  publicMovingExpressSurchargePct: 40,
+  publicMovingStandardEur: STANDARD_MOVE_HOURLY_PRICE,
+  publicMovingExpressEur: EXPRESS_MOVE_HOURLY_PRICE,
+  publicMovingExpressSurchargePct: 0,
   publicHomeCleaningEur: 34,
-  publicOfficeMovingEur: 59,
+  publicOfficeMovingEur: STANDARD_MOVE_HOURLY_PRICE,
   publicOfficeCleaningEur: 34,
-  publicDisposalEur: 49,
+  publicDisposalEur: ENTRUEMPELUNG_PRICE_PER_M3,
   publicMoveOutCleaningEur: 34,
 };
 
@@ -56,13 +61,13 @@ function toSnapshot(settings: PricingSettings | null): PricingSettingsSnapshot {
     baseHomeCleaningEur: settings.baseHomeCleaningEur,
     baseMoveOutCleaningEur: settings.baseMoveOutCleaningEur,
     baseOfficeCleaningEur: settings.baseOfficeCleaningEur,
-    publicMovingStandardEur: settings.publicMovingStandardEur,
-    publicMovingExpressEur: settings.publicMovingExpressEur,
-    publicMovingExpressSurchargePct: settings.publicMovingExpressSurchargePct,
+    publicMovingStandardEur: STANDARD_MOVE_HOURLY_PRICE,
+    publicMovingExpressEur: EXPRESS_MOVE_HOURLY_PRICE,
+    publicMovingExpressSurchargePct: 0,
     publicHomeCleaningEur: settings.publicHomeCleaningEur,
-    publicOfficeMovingEur: settings.publicOfficeMovingEur,
+    publicOfficeMovingEur: STANDARD_MOVE_HOURLY_PRICE,
     publicOfficeCleaningEur: settings.publicOfficeCleaningEur,
-    publicDisposalEur: settings.publicDisposalEur,
+    publicDisposalEur: ENTRUEMPELUNG_PRICE_PER_M3,
     publicMoveOutCleaningEur: settings.publicMoveOutCleaningEur,
   };
 }

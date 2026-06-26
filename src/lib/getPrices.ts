@@ -1,15 +1,20 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { getPricingSettingsSnapshot } from "@/lib/pricing/settings";
-import { formatPricePerHour, type PublicPrices } from "@/lib/public-prices-shared";
+import {
+  ENTRUEMPELUNG_PRICE_PER_M3,
+  EXPRESS_MOVE_HOURLY_PRICE,
+  formatPricePerHour,
+  STANDARD_MOVE_HOURLY_PRICE,
+} from "@/lib/service-pricing";
+import type { PublicPrices } from "@/lib/public-prices-shared";
 
 const FALLBACK_PRICES: PublicPrices = {
-  umzugStandard: 59,
-  umzugExpress: 75,
-  umzugExpressSurchargePct: 40,
+  umzugStandard: STANDARD_MOVE_HOURLY_PRICE,
+  umzugExpress: EXPRESS_MOVE_HOURLY_PRICE,
   reinigungWohnung: 34,
   reinigungBuero: 34,
-  gewerbeUmzug: 59,
-  entruempelung: 49,
+  gewerbeUmzug: STANDARD_MOVE_HOURLY_PRICE,
+  entruempelung: ENTRUEMPELUNG_PRICE_PER_M3,
   endreinigung: 34,
   minimumHoursLabel: "Mindestabnahme 2 Stunden",
 };
@@ -19,13 +24,12 @@ export async function getPrices(): Promise<PublicPrices> {
     noStore();
     const settings = await getPricingSettingsSnapshot();
     return {
-      umzugStandard: settings.publicMovingStandardEur,
-      umzugExpress: settings.publicMovingExpressEur,
-      umzugExpressSurchargePct: settings.publicMovingExpressSurchargePct,
+      umzugStandard: STANDARD_MOVE_HOURLY_PRICE,
+      umzugExpress: EXPRESS_MOVE_HOURLY_PRICE,
       reinigungWohnung: settings.publicHomeCleaningEur,
       reinigungBuero: settings.publicOfficeCleaningEur,
-      gewerbeUmzug: settings.publicOfficeMovingEur,
-      entruempelung: settings.publicDisposalEur,
+      gewerbeUmzug: STANDARD_MOVE_HOURLY_PRICE,
+      entruempelung: ENTRUEMPELUNG_PRICE_PER_M3,
       endreinigung: settings.publicMoveOutCleaningEur,
       minimumHoursLabel: "Mindestabnahme 2 Stunden",
     };

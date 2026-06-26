@@ -10,6 +10,5 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: "https://seeltransport.de/sitemap.xml",
-    host: "https://seeltransport.de",
   };
 }

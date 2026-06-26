@@ -1,9 +1,7 @@
-const backendOrigin = process.env.BACKEND_ORIGIN || "http://187.77.82.124";
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "standalone",
   trailingSlash: false,
+  skipTrailingSlashRedirect: true,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -20,44 +18,49 @@ const nextConfig = {
       {
         source: "/preise",
         destination: "/buchen",
-        permanent: true,
+        statusCode: 301,
+      },
+      {
+        source: "/preise-mobeltransporte",
+        destination: "/buchen",
+        statusCode: 301,
       },
       {
         source: "/leistungen/reinigung-buero",
         destination: "/leistungen/bueroreinigung",
-        permanent: true,
+        statusCode: 301,
       },
       {
         source: "/leistungen-mobeltransporte",
-        destination: "/leistungen",
-        permanent: true,
+        destination: "/leistungen/transport",
+        statusCode: 301,
       },
       {
         source: "/impressum-berlin-seel-transport",
         destination: "/impressum",
-        permanent: true,
+        statusCode: 301,
       },
       {
         source: "/umzugsservice-berlin",
         destination: "/leistungen/umzug-berlin",
-        permanent: true,
+        statusCode: 301,
       },
       {
         source: "/leistungen/umzug",
         destination: "/leistungen/umzug-berlin",
-        permanent: true,
+        statusCode: 301,
+      },
+      {
+        source: "/2024/:path*",
+        destination: "/",
+        statusCode: 301,
+      },
+      {
+        source: "/2025/:path*",
+        destination: "/",
+        statusCode: 301,
       },
     ];
-  },
-  async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: "/api/:path*",
-          destination: `${backendOrigin}/api/:path*`,
-        },
-      ],
-    };
   },
 };
 

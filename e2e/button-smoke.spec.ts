@@ -27,11 +27,11 @@ test("public pages buttons and links smoke", async ({ page }) => {
 
   await page.goto("/buchen");
   await page.getByRole("button", { name: /Wohnungsreinigung/i }).click();
-  await page.getByRole("button", { name: /Umzug/i }).click();
-  await expect(page.getByText(/Smart-Presets/i).first()).toBeVisible();
-
-  await page.getByRole("button", { name: /10:00-12:00/i }).click();
-  await expect(page.locator('input[placeholder*="Zeitfenster"]')).toHaveValue("10:00-12:00");
+  await page.getByRole("button", { name: /^Umzug Standardumzug/i }).click();
+  await page.getByRole("button", { name: /Weiter zu Details/i }).click();
+  await expect(page.getByRole("heading", { name: /Konfiguration/i })).toBeVisible();
+  await expect(page.getByText(/Startadresse/i)).toBeVisible();
+  await expect(page.getByText(/Zieladresse/i)).toBeVisible();
 });
 
 test("admin navigation buttons smoke", async ({ page }) => {

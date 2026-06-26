@@ -1,5 +1,6 @@
 import { getPrices } from "@/lib/getPrices";
-import { formatPricePerHour, type PublicPrices } from "@/lib/public-prices-shared";
+import type { PublicPrices } from "@/lib/public-prices-shared";
+import { formatPricePerCubicMeter, formatPricePerHour } from "@/lib/service-pricing";
 export { getBookingMarketingPriceLabel, getMovingPublicRate } from "@/lib/public-service-pricing-shared";
 
 export type PublicServiceSlug =
@@ -87,6 +88,9 @@ export function getPublicServiceRate(prices: PublicPrices, slug: PublicServiceSl
 }
 
 export function getPublicServicePriceLabel(prices: PublicPrices, slug: PublicServiceSlug) {
+  if (SERVICE_PRICE_KEYS[slug] === "entruempelung") {
+    return formatPricePerCubicMeter(getPublicServiceRate(prices, slug));
+  }
   return formatPricePerHour(getPublicServiceRate(prices, slug));
 }
 

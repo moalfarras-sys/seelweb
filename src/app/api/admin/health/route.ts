@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -118,6 +119,11 @@ async function checkEnv(): Promise<CheckResult> {
 }
 
 export async function GET() {
+  const session = await getSession();
+  if (!session.isLoggedIn) {
+    return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
+  }
+
   const checks = await Promise.all([
     checkDatabase(),
     checkEmail(),

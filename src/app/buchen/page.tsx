@@ -5,10 +5,21 @@ import { useSearchParams } from "next/navigation";
 import { DayPicker } from "react-day-picker";
 import { de } from "date-fns/locale";
 import { formatCurrency } from "@/lib/utils";
+import type { PublicPrices } from "@/lib/public-prices-shared";
 import { getBookingMarketingPriceLabel, getMovingPublicRate } from "@/lib/public-service-pricing-shared";
 import AddressAutocomplete, { type AddressResult } from "@/components/maps/AddressAutocomplete";
 import RouteMap from "@/components/maps/RouteMap";
 import { useSiteContent } from "@/components/SiteContentProvider";
+import {
+  ENTRUEMPELUNG_PRICE_PER_M3,
+  ENTRUEMPELUNG_LONG_DETAILS,
+  EXPRESS_MOVE_HOURLY_PRICE,
+  EXPRESS_MOVE_NOTE,
+  STANDARD_MOVE_HOURLY_PRICE,
+  STANDARD_MOVE_DETAILS,
+  formatPricePerCubicMeter,
+  formatPricePerHour,
+} from "@/lib/service-pricing";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
@@ -49,6 +60,9 @@ type ServiceCfg = {
   express24h: boolean;
   express48h: boolean;
   businessMove: boolean;
+  wasteType: string;
+  accessNotes: string;
+  photoCount: number;
 };
 
 type QuoteServiceInput = {
@@ -91,16 +105,15 @@ type AvailabilitySlot = { start: string; end: string; label: string };
 
 type PaymentMethod = "UEBERWEISUNG" | "BAR" | "PAYPAL";
 
-type PublicPrices = {
-  umzugStandard: number;
-  umzugExpress: number;
-  umzugExpressSurchargePct: number;
-  reinigungWohnung: number;
-  reinigungBuero: number;
-  gewerbeUmzug: number;
-  entruempelung: number;
-  endreinigung: number;
-  minimumHoursLabel: string;
+const PUBLIC_BOOKING_PRICES: PublicPrices = {
+  umzugStandard: STANDARD_MOVE_HOURLY_PRICE,
+  umzugExpress: EXPRESS_MOVE_HOURLY_PRICE,
+  reinigungWohnung: 34,
+  reinigungBuero: 38,
+  gewerbeUmzug: STANDARD_MOVE_HOURLY_PRICE,
+  entruempelung: ENTRUEMPELUNG_PRICE_PER_M3,
+  endreinigung: 36,
+  minimumHoursLabel: "Mindestabnahme 2 Stunden",
 };
 
 const MIN_HOURS: Record<ServiceType, number> = {
@@ -109,7 +122,7 @@ const MIN_HOURS: Record<ServiceType, number> = {
   OFFICE_CLEANING: 2,
   MOVING: 2,
   EXPRESS_MOVING: 2,
-  DISPOSAL: 1,
+  DISPOSAL: 0,
 };
 
 const LABELS: Record<ServiceType, string> = {
@@ -127,7 +140,7 @@ const SERVICE_META: Record<ServiceType, { desc: string; icon: typeof Home; color
   OFFICE_CLEANING: { desc: "Regelmäßige Gewerbereinigung", icon: Building2, color: "text-indigo-500" },
   MOVING: { desc: "Standardumzug mit Route und klarer Planung", icon: Truck, color: "text-teal-500" },
   EXPRESS_MOVING: { desc: "Kurzfristig verfügbar mit priorisierter Disposition", icon: Truck, color: "text-orange-500" },
-  DISPOSAL: { desc: "Entrümpelung inkl. Entsorgung", icon: Trash2, color: "text-rose-500" },
+  DISPOSAL: { desc: "Entrümpelung nach Volumen, Etage und Zugang", icon: Trash2, color: "text-rose-500" },
 };
 
 const EMPTY_CFG: ServiceCfg = {
@@ -145,6 +158,9 @@ const EMPTY_CFG: ServiceCfg = {
   express24h: false,
   express48h: false,
   businessMove: false,
+  wasteType: "",
+  accessNotes: "",
+  photoCount: 0,
 };
 
 const SMART_PRESETS: Record<
@@ -177,9 +193,9 @@ const SMART_PRESETS: Record<
     { label: "Komplett", hint: "8h · 40m³", patch: { hours: 8, volumeM3: 40, express24h: true } },
   ],
   DISPOSAL: [
-    { label: "Klein", hint: "2h · 4m³", patch: { hours: 2, volumeM3: 4 } },
-    { label: "Mittel", hint: "3h · 8m³", patch: { hours: 3, volumeM3: 8 } },
-    { label: "Groß", hint: "5h · 15m³", patch: { hours: 5, volumeM3: 15 } },
+    { label: "Klein", hint: "4m³ · Keller", patch: { hours: 0, volumeM3: 4 } },
+    { label: "Mittel", hint: "8m³ · Wohnung", patch: { hours: 0, volumeM3: 8 } },
+    { label: "Groß", hint: "15m³ · Hausrat", patch: { hours: 0, volumeM3: 15 } },
   ],
 };
 
@@ -227,7 +243,7 @@ export default function BuchenPage() {
   const [slotLoading, setSlotLoading] = useState(false);
   const [slotError, setSlotError] = useState("");
   const [slotNotice, setSlotNotice] = useState("");
-  const [publicPrices, setPublicPrices] = useState<PublicPrices | null>(null);
+  const [publicPrices, setPublicPrices] = useState<PublicPrices>(PUBLIC_BOOKING_PRICES);
 
   const doneTracking = done?.trackingNumber || done?.orderNumber || "";
 
@@ -251,8 +267,15 @@ export default function BuchenPage() {
   useEffect(() => {
     fetch("/api/prices", { cache: "no-store" })
       .then((res) => res.json())
-      .then((data) => setPublicPrices(data))
-      .catch(() => undefined);
+      .then((data) =>
+        setPublicPrices({
+          ...PUBLIC_BOOKING_PRICES,
+          reinigungWohnung: Number(data?.reinigungWohnung ?? PUBLIC_BOOKING_PRICES.reinigungWohnung),
+          reinigungBuero: Number(data?.reinigungBuero ?? PUBLIC_BOOKING_PRICES.reinigungBuero),
+          endreinigung: Number(data?.endreinigung ?? PUBLIC_BOOKING_PRICES.endreinigung),
+        })
+      )
+      .catch(() => setPublicPrices(PUBLIC_BOOKING_PRICES));
   }, []);
 
   const ensureCfg = useCallback((s: ServiceType) => cfgs[s] || { ...EMPTY_CFG, hours: MIN_HOURS[s] }, [cfgs]);
@@ -277,8 +300,8 @@ export default function BuchenPage() {
       return {
         serviceType: s,
         zip: c.addressFrom?.zip || c.addressTo?.zip || "",
-        hours: c.hours,
-        workers: s === "MOVING" || s === "EXPRESS_MOVING" ? 2 : 1,
+        hours: s === "DISPOSAL" ? 0 : c.hours,
+        workers: s === "MOVING" || s === "EXPRESS_MOVING" ? 2 : s === "DISPOSAL" ? 2 : 1,
         distanceKm: s === "MOVING" || s === "EXPRESS_MOVING" ? c.distanceKm : undefined,
         volumeM3: s === "MOVING" || s === "EXPRESS_MOVING" || s === "DISPOSAL" ? c.volumeM3 : undefined,
         areaM2: s === "MOVE_OUT_CLEANING" ? c.areaM2 : undefined,
@@ -295,7 +318,6 @@ export default function BuchenPage() {
   }, [services, ensureCfg]);
 
   const marketingPriceLabel = useCallback((serviceType: ServiceType) => {
-    if (!publicPrices) return "";
     const cfg = ensureCfg(serviceType);
     return getBookingMarketingPriceLabel(publicPrices, serviceType, {
       businessMove: serviceType === "MOVING" ? cfg.businessMove : false,
@@ -318,8 +340,9 @@ export default function BuchenPage() {
         return sum + c.hours * 60 + areaPart;
       }
       if (s === "DISPOSAL") {
-        const volumePart = Math.max(0, Math.ceil((c.volumeM3 || 0) / 5) * 15);
-        return sum + c.hours * 60 + volumePart;
+        const volumePart = Math.max(30, Math.ceil((c.volumeM3 || 0) / 3) * 20);
+        const floorPart = Math.max(0, c.floorFrom * 10);
+        return sum + volumePart + floorPart;
       }
       return sum + c.hours * 60;
     }, 0);
@@ -328,7 +351,11 @@ export default function BuchenPage() {
 
   const isStep2Valid = useMemo(() => {
     if (services.length === 0) return false;
-    return quotePayload.every((r) => /^\d{4,5}$/.test(String(r.zip || "")) && Number(r.hours || 0) >= MIN_HOURS[r.serviceType]);
+    return quotePayload.every((r) => {
+      if (!/^\d{4,5}$/.test(String(r.zip || ""))) return false;
+      if (r.serviceType === "DISPOSAL") return Number(r.volumeM3 || 0) > 0;
+      return Number(r.hours || 0) >= MIN_HOURS[r.serviceType];
+    });
   }, [services, quotePayload]);
 
   useEffect(() => {
@@ -425,7 +452,7 @@ export default function BuchenPage() {
   }, [selectedDate, services, computedDurationMin, timeSlot]);
 
   const estimatedTotal = useMemo(() => {
-    if (!publicPrices || services.length === 0) return null;
+    if (services.length === 0) return null;
     const netto = services.reduce((sum, s) => {
       const c = ensureCfg(s);
       const rate =
@@ -442,6 +469,9 @@ export default function BuchenPage() {
               : s === "OFFICE_CLEANING"
                 ? publicPrices.reinigungBuero
                 : publicPrices.entruempelung;
+      if (s === "DISPOSAL") {
+        return sum + rate * Math.max(c.volumeM3 || 0, 1);
+      }
       return sum + rate * c.hours;
     }, 0);
     const mwst = Math.round(netto * 0.19 * 100) / 100;
@@ -671,7 +701,7 @@ export default function BuchenPage() {
           </div>
 
           {/* Main Form Container - Glassmorphic */}
-          <div className="premium-panel min-h-[500px] overflow-hidden rounded-[34px] p-6 sm:p-10">
+          <div className="premium-panel min-h-[360px] sm:min-h-[500px] overflow-hidden rounded-2xl md:rounded-[34px] p-5 sm:p-10">
             <AnimatePresence mode="wait">
               {currentStep === 1 && (
                 <motion.div
@@ -776,14 +806,14 @@ export default function BuchenPage() {
                             </div>
                             <h3 className="font-semibold text-lg">{LABELS[s]}</h3>
                             <span className="ml-auto rounded-full bg-slate-200/60 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-white/10 dark:text-slate-300">
-                              Min. {MIN_HOURS[s]} Std.
+                              {s === "DISPOSAL" ? "Richtpreis live" : `Min. ${MIN_HOURS[s]} Std.`}
                             </span>
                           </div>
 
                           {/* Smart Presets */}
                           <div className="space-y-2">
                             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Schnellauswahl</label>
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                               {SMART_PRESETS[s].map((preset) => (
                                 <button
                                   key={preset.label}
@@ -799,18 +829,20 @@ export default function BuchenPage() {
                           </div>
 
                           <div className="grid sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
+                            {s !== "DISPOSAL" && (
+                              <div className="space-y-2">
                               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Dauer (Stunden)</label>
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="number"
-                                  min={MIN_HOURS[s]}
-                                  value={c.hours}
-                                  onChange={(e) => setCfg(s, { hours: Math.max(MIN_HOURS[s], Number(e.target.value)) })}
-                                  className="input-glass"
-                                />
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="number"
+                                    min={MIN_HOURS[s]}
+                                    value={c.hours}
+                                    onChange={(e) => setCfg(s, { hours: Math.max(MIN_HOURS[s], Number(e.target.value)) })}
+                                    className="input-glass"
+                                  />
+                                </div>
                               </div>
-                            </div>
+                            )}
 
                             {(s === "MOVING" || s === "EXPRESS_MOVING" || s === "DISPOSAL" || s === "MOVE_OUT_CLEANING") && (
                               <div className="space-y-2">
@@ -827,6 +859,24 @@ export default function BuchenPage() {
                               </div>
                             )}
                           </div>
+
+                          {s === "MOVING" && (
+                            <div className="rounded-2xl border border-sky-200/60 bg-sky-50/80 p-4 text-sm text-sky-900 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-100">
+                              Der Umzugspreis startet bei {formatPricePerHour(publicPrices?.umzugStandard ?? 79)} inklusive 2 Mitarbeiter + Fahrzeug.
+                            </div>
+                          )}
+
+                          {s === "EXPRESS_MOVING" && (
+                            <div className="rounded-2xl border border-amber-200/60 bg-amber-50/80 p-4 text-sm text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
+                              {EXPRESS_MOVE_NOTE}
+                            </div>
+                          )}
+
+                          {s === "DISPOSAL" && (
+                            <div className="rounded-2xl border border-rose-200/60 bg-rose-50/80 p-4 text-sm text-rose-900 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-100">
+                              Entrümpelungen starten bei {formatPricePerCubicMeter(publicPrices?.entruempelung ?? 60)}. {ENTRUEMPELUNG_LONG_DETAILS}
+                            </div>
+                          )}
 
                           <div className="space-y-4">
                             <div className="relative">
@@ -864,8 +914,8 @@ export default function BuchenPage() {
                                   className="input-glass"
                                 >
                                   <option value="0">Standard Planung</option>
-                                  <option value="48">Express 48h (Aufpreis)</option>
-                                  <option value="24">Express 24h (Aufpreis)</option>
+                                  <option value="48">Express 48h (99 €/Std.)</option>
+                                  <option value="24">Express 24h (99 €/Std.)</option>
                                 </select>
                               </div>
 
@@ -885,10 +935,6 @@ export default function BuchenPage() {
 
                           {s === "EXPRESS_MOVING" && (
                             <div className="space-y-4 pt-2">
-                              <div className="rounded-2xl border border-amber-200/60 bg-amber-50/80 p-4 text-sm text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
-                                Expressumzug ist als priorisierte Disposition hinterlegt. Der Expresspreis wird automatisch aus den aktuellen Preiseinstellungen übernommen.
-                              </div>
-
                               {c.addressFrom && c.addressTo && (
                                 <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10">
                                   <RouteMap
@@ -900,6 +946,40 @@ export default function BuchenPage() {
                                   />
                                 </div>
                               )}
+                            </div>
+                          )}
+
+                          {s === "DISPOSAL" && (
+                            <div className="grid gap-4 sm:grid-cols-2">
+                              <div className="space-y-2">
+                                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Abfallart</label>
+                                <input
+                                  value={c.wasteType}
+                                  onChange={(e) => setCfg(s, { wasteType: e.target.value })}
+                                  className="input-glass"
+                                  placeholder="z. B. Sperrmüll, Möbel, Elektrogeräte"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Fotos (optional)</label>
+                                <input
+                                  type="file"
+                                  multiple
+                                  accept="image/*"
+                                  onChange={(e) => setCfg(s, { photoCount: e.target.files?.length ?? 0 })}
+                                  className="input-glass file:mr-3 file:rounded-lg file:border-0 file:bg-slate-200 file:px-3 file:py-2 file:text-sm file:font-medium dark:file:bg-white/10"
+                                />
+                                {c.photoCount > 0 && <p className="text-xs text-slate-500">{c.photoCount} Foto(s) ausgewählt</p>}
+                              </div>
+                              <div className="sm:col-span-2 space-y-2">
+                                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Zugang / Laufweg Hinweise</label>
+                                <textarea
+                                  value={c.accessNotes}
+                                  onChange={(e) => setCfg(s, { accessNotes: e.target.value })}
+                                  className="input-glass min-h-[110px] resize-none"
+                                  placeholder="z. B. langer Hofweg, enger Zugang, kein Parkplatz, Kellerzugang hinten"
+                                />
+                              </div>
                             </div>
                           )}
                         </div>
@@ -961,7 +1041,6 @@ export default function BuchenPage() {
                           }}
                           disabled={[
                             { before: new Date(new Date().setHours(0, 0, 0, 0)) },
-                            { dayOfWeek: [0] },
                           ]}
                           classNames={{
                             months: "flex justify-center",
@@ -985,7 +1064,7 @@ export default function BuchenPage() {
                     <div className="space-y-3 pt-2">
                       <div className="flex items-center justify-between gap-2">
                         <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Verfügbare Zeitfenster</label>
-                        <span className="text-xs text-slate-500">Dauer: {Math.round(computedDurationMin / 60 * 10) / 10} Std. (automatisch)</span>
+                        <span className="text-xs text-slate-500">Einsatzdauer: {Math.round(computedDurationMin / 60 * 10) / 10} Std. (automatisch)</span>
                       </div>
                       {slotNotice && <p className="text-xs text-amber-600">{slotNotice}</p>}
                       {slotError && <p className="text-xs text-red-500">{slotError}</p>}
@@ -1102,7 +1181,7 @@ export default function BuchenPage() {
 
         {/* Right Column: Sticky Live-Preis Widget */}
         <div className="lg:w-[400px] w-full shrink-0">
-          <div className="premium-panel sticky top-8 overflow-hidden rounded-[34px] p-8">
+          <div className="premium-panel lg:sticky lg:top-8 overflow-hidden rounded-2xl md:rounded-[34px] p-5 md:p-8">
             <div className="absolute top-0 right-0 w-40 h-40 bg-teal-400/10 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -1134,7 +1213,7 @@ export default function BuchenPage() {
                         {LABELS[s]}
                         {cfgs[s] && (
                           <div className="text-xs text-slate-500 font-normal mt-0.5">
-                            {cfgs[s].hours} Std.
+                            {s === "DISPOSAL" ? `${cfgs[s].volumeM3} m³` : `${cfgs[s].hours} Std.`}
                             {(s === "MOVING" || s === "EXPRESS_MOVING") && cfgs[s].distanceKm > 0 && ` • ${cfgs[s].distanceKm.toFixed(1)} km`}
                           </div>
                         )}
@@ -1149,7 +1228,7 @@ export default function BuchenPage() {
                 <div className="mb-4 space-y-1 rounded-xl border border-slate-200/70 bg-white/50 p-3 text-xs dark:border-white/10 dark:bg-white/5">
                   <p><span className="text-slate-500">Termin:</span> {selectedDate ? new Date(`${selectedDate}T00:00:00`).toLocaleDateString("de-DE") : "Nicht gewählt"}</p>
                   <p><span className="text-slate-500">Zeitfenster:</span> {timeSlot || "Nicht gewählt"}</p>
-                  <p><span className="text-slate-500">Dauer:</span> {Math.round(computedDurationMin / 60 * 10) / 10} Std.</p>
+                  <p><span className="text-slate-500">Einsatzdauer:</span> {Math.round(computedDurationMin / 60 * 10) / 10} Std.</p>
                 </div>
 
                 {services.length > 0 && (
@@ -1226,7 +1305,9 @@ export default function BuchenPage() {
                         </div>
                       </div>
                       <p className="text-[11px] text-amber-600">
-                        Richtwert auf Basis der Stundensätze. Endpreis nach Adresseingabe.
+                        {services.includes("DISPOSAL")
+                          ? "Richtpreis auf Basis des geschätzten Volumens. Endpreis nach Volumen, Etage, Zugang und Entsorgungsart."
+                          : "Richtwert auf Basis der Startpreise. Endpreis nach Adresseingabe und finaler Einsatzplanung."}
                       </p>
                     </div>
                   ) : quoteError ? (

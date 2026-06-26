@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { getPublicServicePriceLabel, getPublicServicePrices } from "@/lib/public-service-pricing";
 import { buildMetadata } from "@/lib/seo";
+import { ENTRUEMPELUNG_SHORT_DETAILS, STANDARD_MOVE_DETAILS } from "@/lib/service-pricing";
 
 export const metadata: Metadata = buildMetadata({
   title: "Leistungen für Umzug, Reinigung und Entrümpelung",
@@ -48,6 +49,7 @@ export default async function LeistungenPage() {
       alt: "SEEL Transport Privatumzug Berlin – Möbeltransport und Umzugsteam",
       price: getPublicServicePriceLabel(prices, "umzug-berlin"),
       bullets: ["Privatumzug Berlin", "Umzug Berlin-Brandenburg", "Montage und Tragehilfe", "Halteverbotszonen auf Wunsch"],
+      detailLine: STANDARD_MOVE_DETAILS,
     },
     {
       id: "buero",
@@ -58,6 +60,7 @@ export default async function LeistungenPage() {
       alt: "Professionelle Gewerbeleistung von SEEL in Berlin",
       price: getPublicServicePriceLabel(prices, "gewerbe"),
       bullets: ["Projektplanung", "IT-Equipment", "Möbellogistik", "Optionale Nachreinigung"],
+      detailLine: STANDARD_MOVE_DETAILS,
     },
     {
       id: "schule",
@@ -68,6 +71,7 @@ export default async function LeistungenPage() {
       alt: "Schulumzug Berlin – SEEL Transport für Schulen und Bildungseinrichtungen",
       price: getPublicServicePriceLabel(prices, "schulumzug"),
       bullets: ["Ferienfenster", "Präzise Etappen", "IT- und Möbellogistik", "Kein Unterrichtsausfall"],
+      detailLine: STANDARD_MOVE_DETAILS,
     },
     {
       id: "reinigung",
@@ -78,6 +82,7 @@ export default async function LeistungenPage() {
       alt: "SEEL Reinigungsteam bei der professionellen Büroreinigung in Berlin",
       price: getPublicServicePriceLabel(prices, "reinigung"),
       bullets: ["Wohnungsreinigung", "Endreinigung", "Büroreinigung", "Feste Leistungslisten"],
+      detailLine: "Mindestabnahme 2 Stunden",
     },
     {
       id: "entruempelung",
@@ -88,6 +93,7 @@ export default async function LeistungenPage() {
       alt: "Umweltgerechte Entrümpelung und Entsorgung in Berlin – SEEL Transport",
       price: getPublicServicePriceLabel(prices, "entruempelung"),
       bullets: ["Besenreine Übergabe", "Umweltgerechte Entsorgung", "Kurzfristige Termine", "Dokumentierte Abwicklung"],
+      detailLine: ENTRUEMPELUNG_SHORT_DETAILS,
     },
   ];
 
@@ -122,21 +128,21 @@ export default async function LeistungenPage() {
             <article
               key={section.id}
               id={section.id}
-              className="premium-panel card-interactive scroll-reveal grid items-center gap-8 overflow-hidden rounded-[36px] lg:grid-cols-2"
+              className="premium-panel card-interactive scroll-reveal grid items-center gap-8 overflow-hidden rounded-2xl md:rounded-[36px] lg:grid-cols-2"
               style={{ transitionDelay: `${index * 80}ms` }}
             >
               <div className={index % 2 === 1 ? "order-2 lg:order-1" : ""}>
-                <div className="relative h-80">
+                <div className="relative h-52 sm:h-64 lg:h-80">
                   <Image src={section.image} alt={section.alt} fill className="image-cinematic object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,8,18,0.04)_0%,rgba(2,8,18,0.58)_100%)]" />
                   <span className="price-badge absolute left-5 top-5">{section.price}</span>
                 </div>
               </div>
               <div className={`p-8 md:p-10 ${index % 2 === 1 ? "order-1 lg:order-2" : ""}`}>
-                <p className="text-xs uppercase tracking-[0.3em] text-sky-700 dark:text-cyan-300">Klar strukturierter Bereich</p>
+                  <p className="text-xs sm:text-sm uppercase tracking-[0.2em] sm:tracking-[0.3em] text-sky-700 dark:text-cyan-300">Klar strukturierter Bereich</p>
                 <h2 className="section-title mt-4 text-3xl md:text-4xl">{section.title}</h2>
                 <p className="section-copy mt-4 text-sm md:text-base">{section.description}</p>
-                <p className="mt-5 text-sm font-semibold text-sky-700 dark:text-cyan-300">{section.price} · Mindestabnahme 2 Stunden</p>
+                <p className="mt-5 text-sm font-semibold text-sky-700 dark:text-cyan-300">{section.price} · {section.detailLine}</p>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   {section.bullets.map((bullet) => (
                     <div key={bullet} className="glass-card flex items-start gap-2 rounded-[22px] px-4 py-3 text-sm text-slate-700 dark:text-white/70">
@@ -176,7 +182,7 @@ export default async function LeistungenPage() {
 
       <section className="section-spotlight pb-24">
         <div className="mx-auto max-w-5xl px-4 md:px-8">
-          <div className="premium-panel rounded-[36px] p-10 text-center md:p-14">
+          <div className="premium-panel rounded-2xl md:rounded-[36px] p-6 text-center md:p-14">
             <p className="section-eyebrow">Direkt online anfragen</p>
             <h2 className="section-title mt-4 text-center">Jetzt strukturiert weitergehen</h2>
             <p className="section-copy mx-auto mt-4 max-w-2xl text-center">

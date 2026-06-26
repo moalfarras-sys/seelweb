@@ -12,10 +12,10 @@ const displayFont = Plus_Jakarta_Sans({
 });
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import WhatsAppButton from "@/components/layout/WhatsAppButton";
 import { CookieBanner } from "@/components/layout/CookieBanner";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SiteContentProvider } from "@/components/SiteContentProvider";
+import { ChatbotProvider } from "@/components/chatbot/ChatbotProvider";
 import { getPublicSiteSettings } from "@/lib/site-content";
 
 export const viewport: Viewport = {
@@ -86,7 +86,7 @@ export default async function RootLayout({
       opens: "00:00",
       closes: "23:59",
     },
-    priceRange: "EUR",
+    priceRange: "€€",
   };
 
   return (
@@ -114,8 +114,8 @@ export default async function RootLayout({
             {!isAdmin && <Navbar />}
             <main className="relative z-10 min-h-screen page-shell">{children}</main>
             {!isAdmin && <Footer />}
-            {!isAdmin && <WhatsAppButton />}
             {!isAdmin && <CookieBanner />}
+            {!isAdmin && <ChatbotProvider />}
           </SiteContentProvider>
 
           {!isAdmin && (

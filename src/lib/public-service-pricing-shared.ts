@@ -1,4 +1,12 @@
-import { formatPricePerHour, type PublicPrices } from "@/lib/public-prices-shared";
+import type { PublicPrices } from "@/lib/public-prices-shared";
+import {
+  ENTRUEMPELUNG_SHORT_DETAILS,
+  EXPRESS_MOVE_DETAILS,
+  EXPRESS_MOVE_PLANNING,
+  STANDARD_MOVE_DETAILS,
+  formatPricePerCubicMeter,
+  formatPricePerHour,
+} from "@/lib/service-pricing";
 
 export function getMovingPublicRate(
   prices: PublicPrices,
@@ -15,10 +23,10 @@ export function getBookingMarketingPriceLabel(
   options?: { businessMove?: boolean; express24h?: boolean; express48h?: boolean }
 ) {
   if (serviceType === "EXPRESS_MOVING") {
-    return `${formatPricePerHour(prices.umzugExpress)} - ${prices.minimumHoursLabel}`;
+    return `${formatPricePerHour(prices.umzugExpress)} - ${EXPRESS_MOVE_DETAILS} · ${EXPRESS_MOVE_PLANNING}`;
   }
   if (serviceType === "MOVING") {
-    return `${formatPricePerHour(getMovingPublicRate(prices, options))} - ${prices.minimumHoursLabel}`;
+    return `${formatPricePerHour(getMovingPublicRate(prices, options))} - ${STANDARD_MOVE_DETAILS}`;
   }
   if (serviceType === "HOME_CLEANING") {
     return `${formatPricePerHour(prices.reinigungWohnung)} - ${prices.minimumHoursLabel}`;
@@ -29,5 +37,5 @@ export function getBookingMarketingPriceLabel(
   if (serviceType === "OFFICE_CLEANING") {
     return `${formatPricePerHour(prices.reinigungBuero)} - ${prices.minimumHoursLabel}`;
   }
-  return `${formatPricePerHour(prices.entruempelung)} - ${prices.minimumHoursLabel}`;
+  return `${formatPricePerCubicMeter(prices.entruempelung)} - ${ENTRUEMPELUNG_SHORT_DETAILS}`;
 }

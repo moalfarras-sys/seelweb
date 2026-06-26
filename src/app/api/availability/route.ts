@@ -35,11 +35,9 @@ function intervalsOverlap(a: Interval, b: Interval) {
   return a.start < b.end && b.start < a.end;
 }
 
-function getWorkHours(date: Date) {
-  const day = date.getDay();
-  if (day === 0) return null;
-  if (day === 6) return { start: toMinutes("09:00"), end: toMinutes("15:00") };
-  return { start: toMinutes("08:00"), end: toMinutes("18:00") };
+function getWorkHours(_date: Date) {
+  // Business operates 24/7, every day of the week.
+  return { start: 0, end: 24 * 60 };
 }
 
 function parseDuration(raw: string | null) {
@@ -123,9 +121,16 @@ export async function GET(req: NextRequest) {
         end: Math.min(work.end, x.end + BUFFER_MINUTES),
       }));
 
+    // A job whose estimated duration exceeds a single work day must NOT make every
+    // day look "fully booked". Cap the slot length to the work window so an empty
+    // day always offers at least a full-day start slot; the real duration is
+    // confirmed manually after booking.
+    const workSpan = work.end - work.start;
+    const slotDuration = Math.min(durationMin, workSpan);
+
     const slots = fallback
-      ? buildSlots(work, durationMin)
-      : buildSlots(work, durationMin).filter((slot) => {
+      ? buildSlots(work, slotDuration)
+      : buildSlots(work, slotDuration).filter((slot) => {
           const candidate = parseSlot(slot.label);
           return candidate ? !blocked.some((b) => intervalsOverlap(candidate, b)) : false;
         });

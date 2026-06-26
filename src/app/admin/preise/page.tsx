@@ -6,7 +6,6 @@ import { CheckCircle2, AlertCircle, Loader2, Save, Euro } from "lucide-react";
 type PricingSettings = {
   publicMovingStandardEur: number;
   publicMovingExpressEur: number;
-  publicMovingExpressSurchargePct: number;
   publicHomeCleaningEur: number;
   publicOfficeMovingEur: number;
   publicOfficeCleaningEur: number;
@@ -16,13 +15,12 @@ type PricingSettings = {
 };
 
 const emptyState: PricingSettings = {
-  publicMovingStandardEur: 59,
-  publicMovingExpressEur: 75,
-  publicMovingExpressSurchargePct: 40,
+  publicMovingStandardEur: 79,
+  publicMovingExpressEur: 99,
   publicHomeCleaningEur: 34,
-  publicOfficeMovingEur: 59,
+  publicOfficeMovingEur: 79,
   publicOfficeCleaningEur: 34,
-  publicDisposalEur: 49,
+  publicDisposalEur: 60,
   publicMoveOutCleaningEur: 34,
   updatedAt: new Date().toISOString(),
 };
@@ -30,11 +28,10 @@ const emptyState: PricingSettings = {
 const fields: Array<{ key: keyof PricingSettings; label: string; unit: string }> = [
   { key: "publicMovingStandardEur", label: "Umzug Standard", unit: "EUR/Std." },
   { key: "publicMovingExpressEur", label: "Expressumzug", unit: "EUR/Std." },
-  { key: "publicMovingExpressSurchargePct", label: "Expresszuschlag", unit: "%" },
   { key: "publicHomeCleaningEur", label: "Wohnungsreinigung", unit: "EUR/Std." },
   { key: "publicOfficeMovingEur", label: "Büro- & Gewerbeumzug", unit: "EUR/Std." },
   { key: "publicOfficeCleaningEur", label: "Büroreinigung", unit: "EUR/Std." },
-  { key: "publicDisposalEur", label: "Entrümpelung", unit: "EUR/Std." },
+  { key: "publicDisposalEur", label: "Entrümpelung", unit: "EUR/m³" },
   { key: "publicMoveOutCleaningEur", label: "Endreinigung", unit: "EUR/Std." },
 ];
 
@@ -53,6 +50,7 @@ export default function PreisePage() {
         if (!res.ok) throw new Error();
         const data = await res.json();
         const merged = { ...emptyState, ...data };
+        delete (merged as Record<string, unknown>).publicMovingExpressSurchargePct;
         setForm(merged);
         setInitialForm(merged);
       } catch {
@@ -75,13 +73,14 @@ export default function PreisePage() {
       const res = await fetch("/api/admin/pricing-settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, publicMovingExpressSurchargePct: 0 }),
       });
 
       if (!res.ok) throw new Error();
 
       const saved = await res.json();
       const merged = { ...form, ...saved };
+      delete (merged as Record<string, unknown>).publicMovingExpressSurchargePct;
       setForm(merged);
       setInitialForm(merged);
       setMessage({ type: "ok", text: "Preise wurden gespeichert" });
@@ -132,7 +131,7 @@ export default function PreisePage() {
                     </div>
                     <input
                       type="number"
-                      step={field.unit === "%" ? "1" : "0.5"}
+                      step="0.5"
                       min="0"
                       value={String(form[field.key] ?? "")}
                       onChange={(event) =>

@@ -6,16 +6,16 @@ import { getPrices, formatPricePerHour } from "@/lib/getPrices";
 import { buildFaqSchema, buildMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Möbeltransport Berlin - Schnell, sicher und transparent",
+  title: "Transport Berlin - Kurier, Einzelstücke und Lieferfahrten",
   description:
-    "Transport-Service in Berlin für Möbel, Einzelstücke, Geräte und gewerbliche Lieferfahrten. Transparente Kilometerkalkulation und versicherter Transport.",
+    "Transport-Service in Berlin für Einzelstücke, Geräte, Kurierfahrten und gewerbliche Lieferungen. Transparent kalkuliert, versichert und klar geplant.",
   path: "/leistungen/transport",
 });
 
 const faqItems = [
   {
     question: "Was kann transportiert werden?",
-    answer: "Einzelmöbel, schwere Gegenstände wie Waschmaschinen oder Klaviere, Gerätelieferungen und gewerbliche Waren. Auf Wunsch mit Montage- und Tragehilfe.",
+    answer: "Einzelstücke, schwere Gegenstände wie Waschmaschinen oder Klaviere, Gerätelieferungen und gewerbliche Waren. Auf Wunsch mit Montage- und Tragehilfe.",
   },
   {
     question: "Wie wird der Preis für Transporte berechnet?",
@@ -38,10 +38,10 @@ export default async function TransportPage() {
 
       <section className="gradient-navy py-20 md:py-28">
         <div className="mx-auto max-w-5xl px-4 text-center md:px-8">
-          <h1 className="text-4xl font-bold text-white md:text-5xl">Möbeltransport Berlin - Schnell, sicher und transparent</h1>
+          <h1 className="text-4xl font-bold text-white md:text-5xl">Transport Berlin - schnell, sicher und transparent</h1>
           <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-silver-300">
-            Schneller und sicherer Transport für private und gewerbliche Aufträge. Ideal für Möbel, Einzeltransporte
-            und terminkritische Lieferungen in Berlin und Brandenburg.
+            Schneller und sicherer Transport für private und gewerbliche Aufträge. Ideal für Einzelstücke, Geräte,
+            Kurierfahrten und terminkritische Lieferungen in Berlin und Brandenburg.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
             <Link href="/buchen?service=MOVING" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-600">
@@ -61,7 +61,7 @@ export default async function TransportPage() {
             {[
               "Transparente Kilometerkalkulation ohne versteckte Kosten",
               "Versicherter Transport nach HGB §451e",
-              "Optionale Tragehilfe und Möbelmontage",
+              "Optionale Tragehilfe und Montage",
             ].map((item) => (
               <div key={item} className="rounded-[2rem] border border-gray-100 bg-gray-50/80 p-6 dark:border-navy-700/50 dark:bg-navy-800/60">
                 <CheckCircle2 size={18} className="text-teal-500" />
@@ -75,7 +75,7 @@ export default async function TransportPage() {
               <h2 className="text-3xl font-bold text-navy-800 dark:text-white">Was wir transportieren</h2>
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 {[
-                  "Einzelmöbel und schwere Gegenstände",
+                  "Einzelstücke und schwere Gegenstände",
                   "Kurzfristige City-Transporte",
                   "Gewerbelieferungen und Warenwirtschaft",
                   "Schwerlast: Waschmaschinen, Klaviere",
