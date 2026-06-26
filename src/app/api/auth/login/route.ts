@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { sealData } from "iron-session";
 import { prisma } from "@/lib/db";
-import { getSession } from "@/lib/auth";
+import { SessionData, sessionOptions } from "@/lib/auth";
 
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_ATTEMPTS = 8;
@@ -38,6 +39,16 @@ function clearFailures(ip: string) {
   attempts.delete(ip);
 }
 
+async function createLoginResponse(session: SessionData) {
+  const sealedSession = await sealData(session, {
+    password: sessionOptions.password,
+    ttl: sessionOptions.cookieOptions.maxAge,
+  });
+  const response = NextResponse.json({ success: true });
+  response.cookies.set(sessionOptions.cookieName, sealedSession, sessionOptions.cookieOptions);
+  return response;
+}
+
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
   try {
@@ -65,15 +76,14 @@ export async function POST(req: NextRequest) {
       const envEmail = process.env.ADMIN_EMAIL;
       const envPass = process.env.ADMIN_PASSWORD;
       if (email === envEmail && password === envPass) {
-        const session = await getSession();
-        session.userId = "env-admin";
-        session.email = email;
-        session.name = "Administrator";
-        session.role = "admin";
-        session.isLoggedIn = true;
-        await session.save();
         clearFailures(ip);
-        return NextResponse.json({ success: true });
+        return createLoginResponse({
+          userId: "env-admin",
+          email,
+          name: "Administrator",
+          role: "admin",
+          isLoggedIn: true,
+        });
       }
       recordFailure(ip);
       return NextResponse.json({ error: "Ungültige Anmeldedaten" }, { status: 401 });
@@ -85,16 +95,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Ungültige Anmeldedaten" }, { status: 401 });
     }
 
-    const session = await getSession();
-    session.userId = admin.id;
-    session.email = admin.email;
-    session.name = admin.name;
-    session.role = admin.role;
-    session.isLoggedIn = true;
-    await session.save();
     clearFailures(ip);
 
-    return NextResponse.json({ success: true });
+    return createLoginResponse({
+      userId: admin.id,
+      email: admin.email,
+      name: admin.name,
+      role: admin.role,
+      isLoggedIn: true,
+    });
   } catch (err) {
     recordFailure(ip);
     console.error("Login error:", err);

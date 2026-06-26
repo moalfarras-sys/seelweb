@@ -9,7 +9,7 @@ export interface SessionData {
   isLoggedIn: boolean;
 }
 
-const sessionOptions = {
+export const sessionOptions = {
   password: process.env.NEXTAUTH_SECRET || "seel-transport-secret-key-change-in-production-2024-min32chars!!",
   cookieName: "seel-admin-session",
   cookieOptions: {
@@ -17,6 +17,7 @@ const sessionOptions = {
     httpOnly: true,
     sameSite: "lax" as const,
     maxAge: 60 * 60 * 8,
+    path: "/",
   },
 };
 
