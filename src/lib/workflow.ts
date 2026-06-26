@@ -31,7 +31,11 @@ function toInputJson(value: unknown): Prisma.InputJsonValue {
 function getCurrentYear() {
   return new Date().getFullYear();
 }
-async function getNextSequentialCode(prefix: string, field: "offerNumber" | "contractNumber" | "invoiceNumber") {
+async function getNextSequentialCode(
+  prefix: string,
+  field: "offerNumber" | "contractNumber" | "invoiceNumber",
+  externalTx?: Prisma.TransactionClient
+) {
   const year = getCurrentYear();
   const parseNumericSuffix = (value: string | null | undefined) => {
     if (!value) return 0;
@@ -41,7 +45,7 @@ async function getNextSequentialCode(prefix: string, field: "offerNumber" | "con
   };
   const formatCode = (num: number) => `${prefix}-${year}-${String(num).padStart(4, "0")}`;
 
-  return prisma.$transaction(async (tx) => {
+  const run = async (tx: Prisma.TransactionClient) => {
     if (field === "offerNumber") {
       const existingSeq = await tx.offerSequence.findUnique({ where: { year } });
       const last = await tx.offer.findFirst({
@@ -96,16 +100,18 @@ async function getNextSequentialCode(prefix: string, field: "offerNumber" | "con
     const nextValue = Math.max(existingSeq.currentValue, maxExisting) + 1;
     const updated = await tx.invoiceSequence.update({ where: { year }, data: { currentValue: nextValue } });
     return formatCode(updated.currentValue);
-  });
+  };
+
+  return externalTx ? run(externalTx) : prisma.$transaction(run);
 }
 
-export async function nextTrackingNumber() {
+export async function nextTrackingNumber(externalTx?: Prisma.TransactionClient) {
   const now = new Date();
   const yearShort = String(now.getFullYear()).slice(-2);
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const period = `${yearShort}${month}`;
 
-  const value = await prisma.$transaction(async (tx) => {
+  const run = async (tx: Prisma.TransactionClient) => {
     const seq = await tx.trackingSequence.findUnique({ where: { period } });
     if (!seq) {
       await tx.trackingSequence.create({
@@ -122,13 +128,15 @@ export async function nextTrackingNumber() {
       data: { currentValue: seq.currentValue + 1 },
     });
     return updated.currentValue;
-  });
+  };
+
+  const value = externalTx ? await run(externalTx) : await prisma.$transaction(run);
 
   return `T-${period}-${String(value).padStart(5, "0")}`;
 }
 
-export async function nextOfferNumber() {
-  return getNextSequentialCode("ANG", "offerNumber");
+export async function nextOfferNumber(externalTx?: Prisma.TransactionClient) {
+  return getNextSequentialCode("ANG", "offerNumber", externalTx);
 }
 
 export async function nextContractNumber() {
@@ -248,7 +256,7 @@ function buildOfferItemsFromBreakdown(
   return items;
 }
 
-export async function createOfferFromOrder(order: OrderWithPayload) {
+export async function createOfferFromOrder(order: OrderWithPayload, externalTx?: Prisma.TransactionClient) {
   const token = createPublicToken();
   const validUntil = new Date();
   validUntil.setDate(validUntil.getDate() + 14);
@@ -256,53 +264,71 @@ export async function createOfferFromOrder(order: OrderWithPayload) {
   const services = parseBreakdownServices(order.breakdownJson);
   const extrasByService = parseExtrasMap(order.extrasJson);
 
-  let offer: Awaited<ReturnType<typeof prisma.offer.create>> | null = null;
-  let lastError: unknown = null;
-
-  for (let attempt = 0; attempt < 5; attempt += 1) {
-    const offerNumber = await nextOfferNumber();
-    try {
-      offer = await prisma.offer.create({
-        data: {
-          offerNumber,
-          customerId: order.customerId,
-          orderId: order.id,
-          status: "PENDING",
-          validUntil,
+  const buildOfferData = (offerNumber: string) => ({
+    offerNumber,
+    customerId: order.customerId,
+    orderId: order.id,
+    status: "PENDING" as const,
+    validUntil,
+    subtotal: order.subtotal,
+    discountAmount: order.discountAmount,
+    extraFees: 0,
+    netto: order.netto,
+    mwst: order.mwst,
+    totalPrice: order.totalPrice,
+    token,
+    latestVersion: 1,
+    items: { create: buildOfferItemsFromBreakdown(services, extrasByService) },
+    versions: {
+      create: {
+        versionNo: 1,
+        snapshotJson: {
           subtotal: order.subtotal,
           discountAmount: order.discountAmount,
           extraFees: 0,
           netto: order.netto,
           mwst: order.mwst,
           totalPrice: order.totalPrice,
-          token,
-          latestVersion: 1,
-          items: {
-            create: buildOfferItemsFromBreakdown(services, extrasByService),
-          },
-          versions: {
-            create: {
-              versionNo: 1,
-              snapshotJson: {
-                subtotal: order.subtotal,
-                discountAmount: order.discountAmount,
-                extraFees: 0,
-                netto: order.netto,
-                mwst: order.mwst,
-                totalPrice: order.totalPrice,
-                breakdownJson: toInputJson(order.breakdownJson),
-                extrasJson: toInputJson(order.extrasJson),
-              } as Prisma.InputJsonValue,
-              createdBy: "system",
-            },
-          },
-        },
-        include: {
-          items: true,
-          order: { include: { customer: true, service: true, fromAddress: true, toAddress: true } },
-          customer: true,
-        },
-      });
+          breakdownJson: toInputJson(order.breakdownJson),
+          extrasJson: toInputJson(order.extrasJson),
+        } as Prisma.InputJsonValue,
+        createdBy: "system",
+      },
+    },
+  });
+  const offerInclude = {
+    items: true,
+    order: { include: { customer: true, service: true, fromAddress: true, toAddress: true } },
+    customer: true,
+  };
+
+  let offer: Awaited<ReturnType<typeof prisma.offer.create>> | null = null;
+
+  if (externalTx) {
+    // Inside an interactive transaction: the offer-sequence row update serializes
+    // numbering, so no P2002 retry is needed (and a retry would abort the tx).
+    const offerNumber = await nextOfferNumber(externalTx);
+    offer = await externalTx.offer.create({ data: buildOfferData(offerNumber), include: offerInclude });
+    await externalTx.communication.create({
+      data: {
+        customerId: order.customerId,
+        offerId: offer.id,
+        channel: "INTERNAL_NOTE",
+        direction: "INTERNAL",
+        subject: "Angebot aus Buchung erstellt",
+        message: `Angebot ${offer.offerNumber} wurde automatisch aus Buchung erstellt.`,
+        sentBy: "system",
+      },
+    });
+    return offer;
+  }
+
+  // Standalone (no outer transaction): keep the collision-retry behaviour.
+  let lastError: unknown = null;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const offerNumber = await nextOfferNumber();
+    try {
+      offer = await prisma.offer.create({ data: buildOfferData(offerNumber), include: offerInclude });
       break;
     } catch (error) {
       lastError = error;

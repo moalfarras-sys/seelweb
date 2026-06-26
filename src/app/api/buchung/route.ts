@@ -8,6 +8,7 @@ import { Prisma, type ServiceCategory } from "@prisma/client";
 import { calculateAggregatePricing } from "@/lib/pricing/rules";
 import { getAppBaseUrl } from "@/lib/app-url";
 import { escapeHtml } from "@/lib/escape-html";
+import { createHash } from "crypto";
 
 const JSON_UTF8_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
@@ -229,6 +230,15 @@ function bookingRateLimited(ip: string): boolean {
 const MAX_NOTES_LEN = 2000;
 const MAX_NAME_LEN = 200;
 
+// Stable positive 31-bit id for Postgres advisory locks (fits int4 and bigint).
+function advisoryLockId(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i += 1) {
+    h = (h * 31 + s.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h);
+}
+
 export async function POST(req: NextRequest) {
   const requestId = req.headers.get("x-request-id") || crypto.randomUUID();
 
@@ -406,131 +416,224 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    let fromAddressId: string | null = null;
-    let toAddressId: string | null = null;
+    // --- Idempotency: stable key (explicit header or derived from payload) ---
+    const idempotencyKey =
+      (req.headers.get("idempotency-key") || "").trim() ||
+      createHash("sha256")
+        .update(
+          JSON.stringify({
+            email: customer.email,
+            scheduledAt,
+            timeSlot: timeSlot || "",
+            fp: aggregate.quoteFingerprint,
+            total: aggregate.total,
+          })
+        )
+        .digest("hex");
 
-    if (firstFrom) {
-      const fromAddr = await prisma.address.create({
-        data: {
-          street: firstFrom.street,
-          houseNumber: firstFrom.houseNumber || "",
-          zip: firstFrom.zip,
-          city: firstFrom.city || "",
-          floor: firstService.floorFrom || 0,
-          hasElevator: firstService.hasElevatorFrom || false,
-          latitude: firstFrom.lat,
-          longitude: firstFrom.lon,
-        },
+    const buildReplay = (o: {
+      orderNumber: string;
+      trackingNumber: string | null;
+      offer: { offerNumber: string; token: string; status: string } | null;
+    }) =>
+      NextResponse.json({
+        success: true,
+        orderNumber: o.orderNumber,
+        trackingNumber: o.trackingNumber,
+        offerNumber: o.offer?.offerNumber ?? "",
+        offerToken: o.offer?.token ?? "",
+        offerStatus: o.offer?.status ?? "",
+        offerPdfUrl: o.offer ? `/api/angebot/${o.offer.token}/pdf?download=1` : "",
+        paypalRedirectUrl: null,
+        requestId,
+        idempotent: true,
       });
-      fromAddressId = fromAddr.id;
+
+    // Replay an already-processed identical request without creating a duplicate.
+    const existingByKey = await prisma.order.findUnique({ where: { idempotencyKey }, include: { offer: true } });
+    if (existingByKey) {
+      return buildReplay(existingByKey);
     }
 
-    if (firstTo) {
-      const toAddr = await prisma.address.create({
-        data: {
-          street: firstTo.street,
-          houseNumber: firstTo.houseNumber || "",
-          zip: firstTo.zip,
-          city: firstTo.city || "",
-          floor: firstService.floorTo || 0,
-          hasElevator: firstService.hasElevatorTo || false,
-          latitude: firstTo.lat,
-          longitude: firstTo.lon,
-        },
-      });
-      toAddressId = toAddr.id;
-    }
-
-    const trackingNumber = await nextTrackingNumber();
-    const orderNumber = trackingNumber;
     const combinedHours = Number(normalizedServices.reduce((sum, s) => sum + Number(s.hours || 0), 0).toFixed(2));
+    const slotDayStart = new Date(selectedDate);
+    slotDayStart.setHours(0, 0, 0, 0);
+    const slotDayEnd = new Date(selectedDate);
+    slotDayEnd.setHours(23, 59, 59, 999);
+    const slotLockId = advisoryLockId(`${selectedDate.toISOString().slice(0, 10)}|${timeSlot || ""}`);
 
-    const dbOrder = await prisma.order.create({
-      data: {
-        orderNumber,
-        trackingNumber,
-        customerId: dbCustomer.id,
-        serviceId: catalogService.id,
-        status: "ANFRAGE",
-        fromAddressId,
-        toAddressId,
-        scheduledAt: selectedDate,
-        timeSlot: timeSlot || null,
-        bookedHours: combinedHours,
-        extrasTimeMin: 0,
-        totalHours: combinedHours,
-        hourlyRate: combinedHours > 0 ? Number((aggregate.subtotal / combinedHours).toFixed(2)) : 0,
-        workers: firstCategory === "MOVING" ? 2 : 1,
-        volumeM3: firstService.volumeM3 || null,
-        distanceKm: firstService.distanceKm || null,
-        areaM2: firstService.areaM2 || null,
-        subtotal: aggregate.subtotal,
-        discountAmount: aggregate.discountAmount,
-        discountCode: aggregate.discountCode,
-        quoteFingerprint: aggregate.quoteFingerprint,
-        quoteSnapshotJson: {
-          services: aggregate.services.map((s) => ({
-            serviceType: s.originalServiceType,
-            effectiveServiceType: s.serviceType,
-            region: s.result.regionName,
-            zip: s.zip,
-            subtotal: s.result.subtotal,
-            total: s.result.total,
-          })),
-          lines: aggregate.lines,
-          generatedAt: new Date().toISOString(),
-        },
-        netto: aggregate.netto,
-        mwst: aggregate.mwst,
-        totalPrice: aggregate.total,
-        paymentMethod: mapPaymentMethod(paymentMethod) as never,
-        paymentStatus: "AUSSTEHEND",
-        extrasJson: normalizedServices.map((s) => ({
-          serviceType: s.serviceType,
-          extras: (s.extras || []).filter((e) => e.selected),
-        })),
-        breakdownJson: {
-          services: aggregate.services.map((s, i) => ({
-            serviceType: s.originalServiceType,
-            effectiveServiceType: s.serviceType,
-            hours: normalizedServices[i]?.hours || 0,
-            pricing: s.result,
-          })),
-          lines: aggregate.lines,
-          quoteFingerprint: aggregate.quoteFingerprint,
-        },
-        addressSnapshotJson: normalizedServices.map((s, i) => ({
-          serviceType: s.serviceType,
-          from: serviceValidation[i].ok ? serviceValidation[i].from : null,
-          to: serviceValidation[i].ok ? serviceValidation[i].to : null,
-        })),
-        notes: notes || null,
-      },
-    });
+    // --- Single atomic transaction: addresses + order + discount + offer ---
+    let txData: {
+      dbOrder: Awaited<ReturnType<typeof prisma.order.create>>;
+      offer: Prisma.OfferGetPayload<{ include: { items: true } }> | null;
+      trackingNumber: string;
+    };
+    try {
+      txData = await prisma.$transaction(
+        async (tx) => {
+          // Serialize concurrent bookings for the same day + slot.
+          await tx.$queryRawUnsafe("SELECT pg_advisory_xact_lock($1::bigint)::text AS lock", slotLockId);
 
-    if (aggregate.discountCode) {
-      await prisma.discount.update({
-        where: { code: aggregate.discountCode },
-        data: { usedCount: { increment: 1 } },
-      });
+          // Double-booking guard at write time (not client-side).
+          if (timeSlot) {
+            const taken = await tx.order.findFirst({
+              where: {
+                scheduledAt: { gte: slotDayStart, lte: slotDayEnd },
+                timeSlot,
+                deletedAt: null,
+                status: { in: ["ANFRAGE", "ANGEBOT", "BESTAETIGT", "IN_BEARBEITUNG"] },
+              },
+              select: { id: true },
+            });
+            if (taken) {
+              const e = new Error("SLOT_TAKEN") as Error & { code?: string };
+              e.code = "SLOT_TAKEN";
+              throw e;
+            }
+          }
+
+          let fromAddressId: string | null = null;
+          let toAddressId: string | null = null;
+          if (firstFrom) {
+            const fromAddr = await tx.address.create({
+              data: {
+                street: firstFrom.street,
+                houseNumber: firstFrom.houseNumber || "",
+                zip: firstFrom.zip,
+                city: firstFrom.city || "",
+                floor: firstService.floorFrom || 0,
+                hasElevator: firstService.hasElevatorFrom || false,
+                latitude: firstFrom.lat,
+                longitude: firstFrom.lon,
+              },
+            });
+            fromAddressId = fromAddr.id;
+          }
+          if (firstTo) {
+            const toAddr = await tx.address.create({
+              data: {
+                street: firstTo.street,
+                houseNumber: firstTo.houseNumber || "",
+                zip: firstTo.zip,
+                city: firstTo.city || "",
+                floor: firstService.floorTo || 0,
+                hasElevator: firstService.hasElevatorTo || false,
+                latitude: firstTo.lat,
+                longitude: firstTo.lon,
+              },
+            });
+            toAddressId = toAddr.id;
+          }
+
+          const trackingNumber = await nextTrackingNumber(tx);
+          const dbOrder = await tx.order.create({
+            data: {
+              orderNumber: trackingNumber,
+              trackingNumber,
+              idempotencyKey,
+              customerId: dbCustomer.id,
+              serviceId: catalogService.id,
+              status: "ANFRAGE",
+              fromAddressId,
+              toAddressId,
+              scheduledAt: selectedDate,
+              timeSlot: timeSlot || null,
+              bookedHours: combinedHours,
+              extrasTimeMin: 0,
+              totalHours: combinedHours,
+              hourlyRate: combinedHours > 0 ? Number((aggregate.subtotal / combinedHours).toFixed(2)) : 0,
+              workers: firstCategory === "MOVING" ? 2 : 1,
+              volumeM3: firstService.volumeM3 || null,
+              distanceKm: firstService.distanceKm || null,
+              areaM2: firstService.areaM2 || null,
+              subtotal: aggregate.subtotal,
+              discountAmount: aggregate.discountAmount,
+              discountCode: aggregate.discountCode,
+              quoteFingerprint: aggregate.quoteFingerprint,
+              quoteSnapshotJson: {
+                services: aggregate.services.map((s) => ({
+                  serviceType: s.originalServiceType,
+                  effectiveServiceType: s.serviceType,
+                  region: s.result.regionName,
+                  zip: s.zip,
+                  subtotal: s.result.subtotal,
+                  total: s.result.total,
+                })),
+                lines: aggregate.lines,
+                generatedAt: new Date().toISOString(),
+              },
+              netto: aggregate.netto,
+              mwst: aggregate.mwst,
+              totalPrice: aggregate.total,
+              paymentMethod: mapPaymentMethod(paymentMethod) as never,
+              paymentStatus: "AUSSTEHEND",
+              extrasJson: normalizedServices.map((s) => ({
+                serviceType: s.serviceType,
+                extras: (s.extras || []).filter((e) => e.selected),
+              })),
+              breakdownJson: {
+                services: aggregate.services.map((s, i) => ({
+                  serviceType: s.originalServiceType,
+                  effectiveServiceType: s.serviceType,
+                  hours: normalizedServices[i]?.hours || 0,
+                  pricing: s.result,
+                })),
+                lines: aggregate.lines,
+                quoteFingerprint: aggregate.quoteFingerprint,
+              },
+              addressSnapshotJson: normalizedServices.map((s, i) => ({
+                serviceType: s.serviceType,
+                from: serviceValidation[i].ok ? serviceValidation[i].from : null,
+                to: serviceValidation[i].ok ? serviceValidation[i].to : null,
+              })),
+              notes: notes || null,
+            },
+          });
+
+          if (aggregate.discountCode) {
+            await tx.discount.update({
+              where: { code: aggregate.discountCode },
+              data: { usedCount: { increment: 1 } },
+            });
+          }
+
+          const createdOffer = await createOfferFromOrder(
+            {
+              id: dbOrder.id,
+              customerId: dbOrder.customerId,
+              subtotal: dbOrder.subtotal,
+              netto: dbOrder.netto,
+              mwst: dbOrder.mwst,
+              totalPrice: dbOrder.totalPrice,
+              discountAmount: dbOrder.discountAmount,
+              breakdownJson: dbOrder.breakdownJson,
+              extrasJson: dbOrder.extrasJson,
+            },
+            tx
+          );
+          const offer = await tx.offer.findUnique({ where: { id: createdOffer.id }, include: { items: true } });
+          return { dbOrder, offer, trackingNumber };
+        },
+        { timeout: 20000 }
+      );
+    } catch (txErr) {
+      const code = (txErr as { code?: string })?.code;
+      if (code === "SLOT_TAKEN") {
+        return errorResponse(409, "SLOT_TAKEN", "Dieser Termin ist leider nicht mehr verfügbar.", requestId);
+      }
+      if (
+        txErr instanceof Prisma.PrismaClientKnownRequestError &&
+        txErr.code === "P2002" &&
+        String(txErr.message).includes("idempotency")
+      ) {
+        const dup = await prisma.order.findUnique({ where: { idempotencyKey }, include: { offer: true } });
+        if (dup) return buildReplay(dup);
+      }
+      throw txErr;
     }
 
-    const createdOffer = await createOfferFromOrder({
-      id: dbOrder.id,
-      customerId: dbOrder.customerId,
-      subtotal: dbOrder.subtotal,
-      netto: dbOrder.netto,
-      mwst: dbOrder.mwst,
-      totalPrice: dbOrder.totalPrice,
-      discountAmount: dbOrder.discountAmount,
-      breakdownJson: dbOrder.breakdownJson,
-      extrasJson: dbOrder.extrasJson,
-    });
-
-    const offer = await prisma.offer.findUnique({
-      where: { id: createdOffer.id },
-      include: { items: true },
-    });
+    const { dbOrder, offer, trackingNumber } = txData;
+    const orderNumber = dbOrder.orderNumber;
 
     if (!offer) {
       return errorResponse(500, "OFFER_NOT_CREATED", "Angebot konnte nicht erstellt werden", requestId);

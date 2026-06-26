@@ -257,6 +257,7 @@ model Order {
   areaM2          Float?        @map("area_m2")
   subtotal        Float         @default(0)
   quoteFingerprint String?      @map("quote_fingerprint")
+  idempotencyKey  String?       @unique @map("idempotency_key")
   quoteSnapshotJson Json?       @map("quote_snapshot_json")
   discountCode    String?       @map("discount_code")
   discountAmount  Float         @default(0) @map("discount_amount")
