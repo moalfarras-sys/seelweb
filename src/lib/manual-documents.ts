@@ -2,6 +2,7 @@ import { ManualDocumentType } from "@prisma/client";
 import { CONTACT } from "@/config/contact";
 import { ManualDocumentItem } from "@/lib/manual-document-utils";
 import { nextContractNumber, nextInvoiceNumber, nextOfferNumber } from "@/lib/workflow";
+import { escapeHtml } from "@/lib/escape-html";
 
 export type ManualDocumentPayload = {
   type: ManualDocumentType;
@@ -72,7 +73,7 @@ export function buildManualDocumentEmail(options: {
       </div>
       <div style="padding:34px 36px;">
         <p style="margin:0 0 18px;color:#526173;font-size:15px;line-height:1.7;">
-          Guten Tag <strong style="color:#0f2550;">${options.customerName}</strong>,<br><br>
+          Guten Tag <strong style="color:#0f2550;">${escapeHtml(options.customerName)}</strong>,<br><br>
           anbei erhalten Sie Ihr ${label.toLowerCase()} <strong>${options.documentNumber}</strong> für <strong>${options.serviceSummary}</strong>.
         </p>
         <div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:18px;padding:20px 22px;margin:0 0 20px;">

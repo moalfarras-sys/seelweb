@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
+import { escapeHtml } from "@/lib/escape-html";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     await sendEmail({
       to: offer.customer.email,
       subject: "Update zu Ihrem Angebot - Seel Transport",
-      html: `<p>Sehr geehrte/r ${offer.customer.name},</p><p>Ihr Angebot ${offer.offerNumber} wurde aktuell nicht freigegeben.</p><p>Grund: ${reason}</p><p>Bei Rückfragen antworten Sie bitte auf diese E-Mail.</p>`,
+      html: `<p>Sehr geehrte/r ${escapeHtml(offer.customer.name)},</p><p>Ihr Angebot ${offer.offerNumber} wurde aktuell nicht freigegeben.</p><p>Grund: ${escapeHtml(reason)}</p><p>Bei Rückfragen antworten Sie bitte auf diese E-Mail.</p>`,
     });
 
     await prisma.communication.create({

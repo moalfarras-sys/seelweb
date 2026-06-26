@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
+import { escapeHtml } from "@/lib/escape-html";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       await sendEmail({
         to: offer.customer.email,
         subject,
-        html: `<p>Sehr geehrte/r ${offer.customer.name},</p><p>${message.replace(/\\n/g, "<br/>")}</p>`,
+        html: `<p>Sehr geehrte/r ${escapeHtml(offer.customer.name)},</p><p>${escapeHtml(message).replace(/\n/g, "<br/>")}</p>`,
       });
     }
 

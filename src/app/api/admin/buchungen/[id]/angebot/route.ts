@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { sendEmail } from "@/lib/email";
 import { CONTACT } from "@/config/contact";
+import { escapeHtml } from "@/lib/escape-html";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -122,7 +123,7 @@ function buildContractEmail(data: {
         <div style="padding: 30px;">
           <h2 style="color: #0f2550; margin: 0 0 20px;">Vertragsangebot</h2>
           <p style="color: #6b7787; line-height: 1.6;">
-            Sehr geehrte/r ${data.customerName},<br><br>
+            Sehr geehrte/r ${escapeHtml(data.customerName)},<br><br>
             wir haben ein Vertragsangebot für Sie vorbereitet. Bitte prüfen Sie die Details und unterschreiben Sie den Vertrag online.
           </p>
           <div style="background: #f5f6f8; border-radius: 12px; padding: 20px; margin: 20px 0;">

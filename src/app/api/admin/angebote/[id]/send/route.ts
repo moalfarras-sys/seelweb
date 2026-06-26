@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { generateAgbPDF, generateOfferPDF } from "@/lib/pdf";
 import { sendEmail } from "@/lib/email";
 import { getAppBaseUrl } from "@/lib/app-url";
+import { escapeHtml } from "@/lib/escape-html";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -91,7 +92,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
     </div>
     <div style="padding:26px;">
       <h2 style="margin:0 0 12px;color:#0f2550;">Ihr Angebot</h2>
-      <p style="margin:0 0 16px;color:#4b5563;line-height:1.6;">Sehr geehrte/r ${offer.customer.name},</p>
+      <p style="margin:0 0 16px;color:#4b5563;line-height:1.6;">Sehr geehrte/r ${escapeHtml(offer.customer.name)},</p>
       <p style="margin:0 0 16px;color:#4b5563;line-height:1.6;">vielen Dank für Ihre Anfrage. Im Anhang finden Sie Ihr Angebot (${offer.offerNumber}) inklusive aller Details, Preise und Bedingungen.</p>
       <table style="width:100%;border-collapse:collapse;background:#f8fafc;border-radius:10px;overflow:hidden;margin:12px 0 20px;">
         <tr><td style="padding:10px 14px;color:#64748b;font-size:13px;">Angebotsnummer</td><td style="padding:10px 14px;text-align:right;font-family:monospace;color:#0d9ea0;font-weight:700;">${offer.offerNumber}</td></tr>

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { getInternalNotificationBcc, sendEmail } from "@/lib/email";
 import { generateSignedContractPDF } from "@/lib/pdf";
 import { createInvoiceForSignedContract } from "@/lib/workflow";
+import { escapeHtml } from "@/lib/escape-html";
 
 type Params = { params: Promise<{ token: string }> };
 
@@ -164,7 +165,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   </div>
   <div style="padding:30px 35px;">
     <p style="color:#5a6b80;font-size:15px;line-height:1.7;">
-      Sehr geehrte/r <strong style="color:#0f2550;">${contract.customer.name}</strong>,<br><br>
+      Sehr geehrte/r <strong style="color:#0f2550;">${escapeHtml(contract.customer.name)}</strong>,<br><br>
       Ihr Vertrag <strong style="color:#0d9ea0;">${contract.contractNumber}</strong> wurde erfolgreich bestaetigt und digital unterschrieben.
     </p>
     <div style="background:#f7f8fa;border-radius:14px;padding:18px;margin:20px 0;border:1px solid #e8ecf1;">

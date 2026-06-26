@@ -1,4 +1,5 @@
 import { COMPANY_LEGAL, CONTACT } from "@/config/contact";
+import { escapeHtml } from "@/lib/escape-html";
 
 const fmt = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" });
 
@@ -33,7 +34,7 @@ export function buildContractSignatureEmail(data: {
 
       <div style="padding:34px 38px;">
         <p style="margin:0 0 18px;color:#46556b;font-size:15px;line-height:1.8;">
-          Sehr geehrte/r <strong style="color:#0f2550;">${data.customerName}</strong>,
+          Sehr geehrte/r <strong style="color:#0f2550;">${escapeHtml(data.customerName)}</strong>,
           Ihr Auftrag zu Angebot <strong style="color:#0d9ea0;">${data.offerNumber}</strong> wurde intern freigegeben.
           Bitte pruefen Sie den Vertragsinhalt und leisten Sie Ihre digitale Unterschrift ueber den folgenden Button.
         </p>

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { CONTACT } from "@/config/contact";
 import type { ServiceCategory } from "@prisma/client";
+import { escapeHtml } from "@/lib/escape-html";
 
 const CATEGORY_MAP: Record<string, ServiceCategory> = {
   BUEROUMZUG: "MOVING",
@@ -52,8 +53,8 @@ export async function POST(req: NextRequest) {
       subject: `Neue Ausschreibung - ${company}`,
       html: `
         <h2>Neue Ausschreibung</h2>
-        <p><strong>Unternehmen:</strong> ${company}</p>
-        <p><strong>Ansprechpartner:</strong> ${contact}</p>
+        <p><strong>Unternehmen:</strong> ${escapeHtml(company)}</p>
+        <p><strong>Ansprechpartner:</strong> ${escapeHtml(contact)}</p>
         <p><strong>E-Mail:</strong> ${email}</p>
         <p><strong>Telefon:</strong> ${phone}</p>
         <p><strong>Kategorie:</strong> ${category}</p>
